@@ -2,7 +2,7 @@
 
 ## Background
 
-Career-Ops uses `bb-browser` for browser-backed job-board scans. Built In and
+Auto-Job uses `bb-browser` for browser-backed job-board scans. Built In and
 Indeed already have read-only `bb-browser site` adapters, but authenticated
 browser sessions may be needed for reliable scans.
 

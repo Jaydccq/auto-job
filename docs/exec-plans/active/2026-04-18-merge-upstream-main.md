@@ -2,7 +2,7 @@
 
 ## Background
 
-The local branch `jd-extension-work` tracks fork work and the upstream remote is `https://github.com/santifer/career-ops.git`. `git fetch upstream` moved `upstream/main` from `4b5093a` to `10c496c`.
+The local branch `jd-extension-work` tracks fork work and the upstream remote is `https://github.com/santifer/auto-job.git`. `git fetch upstream` moved `upstream/main` from `4b5093a` to `10c496c`.
 
 ## Goal
 

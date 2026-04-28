@@ -65,7 +65,7 @@ user-provided project description.
 
 - 2026-04-23: Read `CLAUDE.md`, `docs/CODEX.md`, `cv.md`, `config/profile.yml`,
   `article-digest.md`, and the relevant CV generation guidance.
-- 2026-04-23: Ran the Career-Ops update check; the system is up to date.
+- 2026-04-23: Ran the Auto-Job update check; the system is up to date.
 - 2026-04-23: Noted a pre-existing unrelated modification in
   `docs/exec-plans/active/2026-04-23-apply-next-document-downloads.md` and left
   it untouched.
@@ -143,7 +143,7 @@ user-provided project description.
 ## Key Decisions
 
 - Use `cv.md` as the primary changed artifact because it is the resume source of
-  truth for Career-Ops generation flows.
+  truth for Auto-Job generation flows.
 - Keep the existing C++ HTTP proxy project as its own project because the user
   wants it preserved as a distinct resume proof point.
 - Add a separate C/C++ systems project for allocator, synchronization, xv6, and

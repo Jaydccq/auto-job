@@ -1,8 +1,8 @@
 {
-  "name": "@career-ops/server",
+  "name": "@auto-job/server",
   "version": "0.1.0-phase1",
   "private": true,
-  "description": "Local HTTP companion that bridges the Chrome extension to the career-ops CLI pipeline. Phase 1 = contracts only.",
+  "description": "Local HTTP companion that bridges the Chrome extension to the auto-job CLI pipeline. Phase 1 = contracts only.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -31,7 +31,7 @@
     "vitest": "^4.1.4"
   },
   "dependencies": {
-    "@career-ops/shared": "workspace:*",
+    "@auto-job/shared": "workspace:*",
     "fastify": "^5.8.4",
     "js-yaml": "^4.1.1",
     "nanoid": "^5.1.7",

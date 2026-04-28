@@ -4,7 +4,7 @@
 
 Batch worker run `rwPmFEVfxr-MU3tRF00IR` evaluates Aurora's Software Engineer II, Behavior Planning ML Platform role for Hongxi Chen.
 
-Primary local JD cache: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-rwPmFEVfxr-MU3tRF00IR.txt`.
+Primary local JD cache: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-rwPmFEVfxr-MU3tRF00IR.txt`.
 
 The local cache contains role metadata and a short JD excerpt. The Index Ventures posting mirror was used only to fill missing JD details required for a complete A-G report.
 

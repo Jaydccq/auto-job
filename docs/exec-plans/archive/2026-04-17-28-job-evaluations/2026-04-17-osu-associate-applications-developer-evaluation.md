@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run for report 248, batch ID `2REATfM3UgFrfDUKcmuA_`, using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-2REATfM3UgFrfDUKcmuA_.txt`.
+Bridge batch run for report 248, batch ID `2REATfM3UgFrfDUKcmuA_`, using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-2REATfM3UgFrfDUKcmuA_.txt`.
 
 ## Goal
 

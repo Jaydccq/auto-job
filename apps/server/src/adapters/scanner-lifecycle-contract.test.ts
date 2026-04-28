@@ -90,7 +90,7 @@ describe("scanner lifecycle identity contract", () => {
 });
 
 function makeRepoRoot(): string {
-  const repoRoot = mkdtempSync(join(tmpdir(), "career-ops-scanner-lifecycle-"));
+  const repoRoot = mkdtempSync(join(tmpdir(), "auto-job-scanner-lifecycle-"));
   tempDirs.push(repoRoot);
   mkdirSync(join(repoRoot, "reports"), { recursive: true });
   return repoRoot;

@@ -4,7 +4,7 @@
 
 Bridge batch run `oBOS7GwIaC-LaF27hVAMy` requests report `330` for Wonderschool,
 Early Career Software Engineer – Applied AI. The temporary JD cache at
-`/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-oBOS7GwIaC-LaF27hVAMy.txt`
+`/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-oBOS7GwIaC-LaF27hVAMy.txt`
 is the primary source, and the repository already contains a prior quick-screen
 artifact for the same role (`reports/329-wonderschool-2026-04-23.md`) that was
 explicitly called out in `docs/exec-plans/active/2026-04-19-newgrad-scan-run.md`

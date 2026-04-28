@@ -4,7 +4,7 @@
 
 **Goal:** Add a newgrad-jobs.com scanner that extracts job listings via the Chrome extension, scores them locally in the bridge, enriches high-scoring rows from detail pages, and writes survivors to `data/pipeline.md` for full Claude evaluation.
 
-**Architecture:** Hybrid — Chrome extension content scripts scrape DOM (zero bot risk), bridge runs deterministic scoring against `profile.yml` config, enriched rows land in the existing pipeline for batch evaluation. Two entry points: extension UI button when browsing newgrad-jobs.com, and CLI `/career-ops newgrad-scan` that directs the user to the browser.
+**Architecture:** Hybrid — Chrome extension content scripts scrape DOM (zero bot risk), bridge runs deterministic scoring against `profile.yml` config, enriched rows land in the existing pipeline for batch evaluation. Two entry points: extension UI button when browsing newgrad-jobs.com, and CLI `/auto-job newgrad-scan` that directs the user to the browser.
 
 **Tech Stack:** TypeScript (extension + bridge), Fastify (bridge HTTP), Chrome MV3 APIs (content scripts, background SW, tabs), Zod (validation), Vitest (tests)
 
@@ -1149,7 +1149,7 @@ Add a new section to `buildHTML()`:
     <div id="ng-added" style="font-size:12px;color:#4ecb71;"></div>
     <div id="ng-skipped" style="font-size:12px;color:#8f8f94;"></div>
     <div style="font-size:11px;color:#8f8f94;margin-top:6px;">
-      Run <code style="color:#7aa7ff;">/career-ops pipeline</code> to start full evaluations.
+      Run <code style="color:#7aa7ff;">/auto-job pipeline</code> to start full evaluations.
     </div>
   </div>
 </div>
@@ -1212,7 +1212,7 @@ Check `/v1/health`. If not reachable, tell the user:
 ### Step 2: Direct user to browser
 
 > "Open https://www.newgrad-jobs.com/ in Chrome.
-> The career-ops panel will detect the page and show the scanner UI.
+> The auto-job panel will detect the page and show the scanner UI.
 > Click **Scan & Score** to extract and filter listings.
 > Then click **Enrich detail pages** to gather full JD data.
 > Results will be written to `data/pipeline.md`."
@@ -1222,8 +1222,8 @@ Check `/v1/health`. If not reachable, tell the user:
 After the user confirms the scan is done, offer:
 
 > "Scan complete. Want me to process the new pipeline entries?
-> - `/career-ops pipeline` — evaluate one by one
-> - `/career-ops batch` — parallel batch evaluation"
+> - `/auto-job pipeline` — evaluate one by one
+> - `/auto-job batch` — parallel batch evaluation"
 
 ## Scoring Configuration
 
@@ -1241,7 +1241,7 @@ To customize: edit `config/profile.yml → newgrad_scan`.
 
 **Step 2: Update the skill router**
 
-Add `newgrad-scan` to the mode routing table in `.claude/skills/career-ops/SKILL.md`:
+Add `newgrad-scan` to the mode routing table in `.claude/skills/auto-job/SKILL.md`:
 
 ```
 | `newgrad-scan` / `newgrad` | `newgrad-scan` |
@@ -1250,7 +1250,7 @@ Add `newgrad-scan` to the mode routing table in `.claude/skills/career-ops/SKILL
 **Step 3: Commit**
 
 ```bash
-git add modes/newgrad-scan.md .claude/skills/career-ops/SKILL.md
+git add modes/newgrad-scan.md .claude/skills/auto-job/SKILL.md
 git commit -m "feat(newgrad-scan): CLI mode and skill router entry"
 ```
 
@@ -1285,7 +1285,7 @@ Expected: All pass (including new newgrad-scorer tests)
 5. Click "Scan & Score" → verify rows are extracted and scored
 6. Click "Enrich detail pages" → verify background tabs open/close with delays
 7. Verify `data/pipeline.md` has new entries
-8. Run `/career-ops pipeline` → verify entries are processed
+8. Run `/auto-job pipeline` → verify entries are processed
 
 **Step 5: Refine CSS selectors**
 

@@ -1,5 +1,5 @@
 /**
- * bridge-client.ts — typed HTTP client for the career-ops bridge.
+ * bridge-client.ts — typed HTTP client for the auto-job bridge.
  *
  * All requests go through this module. No raw fetch() elsewhere in the
  * background worker. This is the seam where we:

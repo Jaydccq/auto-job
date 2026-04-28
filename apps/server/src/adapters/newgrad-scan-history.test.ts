@@ -13,7 +13,7 @@ import {
   wasNewGradRowSeen,
 } from "./newgrad-scan-history.js";
 
-import type { NewGradRow } from "@career-ops/shared";
+import type { NewGradRow } from "@auto-job/shared";
 
 const tempDirs: string[] = [];
 
@@ -213,7 +213,7 @@ describe("newgrad-scan-history", () => {
 });
 
 function makeRepoRoot(): string {
-  const repoRoot = mkdtempSync(join(tmpdir(), "career-ops-newgrad-history-"));
+  const repoRoot = mkdtempSync(join(tmpdir(), "auto-job-newgrad-history-"));
   tempDirs.push(repoRoot);
   mkdirSync(join(repoRoot, "data"), { recursive: true });
   return repoRoot;

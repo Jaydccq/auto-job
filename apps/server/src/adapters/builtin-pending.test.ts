@@ -36,7 +36,7 @@ describe("readBuiltInPendingEntries", () => {
     writeFileSync(
       join(repoRoot, "data/applications.md"),
       [
-        "# Career-Ops Applications Tracker",
+        "# Auto-Job Applications Tracker",
         "",
         "| # | Date | Company | Role | Score | Status | PDF | Report | Notes |",
         "|---|------|---------|------|-------|--------|-----|--------|-------|",
@@ -138,7 +138,7 @@ describe("readBuiltInPendingEntries", () => {
 });
 
 function makeRepoRoot(): string {
-  const repoRoot = mkdtempSync(join(tmpdir(), "career-ops-builtin-pending-"));
+  const repoRoot = mkdtempSync(join(tmpdir(), "auto-job-builtin-pending-"));
   tempDirs.push(repoRoot);
   mkdirSync(join(repoRoot, "data"), { recursive: true });
   return repoRoot;

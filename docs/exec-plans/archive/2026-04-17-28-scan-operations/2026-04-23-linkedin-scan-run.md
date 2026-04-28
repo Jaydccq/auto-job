@@ -2,7 +2,7 @@
 
 ## Background
 
-The `/career-ops linkedin-scan` mode uses the authenticated `bb-browser`
+The `/auto-job linkedin-scan` mode uses the authenticated `bb-browser`
 profile plus the local bridge to read LinkedIn Jobs search results, score rows
  with the existing newgrad scanner, enrich promising jobs, and write qualified
  survivors to `data/pipeline.md`.
@@ -15,7 +15,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
 
 ## Scope
 
-- Check required career-ops setup files.
+- Check required auto-job setup files.
 - Check update status as required by `CLAUDE.md`.
 - Verify bridge health and start the bridge if needed.
 - Run a read-only LinkedIn preview first.
@@ -77,7 +77,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
 
 ## Progress Log
 
-- 2026-04-23: User invoked `/career-ops linkedin-scan`.
+- 2026-04-23: User invoked `/auto-job linkedin-scan`.
 - 2026-04-23: Goal: run the existing LinkedIn scan flow against a live
   authenticated session, starting with the safest read-only preview before any
   write-path action.
@@ -151,7 +151,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
   passed. The scanner extracted 7 unique LinkedIn rows, promoted 1, enriched 1,
   failed 0 detail reads, and the bridge skipped the candidate with
   `pipeline_threshold` under existing rules. No direct evaluations were queued.
-- 2026-04-23: User invoked `/career-ops linkedin-scan` again. Goal: run the
+- 2026-04-23: User invoked `/auto-job linkedin-scan` again. Goal: run the
   current repo-native LinkedIn scan flow, keep the run bounded to the documented
   24-hour URL because `config/profile.yml` still has no
   `linkedin_scan.search_url`, and record concrete verification results.
@@ -164,7 +164,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
   tracker/profile/CV checks OK, Codex CLI OK, and Playwright Chromium OK.
 - 2026-04-23: `npm` and `bb-browser` were not on the default shell PATH. Used
   Homebrew npm and built the checked-in `bb-browser` workspace with
-  `pnpm install` and `pnpm build`, then used a temporary `/tmp/career-ops-bin`
+  `pnpm install` and `pnpm build`, then used a temporary `/tmp/auto-job-bin`
   PATH shim pointing at `bb-browser/dist/cli.js`. `bb-browser --version`
   reported `0.11.3`.
 - 2026-04-23: Read-only preview passed:
@@ -180,7 +180,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
 - 2026-04-23: Artifact inspection showed no tracked `data/`, `reports/`,
   `output/`, or `bb-browser/` changes from this run. The only in-scope
   repository update for this invocation is this progress log entry.
-- 2026-04-23: User invoked `/career-ops linkedin-scan` again. Goal: execute
+- 2026-04-23: User invoked `/auto-job linkedin-scan` again. Goal: execute
   the current repo-native LinkedIn scan flow against the documented 24-hour URL
   because `config/profile.yml` still has no `linkedin_scan.search_url`.
 - 2026-04-23: Required setup files are present. `node update-system.mjs check`
@@ -221,7 +221,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
   procedure states that the scanner defaults to `--pages 6 --limit 100`.
 - 2026-04-23: Verification passed: scanner help output shows `--limit` default
   100 and `--pages` default 6; `npm --prefix bridge run typecheck` passed.
-- 2026-04-24: User requested `/career-ops linkedin-scan` with an event log so
+- 2026-04-24: User requested `/auto-job linkedin-scan` with an event log so
   they can audit whether page information is extracted correctly. Goal: add
   structured scan-run JSONL logging to the existing LinkedIn scanner, run a
   bounded scan, and report the log path plus extracted row evidence. Success
@@ -459,7 +459,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
   src/adapters/linkedin-guest-detail.test.ts`,
   `npm --prefix bridge run typecheck`, and
   `npm run linkedin-scan -- --help`.
-- 2026-04-24: User requested another supervised `/career-ops linkedin-scan`
+- 2026-04-24: User requested another supervised `/auto-job linkedin-scan`
   run. Goal: execute the repo-native LinkedIn scanner against the documented
   24-hour URL, watch it through completion, inspect the resulting scan-run
   event log, and record the outcome. Success criteria: bridge health is known,
@@ -502,7 +502,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
   `npm --prefix bridge run typecheck`, and
   `npm run linkedin-scan -- --help`.
 - 2026-04-24: User requested queuing evaluations for the latest LinkedIn scan
-  candidates after the supervised `/career-ops linkedin-scan` write path.
+  candidates after the supervised `/auto-job linkedin-scan` write path.
 - 2026-04-24: Initial ad hoc queue attempt wrote
   `data/scan-runs/linkedin-eval-20260424T200749Z-26b16cf0.jsonl` and failed
   to enqueue all 13 jobs with `fetch failed`. The bridge was healthy; the
@@ -557,7 +557,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
   preview reports extracted/promoted counts, a bounded write/enrich path runs
   only after preview success, and the scan outcome is recorded here.
 - 2026-04-26: Assumptions: the misspelled command maps to
-  `/career-ops linkedin-scan`; the configured profile URL is the intended search
+  `/auto-job linkedin-scan`; the configured profile URL is the intended search
   URL; external Apply probing may open employer job pages but must not fill or
   submit any application form; direct formal evaluation queueing is not required
   unless the scanner's default path is explicitly used.
@@ -671,7 +671,7 @@ existing score, enrich, pipeline, and evaluation flow. Live verification against
 the user-provided URL extracted the visible list and completed the
 `--no-evaluate` enrich path successfully.
 
-The latest `/career-ops linkedin-scan` invocation also completed successfully
+The latest `/auto-job linkedin-scan` invocation also completed successfully
 against the documented 24-hour LinkedIn URL. It found 6 unique visible rows,
 promoted and enriched 1 candidate, and wrote no pipeline entries because the
 candidate was rejected by the existing `pipeline_threshold` rule.

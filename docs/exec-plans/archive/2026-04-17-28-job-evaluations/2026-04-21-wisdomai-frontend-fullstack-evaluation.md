@@ -4,7 +4,7 @@
 
 Bridge MVP batch run for `U-wp8FvK1nE_kymCjyfET`.
 
-The JD cache file is `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-U-wp8FvK1nE_kymCjyfET.txt`.
+The JD cache file is `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-U-wp8FvK1nE_kymCjyfET.txt`.
 
 ## Goal
 

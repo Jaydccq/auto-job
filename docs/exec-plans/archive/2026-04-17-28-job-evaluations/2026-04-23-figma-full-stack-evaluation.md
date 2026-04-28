@@ -2,7 +2,7 @@
 
 ## Background
 
-Batch bridge run for report 320 evaluates Figma's Software Engineer, Full Stack posting from the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-iCpZLQvNg6YsbjAJIkOv7.txt`.
+Batch bridge run for report 320 evaluates Figma's Software Engineer, Full Stack posting from the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-iCpZLQvNg6YsbjAJIkOv7.txt`.
 
 ## Goal
 

@@ -1,7 +1,7 @@
 /**
  * inject.ts — floating panel injected into the page via content script.
  *
- * Creates a shadow-DOM container with the career-ops panel UI.
+ * Creates a shadow-DOM container with the auto-job panel UI.
  * Features:
  *   • Draggable by the header bar
  *   • Persists across focus changes (it's part of the page DOM)
@@ -41,7 +41,7 @@ import {
 } from "../shared/autofill-matcher.js";
 
 declare const __EXTENSION_VERSION__: string;
-const PANEL_ID = "career-ops-panel-root";
+const PANEL_ID = "auto-job-panel-root";
 const STORAGE_POS_KEY = "careerOps.panelPos";
 const PANEL_DEFAULT_TOP = 80;
 const PANEL_DEFAULT_RIGHT = 20;
@@ -693,7 +693,7 @@ function buildHTML(): string {
 <div class="panel-container">
   <div class="drag-bar" id="drag-bar">
     <div class="brand-lockup">
-      <div class="brand-kicker">career-ops</div>
+      <div class="brand-kicker">auto-job</div>
       <h1>Job assistant</h1>
     </div>
     <div class="drag-actions">
@@ -1312,7 +1312,7 @@ function initPanel(shadow: ShadowRoot, root: HTMLElement): void {
     while (errorMessageEl.firstChild) errorMessageEl.removeChild(errorMessageEl.firstChild);
     const p = document.createElement("div");
     p.textContent =
-      `First time using career-ops on ${label}. Chrome needs your permission before the extension can read this page.`;
+      `First time using auto-job on ${label}. Chrome needs your permission before the extension can read this page.`;
     errorMessageEl.appendChild(p);
     const btn = document.createElement("button");
     btn.textContent = `Authorize ${label}`;
@@ -1406,7 +1406,7 @@ function initPanel(shadow: ShadowRoot, root: HTMLElement): void {
       return;
     }
     try {
-      const port = chrome.runtime.connect({ name: "career-ops.job" });
+      const port = chrome.runtime.connect({ name: "auto-job.job" });
       activePort = port;
       port.postMessage({ jobId });
       port.onMessage.addListener((raw: any) => {

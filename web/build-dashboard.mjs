@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Build a standalone static HTML snapshot for career-ops.
+// Build a standalone static HTML snapshot for auto-job.
 // Reads: reports/*.md, data/applications.md, data/pipeline.md, data/scan-history.tsv
 // Writes: web/index.html (open with double-click, no server needed)
 

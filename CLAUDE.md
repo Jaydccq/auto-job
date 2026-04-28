@@ -21,7 +21,7 @@ There are two layers. `DATA_CONTRACT.md` has the full table.
   `modes/auto-pipeline.md`, `modes/scan.md`, `modes/*-scan.md`,
   `modes/contacto.md`, `modes/cover-letter.md`, `modes/followup.md`
 - `batch/batch-prompt.md`, `templates/*`, root `*.mjs`, `scripts/*`,
-  `web/*`, `.claude/skills/career-ops/SKILL.md`
+  `web/*`, `skills/*`, `.claude/skills/*`
 - `CLAUDE.md`, `README.md`, `DATA_CONTRACT.md`, `LEGAL_DISCLAIMER.md`
 
 **The rule:** when the user asks to customize anything (archetypes, narrative,
@@ -72,7 +72,7 @@ Three valid setups:
 **Desktop app** (visual):
 ```bash
 bun run --cwd apps/desktop package
-open "apps/desktop/release/mac-arm64/Career Ops.app"
+open "apps/desktop/release/mac-arm64/Auto Job.app"
 ```
 
 **LaunchAgent** (headless, macOS, runs at login):
@@ -85,8 +85,8 @@ bun run app:restart
 **Manual** (development):
 ```bash
 bun run server                                       # Codex
-CAREER_OPS_BACKEND=fake bun run server               # tests
-CAREER_OPS_BACKEND=real-openrouter bun run server    # OpenRouter
+AUTO_JOB_BACKEND=fake bun run server               # tests
+AUTO_JOB_BACKEND=real-openrouter bun run server    # OpenRouter
 ```
 
 Dashboard at `http://127.0.0.1:47319/dashboard/`.

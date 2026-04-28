@@ -4,7 +4,7 @@
 
 Bridge batch run `HJfCeUCSMPaZGl-6mgoeb` requested a repository-backed evaluation for LendingClub's Decision Infrastructure Analyst posting.
 
-Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-HJfCeUCSMPaZGl-6mgoeb.txt`.
+Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-HJfCeUCSMPaZGl-6mgoeb.txt`.
 
 ## Goal
 

@@ -75,10 +75,10 @@ Verification passed:
 
 Smoke test screenshots:
 
-- `/tmp/career-ops-extension-popup.png`
-- `/tmp/career-ops-extension-permission.png`
-- `/tmp/career-ops-extension-unsupported.png`
-- `/tmp/career-ops-web-index.png`
+- `/tmp/auto-job-extension-popup.png`
+- `/tmp/auto-job-extension-permission.png`
+- `/tmp/auto-job-extension-unsupported.png`
+- `/tmp/auto-job-web-index.png`
 
 `npm run verify` reports `0 errors` and keeps 3 pre-existing duplicate warnings:
 

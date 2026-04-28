@@ -1579,7 +1579,7 @@
 <div class="shell">
 
 <header class="masthead">
-  <div class="brand">Career-Ops <em>Console</em></div>
+  <div class="brand">Auto-Job <em>Console</em></div>
   <div class="meta">
     <strong>FIELD BRIEF // 04.2026</strong>
     <span id="generated">—</span>
@@ -2163,7 +2163,7 @@
 </section>
 
 <footer class="sig">
-  <span>Career-Ops · Console v1</span>
+  <span>Auto-Job · Console v1</span>
   <span class="mark">Hongxi Chen</span>
   <span>Signal · <strong style="color:var(--signal);">◉</strong> live</span>
 </footer>
@@ -2230,12 +2230,12 @@ const reportByPath = new Map(D.reports.map(r => [`reports/${r.filename}`, r]));
 const gmailSignals = D.gmailSignals?.rows || [];
 const gmailSignalErrors = D.gmailSignals?.errors || [];
 const gmailRefresh = D.gmailRefresh || null;
-const APPLY_DONE_KEY = 'career_ops_apply_done_v1';
+const APPLY_DONE_KEY = 'auto_job_apply_done_v1';
 const generatedApplyDocs = {};
 const applyDocStatus = {};
 const applyMarkStatus = {};
 const fullEvalStatus = {};
-const DASHBOARD_TOKEN = document.querySelector('meta[name="career-ops-token"]')?.content || '';
+const DASHBOARD_TOKEN = document.querySelector('meta[name="auto-job-token"]')?.content || '';
 let lastApplyRowsByKey = new Map();
 function loadApplyDone() {
   try {
@@ -2664,7 +2664,7 @@ async function postDashboardApi(path, payload) {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
-      'X-Career-Ops-Token': DASHBOARD_TOKEN,
+      'X-Auto-Job-Token': DASHBOARD_TOKEN,
     },
     body: JSON.stringify(payload),
   });
@@ -2694,9 +2694,9 @@ function renderDocumentActions(row) {
   const coverStatus = applyDocStatus[applyDocKey(row.key, 'cover-letter')];
   return `
     <button class="action-btn js-doc-generate" data-key="${escapeHtml(row.key)}" data-doc-type="cv" aria-label="Generate CV PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)}">Generate CV PDF</button>
-    ${cvDoc ? `<button class="action-btn done js-doc-download" data-key="${escapeHtml(row.key)}" data-doc-type="cv" aria-label="Save CV PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)} to Downloads">Download CV PDF</button>` : ''}
+    ${cvDoc ? `<button class="action-btn done js-doc-download" data-key="${escapeHtml(row.key)}" data-doc-type="cv" aria-label="Save CV PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)} to Desktop">Save CV to Desktop</button>` : ''}
     <button class="action-btn js-doc-generate" data-key="${escapeHtml(row.key)}" data-doc-type="cover-letter" aria-label="Generate cover letter PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)}">Generate Cover Letter PDF</button>
-    ${coverDoc ? `<button class="action-btn done js-doc-download" data-key="${escapeHtml(row.key)}" data-doc-type="cover-letter" aria-label="Save cover letter PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)} to Downloads">Download Cover Letter PDF</button>` : ''}
+    ${coverDoc ? `<button class="action-btn done js-doc-download" data-key="${escapeHtml(row.key)}" data-doc-type="cover-letter" aria-label="Save cover letter PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)} to Desktop">Save Cover Letter to Desktop</button>` : ''}
     ${cvStatus ? `<span class="doc-status" role="status" aria-live="polite">${escapeHtml(cvStatus)}</span>` : ''}
     ${coverStatus ? `<span class="doc-status" role="status" aria-live="polite">${escapeHtml(coverStatus)}</span>` : ''}
   `;
@@ -2827,7 +2827,7 @@ function renderApplyNext() {
       const row = lastApplyRowsByKey.get(button.dataset.key);
       if (!doc || !row) return;
       const label = docTypeLabel(button.dataset.docType);
-      setApplyDocStatus(row.key, button.dataset.docType, `Saving ${label} to Downloads...`);
+      setApplyDocStatus(row.key, button.dataset.docType, `Saving ${label} to Desktop...`);
       renderApplyNext();
       try {
         const result = await postDashboardApi('/api/apply-docs/download', { id: doc.id });

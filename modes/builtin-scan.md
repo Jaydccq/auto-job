@@ -7,7 +7,7 @@ and queues direct tracker evaluations by default.
 ## When To Use
 
 Use this mode when the user asks for Built In discovery, BuiltIn discovery, or
-`/career-ops builtin-scan`.
+`/auto-job builtin-scan`.
 
 Use the broader `scan` mode when the user wants every configured portal and
 company source.
@@ -116,7 +116,7 @@ filters to be the source of truth.
 bun run server
 ```
 
-3. Open the Career-Ops extension panel.
+3. Open the Auto-Job extension panel.
 4. Confirm the panel shows the Built In scanner.
 5. Click the scan button to extract visible cards.
 6. Enrich promoted rows before evaluation so detail page text, external Apply
@@ -223,5 +223,5 @@ When reporting results, include:
 - New rows added or dry-run candidates.
 - Evaluation jobs queued/completed unless `--no-evaluate` was used.
 - Any network or parsing errors.
-- Reminder to run `/career-ops pipeline` only for remaining pending roles after
+- Reminder to run `/auto-job pipeline` only for remaining pending roles after
   a direct-evaluation run.

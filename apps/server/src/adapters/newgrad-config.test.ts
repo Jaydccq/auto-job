@@ -11,7 +11,7 @@ import {
   persistBlockedCompanies,
 } from "./newgrad-config.js";
 
-import type { FilteredRow, NewGradRow } from "@career-ops/shared";
+import type { FilteredRow, NewGradRow } from "@auto-job/shared";
 
 const tempDirs: string[] = [];
 
@@ -202,7 +202,7 @@ describe("newgrad-config", () => {
 });
 
 function makeRepoRoot(): string {
-  const repoRoot = mkdtempSync(join(tmpdir(), "career-ops-newgrad-config-"));
+  const repoRoot = mkdtempSync(join(tmpdir(), "auto-job-newgrad-config-"));
   tempDirs.push(repoRoot);
   mkdirSync(join(repoRoot, "config"), { recursive: true });
   mkdirSync(join(repoRoot, "data"), { recursive: true });

@@ -4,7 +4,7 @@
 
 Bridge batch ID `UIJkp-CIsO-gD9f69rkzv` requested report `249` for the Greenhouse posting at `https://boards.greenhouse.io/embed/job_app?token=5796104004`.
 
-The cached JD file was available at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-UIJkp-CIsO-gD9f69rkzv.txt`. It did not include YAML frontmatter, but it did include extracted company, role, URL, requirements, responsibilities, tags, and taxonomy.
+The cached JD file was available at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-UIJkp-CIsO-gD9f69rkzv.txt`. It did not include YAML frontmatter, but it did include extracted company, role, URL, requirements, responsibilities, tags, and taxonomy.
 
 ## Goal
 
@@ -44,7 +44,7 @@ Create a real evaluation report and tracker-addition TSV for Grafana Labs withou
 
 ## Progress Log
 
-- 2026-04-17: Read repository instructions and career-ops context.
+- 2026-04-17: Read repository instructions and auto-job context.
 - 2026-04-17: Read cached JD, `cv.md`, `article-digest.md`, `config/profile.yml`, `templates/states.yml`, `data/applications.md`, and `data/scan-history.tsv`.
 - 2026-04-17: Determined cached JD is sufficient; no WebFetch or WebSearch needed.
 - 2026-04-17: Wrote report and tracker-addition files.

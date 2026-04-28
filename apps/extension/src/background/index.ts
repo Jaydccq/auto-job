@@ -114,7 +114,7 @@ async function togglePanelForAction(tab: chrome.tabs.Tab): Promise<void> {
       // panel.js opens itself on first injection. Future clicks use
       // sendTogglePanel above once the content-script listener exists.
     } catch (err) {
-      console.warn("[career-ops] panel injection failed", err);
+      console.warn("[auto-job] panel injection failed", err);
       await openUnsupportedActionPage();
     }
   }
@@ -122,7 +122,7 @@ async function togglePanelForAction(tab: chrome.tabs.Tab): Promise<void> {
 
 chrome.action.onClicked.addListener((tab) => {
   togglePanelForAction(tab).catch((err: unknown) => {
-    console.warn("[career-ops] toolbar action failed", err);
+    console.warn("[auto-job] toolbar action failed", err);
   });
 });
 
@@ -845,7 +845,7 @@ async function handleCapture(): Promise<PopupResponse> {
   // *.myworkdayjobs.com and need the full picture.
   const dbg = (event: string, payload: Record<string, unknown>): void => {
     // eslint-disable-next-line no-console
-    console.log("[career-ops capture]", event, { url: tab.url, tabId, ...payload });
+    console.log("[auto-job capture]", event, { url: tab.url, tabId, ...payload });
   };
 
   // Reconfirm the permission state we *just* checked, plus what
@@ -3630,7 +3630,7 @@ async function replayCurrentJobState(
 /* -------------------------------------------------------------------------- */
 
 chrome.runtime.onConnect.addListener((port) => {
-  if (port.name !== "career-ops.job") return;
+  if (port.name !== "auto-job.job") return;
   // The first message from the popup names the jobId.
   const onInit = (msg: unknown) => {
     if (

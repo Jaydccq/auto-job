@@ -10,7 +10,7 @@ card, so it usually extracted only the currently selected job.
 
 ## Goal
 
-Make `/career-ops linkedin-scan` identify every visible LinkedIn Jobs result on
+Make `/auto-job linkedin-scan` identify every visible LinkedIn Jobs result on
 the page, obtain a stable LinkedIn job-view URL for each one, and continue using
 the existing score, enrich, pipeline, and evaluation flow.
 

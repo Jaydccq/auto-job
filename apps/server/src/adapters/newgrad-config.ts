@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import type { FilteredRow, NewGradScanConfig } from "@career-ops/shared";
+import type { FilteredRow, NewGradScanConfig } from "@auto-job/shared";
 import { jobCompanyRoleKey, normalizeJobUrl } from "./job-identity.js";
 
 const COMPANY_MEMORY_PATH = "data/newgrad-company-memory.yml";

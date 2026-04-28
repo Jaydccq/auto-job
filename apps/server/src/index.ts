@@ -36,7 +36,7 @@ export type AdapterMode =
 export interface CreateServerOptions {
   /**
    * Pick the pipeline adapter. Maps to the same env-var matrix the CLI
-   * understands (CAREER_OPS_BRIDGE_MODE + CAREER_OPS_REAL_EXECUTOR).
+   * understands (AUTO_JOB_BRIDGE_MODE + AUTO_JOB_REAL_EXECUTOR).
    * If omitted, env vars decide; if env vars are also unset the default
    * is "fake".
    */
@@ -75,20 +75,20 @@ function toPipelineConfig(cfg: BridgeConfig): PipelineConfig {
 function applyBackendOverride(backend: AdapterMode): void {
   switch (backend) {
     case "fake":
-      process.env.CAREER_OPS_BRIDGE_MODE = "fake";
-      // CAREER_OPS_REAL_EXECUTOR is irrelevant in fake mode.
+      process.env.AUTO_JOB_BRIDGE_MODE = "fake";
+      // AUTO_JOB_REAL_EXECUTOR is irrelevant in fake mode.
       break;
     case "real-claude":
-      process.env.CAREER_OPS_BRIDGE_MODE = "real";
-      process.env.CAREER_OPS_REAL_EXECUTOR = "claude";
+      process.env.AUTO_JOB_BRIDGE_MODE = "real";
+      process.env.AUTO_JOB_REAL_EXECUTOR = "claude";
       break;
     case "real-codex":
-      process.env.CAREER_OPS_BRIDGE_MODE = "real";
-      process.env.CAREER_OPS_REAL_EXECUTOR = "codex";
+      process.env.AUTO_JOB_BRIDGE_MODE = "real";
+      process.env.AUTO_JOB_REAL_EXECUTOR = "codex";
       break;
     case "real-openrouter":
-      process.env.CAREER_OPS_BRIDGE_MODE = "real";
-      process.env.CAREER_OPS_REAL_EXECUTOR = "openrouter";
+      process.env.AUTO_JOB_BRIDGE_MODE = "real";
+      process.env.AUTO_JOB_REAL_EXECUTOR = "openrouter";
       break;
   }
 }
@@ -151,7 +151,7 @@ export function createServer(opts: CreateServerOptions = {}): ServerHandle {
               : undefined,
           tokenPreview,
         },
-        "career-ops bridge booting"
+        "auto-job bridge booting"
       );
 
       await fastify.listen({ host, port });
@@ -176,7 +176,7 @@ async function main(): Promise<void> {
   // The Fastify logger already announces the listen banner; this second
   // line keeps backwards compatibility with the previous index.ts output.
   console.error(
-    `career-ops bridge listening on http://${host}:${port} (mode=${server.config.mode})`
+    `auto-job bridge listening on http://${host}:${port} (mode=${server.config.mode})`
   );
   console.error(
     `token file: ${server.config.bridgeDir}/.bridge-token (mode 0600)`

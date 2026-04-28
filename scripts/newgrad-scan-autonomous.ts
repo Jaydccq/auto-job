@@ -104,7 +104,7 @@ const repoRoot = resolve(__dirname, "..");
 const DEFAULT_USER_DATA_DIR = join(repoRoot, "data", "browser-profiles", "newgrad-scan");
 
 function usage(): string {
-  return `career-ops autonomous newgrad scan
+  return `auto-job autonomous newgrad scan
 
 Usage:
   bun run newgrad-scan -- [options]
@@ -526,7 +526,7 @@ async function launchContext(options: Options): Promise<BrowserContext> {
 
 async function assertBridgeHealthy(base: string, token: string): Promise<void> {
   const res = await fetch(`${base}/v1/health`, {
-    headers: { "x-career-ops-token": token },
+    headers: { "x-auto-job-token": token },
   });
   const body = await res.json() as BridgeResponse<unknown>;
   if (!body.ok) {
@@ -1179,7 +1179,7 @@ async function postEnvelope<T>(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-career-ops-token": token,
+      "x-auto-job-token": token,
     },
     body: JSON.stringify({
       protocol: PROTOCOL_VERSION,
@@ -1202,7 +1202,7 @@ async function getEnvelope<T>(
   path: string,
 ): Promise<T> {
   const res = await fetch(`${bridgeBase}${path}`, {
-    headers: { "x-career-ops-token": token },
+    headers: { "x-auto-job-token": token },
   });
   const body = await res.json() as BridgeResponse<T>;
   if (!body.ok) {

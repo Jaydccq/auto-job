@@ -1,12 +1,12 @@
 # Newgrad-Jobs Research Prompt
 
-下面这段 prompt 可以直接交给另一个 agent，用来研究 `https://www.newgrad-jobs.com/` 的页面流和最适合接入当前 career-ops extension 的方案。
+下面这段 prompt 可以直接交给另一个 agent，用来研究 `https://www.newgrad-jobs.com/` 的页面流和最适合接入当前 auto-job extension 的方案。
 
 ---
 
 ## Prompt A — 研究与方案设计
 
-你在当前 `career-ops` 仓库里工作。你的任务不是泛泛分析招聘网站，而是为当前项目设计一个可落地的 `newgrad-jobs.com -> jobright.ai -> Original Job Post` 研究与筛选流程，让 agent 能帮候选人高效发现“适合我”的岗位。
+你在当前 `auto-job` 仓库里工作。你的任务不是泛泛分析招聘网站，而是为当前项目设计一个可落地的 `newgrad-jobs.com -> jobright.ai -> Original Job Post` 研究与筛选流程，让 agent 能帮候选人高效发现“适合我”的岗位。
 
 ### 目标
 
@@ -242,7 +242,7 @@
 
 如果你希望另一个 agent 在研究后直接进入实现准备，可以改用下面这版：
 
-你在当前 `career-ops` 仓库里工作。请先研究 `https://www.newgrad-jobs.com/` 与 `jobright.ai` 的页面层级和信息流，再为当前 Chrome extension + bridge 架构提出“最小可实现版本”的技术设计。
+你在当前 `auto-job` 仓库里工作。请先研究 `https://www.newgrad-jobs.com/` 与 `jobright.ai` 的页面层级和信息流，再为当前 Chrome extension + bridge 架构提出“最小可实现版本”的技术设计。
 
 重点不是通用爬虫，而是：
 

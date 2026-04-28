@@ -1,9 +1,9 @@
 /**
  * pipeline.ts — internal adapter contract between the bridge HTTP layer
- * and the existing career-ops CLI.
+ * and the existing auto-job CLI.
  *
  * This is the seam where bridge.ts (HTTP) meets process_offer (shell).
- * The bridge layer MUST only talk to career-ops through an implementation
+ * The bridge layer MUST only talk to auto-job through an implementation
  * of `PipelineAdapter`. No direct `child_process.spawn` calls in the
  * HTTP handlers.
  *
@@ -34,14 +34,14 @@ import type {
   NewGradPendingCacheBackfillResult,
   TrackerMergeResult,
   TrackerRow,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 
 /**
  * Configuration the adapter needs at construction time. Provided once
  * by the bridge bootstrap, immutable thereafter.
  */
 export interface PipelineConfig {
-  /** Absolute path to the career-ops repo root. cwd for every shell-out. */
+  /** Absolute path to the auto-job repo root. cwd for every shell-out. */
   repoRoot: string;
   /** Absolute path to the `claude` CLI binary. Resolved via `which` at boot. */
   claudeBin: string;

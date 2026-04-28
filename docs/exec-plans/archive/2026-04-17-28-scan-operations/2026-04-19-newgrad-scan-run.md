@@ -2,15 +2,15 @@
 
 ## Background
 
-The `/career-ops newgrad-scan` mode uses the Chrome extension and local bridge to extract listings from `newgrad-jobs.com`, score them with `config/profile.yml -> newgrad_scan`, enrich strong matches, and write survivors to `data/pipeline.md`.
+The `/auto-job newgrad-scan` mode uses the Chrome extension and local bridge to extract listings from `newgrad-jobs.com`, score them with `config/profile.yml -> newgrad_scan`, enrich strong matches, and write survivors to `data/pipeline.md`.
 
 ## Goal
 
-Make `/career-ops newgrad-scan` actionable without requiring the user to manually drive Chrome: open the source page, scan, enrich, and write qualifying results through the existing bridge pipeline.
+Make `/auto-job newgrad-scan` actionable without requiring the user to manually drive Chrome: open the source page, scan, enrich, and write qualifying results through the existing bridge pipeline.
 
 ## Scope
 
-- Check required career-ops setup files.
+- Check required auto-job setup files.
 - Check the update status as required by `CLAUDE.md`.
 - Verify whether the local bridge is reachable.
 - Start the bridge if it is not running.
@@ -27,7 +27,7 @@ Make `/career-ops newgrad-scan` actionable without requiring the user to manuall
 ## Implementation Steps
 
 1. Read router and mode instructions.
-   Verify: `CLAUDE.md`, `.claude/skills/career-ops/SKILL.md`, `modes/_shared.md`, and `modes/newgrad-scan.md` identify the expected flow.
+   Verify: `CLAUDE.md`, `.claude/skills/auto-job/SKILL.md`, `modes/_shared.md`, and `modes/newgrad-scan.md` identify the expected flow.
 2. Check setup and bridge health.
    Verify: required setup files exist; `/v1/health` status is known.
 3. Start the bridge if needed.
@@ -50,7 +50,7 @@ Make `/career-ops newgrad-scan` actionable without requiring the user to manuall
 
 ## Progress Log
 
-- 2026-04-19: User invoked `/career-ops newgrad-scan`.
+- 2026-04-19: User invoked `/auto-job newgrad-scan`.
 - 2026-04-19: Update check returned offline with local version `1.3.0`; repo setup files are present.
 - 2026-04-19: Initial bridge health check found no listener on `127.0.0.1:47319`.
 - 2026-04-19: Started the bridge with `npm run ext:bridge`; it is listening on `127.0.0.1:47319` in real Codex executor mode.
@@ -66,11 +66,11 @@ Make `/career-ops newgrad-scan` actionable without requiring the user to manuall
 - 2026-04-19: Tightened bridge and probe URL scoring to treat `accounts.google.com` as noise and require generic external URLs to carry job/apply/careers signals before outranking Jobright.
 - 2026-04-19: Removed bad homepage/auth-log pipeline entries and their generated JD cache files.
 - 2026-04-19: Final autonomous run extracted 78 rows, promoted 13, enriched 13, added 2 pipeline entries, skipped 11, and wrote concrete Jobright job URLs for Goldman Sachs and Twitch.
-- 2026-04-20: User invoked `/career-ops newgrad-scan`; bridge was not running, so started `npm run ext:bridge`.
+- 2026-04-20: User invoked `/auto-job newgrad-scan`; bridge was not running, so started `npm run ext:bridge`.
 - 2026-04-20: Autonomous run extracted 108 rows, promoted 34, enriched 34, added 3 pipeline entries, and skipped 31.
 - 2026-04-20: Added pipeline entries for The Baldwin Group, Geneva Trading, and Klaviyo with Jobright job URLs and local JD cache files.
 - 2026-04-20: Confirmed no `accounts.google.com` or bare Goldman/Twitch homepage URLs remain in `data/pipeline.md` or `jds/`.
-- 2026-04-20: User asked to log into the same browser used by `/career-ops newgrad-scan`; changed the runner to use persistent profile `data/browser-profiles/newgrad-scan`.
+- 2026-04-20: User asked to log into the same browser used by `/auto-job newgrad-scan`; changed the runner to use persistent profile `data/browser-profiles/newgrad-scan`.
 - 2026-04-20: Opened the persistent scan profile for user login, then killed the lingering Chrome process that still held `SingletonLock` after login.
 - 2026-04-20: Re-ran autonomous scan with the persistent logged-in profile: extracted 119 rows, promoted 31, enriched 31, added 0, skipped 31.
 - 2026-04-20: User reported Google sign-in still rejected the browser as insecure.
@@ -82,7 +82,7 @@ Make `/career-ops newgrad-scan` actionable without requiring the user to manuall
 - 2026-04-20: Imported `.jobright.ai` `SESSION_ID` into `data/browser-profiles/newgrad-scan` and verified the cookie name and flags without printing the value.
 - 2026-04-20: Login-state retest extracted 141 rows, promoted 44, enriched 44, added 8, and skipped 36.
 - 2026-04-20: Found one bad added URL, `https://jobright.ai/jobs/recommend`, for Sun West; added a URL-selection regression test and corrected the pipeline/JD URL to the concrete Jobright detail page from scanner browser history.
-- 2026-04-21: User invoked `/career-ops newgrad-scan`.
+- 2026-04-21: User invoked `/auto-job newgrad-scan`.
 - 2026-04-21: Current run goal is to execute the repo-native autonomous scan, let bridge scoring/enrichment/evaluation handle results, and verify scan outputs without touching unrelated dirty worktree changes.
 - 2026-04-21: Success criteria for this run: bridge health passes, `npm run newgrad-scan` completes or reports a concrete blocker, resulting data/report/dashboard changes are identified, and targeted verification is run before reporting completion.
 - 2026-04-21: Update check returned `up-to-date` at `1.3.0`; required setup files `cv.md`, `config/profile.yml`, `modes/_profile.md`, and `portals.yml` are present.
@@ -91,14 +91,14 @@ Make `/career-ops newgrad-scan` actionable without requiring the user to manuall
 - 2026-04-21: Live scan extracted 213 rows, promoted 59, enriched 59, added 8 pipeline entries, and skipped 51. Skip breakdown: 4 `no_sponsorship`, 8 `site_signal_mixed`, 18 `site_match_below_bar`, 4 `already_evaluated_report`, 2 `active_clearance_required`, 14 `pipeline_threshold`, and 1 `seniority_too_high`.
 - 2026-04-21: Added scan candidates for Relativity, WisdomAI, Bose Corporation, Morgan Stanley, Klaviyo, Goldman Sachs, CAI, and Bayview Asset Management.
 - 2026-04-21: The scanner queued 7 direct evaluations but initially failed the Bose queue request with `BAD_REQUEST invalid envelope`; root cause was scanner structured-signal strings that could exceed bridge schema max lengths.
-- 2026-04-21: The scanner process then exited nonzero while waiting for jobs because `waitForEvaluations()` polled `/v1/jobs/:id` without the required `x-career-ops-token` header.
+- 2026-04-21: The scanner process then exited nonzero while waiting for jobs because `waitForEvaluations()` polled `/v1/jobs/:id` without the required `x-auto-job-token` header.
 - 2026-04-21: Fixed `scripts/newgrad-scan-autonomous.ts` so evaluation polling includes the bridge token and structured signal arrays are trimmed to bridge schema string limits before queueing.
 - 2026-04-21: Manually requeued the Bose candidate with a minimal valid `newgrad_quick` evaluation payload so the rejected candidate was not lost.
 - 2026-04-21: Evaluation results completed: Relativity `3.7/5` report 284, WisdomAI `4.1/5` report 285, Morgan Stanley `3.75/5` report 286, Klaviyo `4.05/5` report 287, Goldman Sachs `3.95/5` report 288, CAI `3.2/5` report 289, Bayview Asset Management `2.35/5` report 290, and Bose Corporation `4.2/5` report 291.
 - 2026-04-21: Tracker rows were added for Relativity, WisdomAI, Morgan Stanley, Klaviyo, CAI, Bayview, and Bose. Goldman report 288 was generated, but tracker merge skipped the row as a duplicate of an existing Goldman Sachs application.
 - 2026-04-21: Rebuilt the dashboard with `npm run dashboard`; generated `web/index.html` now reports 259 reports, 183 applications, 381 pipeline entries, and 828 scan-history rows.
 - 2026-04-21: Verification passed: `npm run newgrad-scan -- --help`, script-level `tsc --noEmit` for `scripts/newgrad-scan-autonomous.ts`, `npm --prefix bridge run typecheck`, `npm --prefix bridge run test -- src/server.test.ts src/adapters/newgrad-links.test.ts src/adapters/newgrad-value-scorer.test.ts`, and `npm run verify`.
-- 2026-04-22: User invoked `/career-ops newgrad-scan`.
+- 2026-04-22: User invoked `/auto-job newgrad-scan`.
 - 2026-04-22: Current run goal is to execute the default repo-native
   autonomous newgrad scan for today's 24-hour window, including direct
   evaluations for enrich survivors unless the bridge or scanner reports a
@@ -140,7 +140,7 @@ Make `/career-ops newgrad-scan` actionable without requiring the user to manuall
   tests with `npm --prefix bridge run test -- --testTimeout=20000
   src/server.test.ts src/batch/batch-runner.e2e.test.ts` passed.
 - 2026-04-21: `npm run verify` finished with 0 errors and 2 existing duplicate warnings: RemoteHunter Software Engineer rows and Anduril Industries Software Engineer rows.
-- 2026-04-23: User invoked `/career-ops newgrad-scan`.
+- 2026-04-23: User invoked `/auto-job newgrad-scan`.
 - 2026-04-23: Goal: execute the repo-native autonomous newgrad scan for the
   current 24-hour JobRight/newgrad window and let qualifying enrich survivors
   queue direct `newgrad_quick` evaluations.
@@ -229,7 +229,7 @@ Make `/career-ops newgrad-scan` actionable without requiring the user to manuall
   `npm run verify`. Full verify completed with 0 errors and the same 2 existing
   duplicate warnings for RemoteHunter Software Engineer and Anduril Industries
   Software Engineer tracker rows.
-- 2026-04-23: User asked to run the full `/career-ops newgrad-scan` flow again
+- 2026-04-23: User asked to run the full `/auto-job newgrad-scan` flow again
   and carefully inspect whether text extraction or enrich has issues. Goal:
   execute the repo-native full scan/enrich/direct-evaluation path, then inspect
   the generated JD cache, pipeline/evaluation candidates, and reports for
@@ -294,7 +294,7 @@ Make `/career-ops newgrad-scan` actionable without requiring the user to manuall
   passed, and `npm run verify` completed with 0 errors and 2 existing duplicate
   warnings for RemoteHunter Software Engineer and Anduril Industries Software
   Engineer tracker rows.
-- 2026-04-23: User invoked `/career-ops newgrad-scan`. Goal: execute the
+- 2026-04-23: User invoked `/auto-job newgrad-scan`. Goal: execute the
   repo-native autonomous JobRight/newgrad scan for the current window and let
   qualifying enrich survivors queue direct `newgrad_quick` evaluations.
   Success criteria: update/setup checks pass, bridge health is available in
@@ -384,7 +384,7 @@ Implemented and verified.
 
 Changed behavior:
 
-- `/career-ops newgrad-scan` now documents an autonomous path through `npm run newgrad-scan`.
+- `/auto-job newgrad-scan` now documents an autonomous path through `npm run newgrad-scan`.
 - `npm run newgrad-scan` opens `https://www.newgrad-jobs.com/`, resolves the embedded Jobright source, extracts list rows with the existing extractor, scores via bridge, enriches details with the existing detail extractor, and writes qualifying rows through bridge.
 - URL selection now avoids bare company homepages and Google auth/analytics probe URLs.
 
@@ -500,7 +500,7 @@ Login cookie import retest:
 
 2026-04-23 current live run:
 
-- User invoked `/career-ops newgrad-scan`.
+- User invoked `/auto-job newgrad-scan`.
 - Goal: run the repo-native autonomous newgrad scan for the current 24-hour
   JobRight/newgrad window, enrich qualifying rows, queue direct
   `newgrad_quick` evaluations, and record the resulting artifacts.
@@ -565,7 +565,7 @@ Login cookie import retest:
 - Final outcome for this run: local scan/enrich/pipeline update completed in
   no-evaluate mode; no direct evaluations were queued, no reports were
   generated, and `data/applications.md` was unchanged.
-- 2026-04-24: User invoked `/career-ops newgrad-scan`. Goal: execute the
+- 2026-04-24: User invoked `/auto-job newgrad-scan`. Goal: execute the
   repo-native autonomous JobRight/newgrad scan for the current 24-hour window,
   enrich qualifying rows, queue direct `newgrad_quick` evaluations when the
   bridge supports it, and record resulting artifacts. Success criteria:
@@ -612,7 +612,7 @@ Login cookie import retest:
   creation because the bridge inherited user-level Codex model `gpt-5.5`, and
   the Codex CLI returned `The model gpt-5.5 does not exist or you do not have
   access to it`.
-- 2026-04-24: Added a bridge-level Codex model override. `CAREER_OPS_CODEX_MODEL`
+- 2026-04-24: Added a bridge-level Codex model override. `AUTO_JOB_CODEX_MODEL`
   can override it. At the time, the default was `gpt-5.4`, which was verified
   with a minimal `codex exec -m gpt-5.4` probe. Superseded on 2026-04-25:
   the current default is `gpt-5.4-mini` with medium reasoning, recorded in
@@ -705,7 +705,7 @@ Login cookie import retest:
   update/setup checks pass, bridge health is available in real Codex mode,
   scanner completes or reports an actionable blocker, generated artifacts are
   inspected, focused verification runs, and this plan records the result.
-  Assumptions: `/newgrad-scan` maps to the existing `/career-ops newgrad-scan`
+  Assumptions: `/newgrad-scan` maps to the existing `/auto-job newgrad-scan`
   workflow, direct evaluation is intended, the persistent scanner browser
   profile should be reused, no application should be submitted, and unrelated
   dirty worktree changes must be preserved. Uncertainties: JobRight API/login
@@ -738,7 +738,7 @@ Login cookie import retest:
   `npm run verify` (0 errors, same 2 known duplicate warnings for RemoteHunter
   Software Engineer and Anduril Industries Software Engineer), and
   `git diff --check`.
-- 2026-04-24: User invoked `/career-ops newgrad-scan`. Goal: execute the
+- 2026-04-24: User invoked `/auto-job newgrad-scan`. Goal: execute the
   repo-native autonomous JobRight/newgrad scan for the current window, enrich
   qualifying rows, queue default `newgrad_quick` evaluations when candidates
   survive enrichment, and record resulting artifacts. Success criteria:
@@ -786,7 +786,7 @@ Login cookie import retest:
   newgrad-scan -- --help`, `npm run verify` (0 errors, same 2 warnings for
   duplicate RemoteHunter Software Engineer and Anduril Industries Software
   Engineer rows), and `git diff --check`.
-- 2026-04-24: User invoked `/career-ops newgrad-scan`. Goal: execute the
+- 2026-04-24: User invoked `/auto-job newgrad-scan`. Goal: execute the
   repo-native autonomous JobRight/newgrad scan for the current live window,
   enrich qualifying rows, queue default `newgrad_quick` evaluations for any
   enrich survivors, rebuild derived artifacts if data changes, and record the
@@ -835,7 +835,7 @@ Login cookie import retest:
   `npm run verify` (0 errors, same 2 duplicate warnings for RemoteHunter
   Software Engineer and Anduril Industries Software Engineer), and
   `git diff --check`.
-- 2026-04-24: User invoked `/career-ops newgrad-scan` again. Goal: run the
+- 2026-04-24: User invoked `/auto-job newgrad-scan` again. Goal: run the
   existing autonomous JobRight/newgrad scanner for the current live window,
   enrich qualifying rows, queue default `newgrad_quick` evaluations for enrich
   survivors, rebuild derived dashboard output if data changes, and record the

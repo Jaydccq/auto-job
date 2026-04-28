@@ -9,7 +9,7 @@ or rerun-audit candidates do not appear there.
 
 ## Goal
 
-Make the autonomous `/career-ops newgrad-scan` path turn enrich survivors into
+Make the autonomous `/auto-job newgrad-scan` path turn enrich survivors into
 formal evaluation jobs so completed results can merge into the tracker and appear
 in the dashboard Priority Queue.
 

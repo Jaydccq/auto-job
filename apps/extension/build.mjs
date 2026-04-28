@@ -1,5 +1,5 @@
 /**
- * build.mjs — esbuild entrypoint for the career-ops Chrome extension.
+ * build.mjs — esbuild entrypoint for the auto-job Chrome extension.
  *
  * Bundles three entry points into dist/:
  *   • background.js  (service worker, ESM)
@@ -58,7 +58,7 @@ async function main() {
     define: sharedDefine,
     // Use the "development" condition so workspace package exports
     // resolve to TypeScript source — esbuild can transpile .ts directly,
-    // so we don't need @career-ops/shared/dist/ to exist.
+    // so we don't need @auto-job/shared/dist/ to exist.
     conditions: ["development", "import", "node", "default"],
   });
 

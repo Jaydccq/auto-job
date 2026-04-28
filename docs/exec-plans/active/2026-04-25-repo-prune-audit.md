@@ -2,7 +2,7 @@
 
 ## Background
 
-The user primarily uses career-ops for job scans, enrich/pipeline writeback,
+The user primarily uses auto-job for job scans, enrich/pipeline writeback,
 PDF generation, negotiation scripts, interview story-bank material, and the
 browser extension. The repository still includes broader upstream product
 surfaces such as dashboards, multi-language modes, multiple CLI frontends,

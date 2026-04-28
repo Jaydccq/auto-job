@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { basename, join, resolve, sep } from "node:path";
 import { parse } from "yaml";
 
-import type { AutofillProfile, AutofillProfileField, AutofillFieldKind, AutofillResumeFile } from "@career-ops/shared";
+import type { AutofillProfile, AutofillProfileField, AutofillFieldKind, AutofillResumeFile } from "@auto-job/shared";
 
 type ProfileRecord = Record<string, unknown>;
 

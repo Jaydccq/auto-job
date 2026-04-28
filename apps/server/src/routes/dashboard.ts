@@ -15,7 +15,7 @@
  *
  * The dashboard HTML carries the bridge token in a <meta> tag so the inline
  * script can read it and call /dashboard/api/* endpoints with the token in
- * the X-Career-Ops-Token header.
+ * the X-Auto-Job-Token header.
  *
  * The HTML rendering and API helpers are delegated to .mjs modules under
  * web/ — no logic duplication. Tests inject stubbed implementations via
@@ -38,7 +38,7 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
  *
  * Resolving via repoRoot at runtime works in dev (tsx/vitest), in the
  * compiled dist tree, and in the packaged Electron app, as long as
- * CAREER_OPS_REPO_ROOT points at a real career-ops checkout.
+ * AUTO_JOB_REPO_ROOT points at a real auto-job checkout.
  */
 type DashboardServerImpl = {
   APPLICATIONS_PATH: string;
@@ -70,7 +70,7 @@ type RenderDashboardHtmlFn = (opts: {
  * web/dashboard-handlers.mjs.
  *
  * Lookup order:
- *   1. CAREER_OPS_WEB_DIR env var — explicit override, set by the
+ *   1. AUTO_JOB_WEB_DIR env var — explicit override, set by the
  *      desktop app to point at its bundled extraResources/web.
  *   2. <repoRoot>/web/ — the production path. Both required files
  *      must be present; user repos that predate the dashboard-handlers
@@ -79,7 +79,7 @@ type RenderDashboardHtmlFn = (opts: {
  *      by tests that pass a tmp repoRoot and by Bun package test commands.
  */
 function resolveWebDir(repoRoot: string): string {
-  const envOverride = process.env.CAREER_OPS_WEB_DIR;
+  const envOverride = process.env.AUTO_JOB_WEB_DIR;
   if (
     envOverride &&
     existsSync(resolve(envOverride, "dashboard-handlers.mjs"))
@@ -198,7 +198,7 @@ export async function registerDashboardRoutes(
 
   const renderHtml = (): string => {
     const metaTag =
-      `<meta name="career-ops-token" content="${escapeHtmlAttr(token)}">`;
+      `<meta name="auto-job-token" content="${escapeHtmlAttr(token)}">`;
     const { html } = renderDashboardHtml({
       extraHead: metaTag,
       includeGmailSignals: true,

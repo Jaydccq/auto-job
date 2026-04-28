@@ -1,6 +1,6 @@
 # Current System Map
 
-Career-Ops is a local-first job search workspace. The current production shape
+Auto-Job is a local-first job search workspace. The current production shape
 is a Bun-first app/package layout plus root scanner/document scripts.
 
 ```text

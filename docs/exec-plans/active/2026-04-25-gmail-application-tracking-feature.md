@@ -2,9 +2,9 @@
 
 ## Background
 
-The user wants a Gmail-backed application tracking feature: track companies applied to, detect application status changes, surface interviews/OA/follow-ups, and keep the Career-Ops tracker current.
+The user wants a Gmail-backed application tracking feature: track companies applied to, detect application status changes, surface interviews/OA/follow-ups, and keep the Auto-Job tracker current.
 
-Current Career-Ops is a local, repository-first job search system. The canonical tracker is `data/applications.md`; follow-up cadence is computed by `followup-cadence.mjs`; dashboard data is built from repository files by `web/build-dashboard.mjs`; status writes must use existing tracker rules from `CLAUDE.md`.
+Current Auto-Job is a local, repository-first job search system. The canonical tracker is `data/applications.md`; follow-up cadence is computed by `followup-cadence.mjs`; dashboard data is built from repository files by `web/build-dashboard.mjs`; status writes must use existing tracker rules from `CLAUDE.md`.
 
 The design question is whether to:
 
@@ -20,12 +20,12 @@ Choose the safest and simplest implementation path for Gmail-driven application 
 - Gmail-derived application signals become durable local repository artifacts before they affect tracker decisions.
 - `data/applications.md` remains the only canonical application tracker.
 - The first implementation can run locally for the current user without Google OAuth app verification or production backend infrastructure.
-- The design leaves a clear upgrade path to first-party Gmail OAuth if Career-Ops becomes a multi-user product.
+- The design leaves a clear upgrade path to first-party Gmail OAuth if Auto-Job becomes a multi-user product.
 - Every status-changing path has tests or a reproducible dry-run check before it mutates tracker state.
 
 ## Assumptions
 
-- The immediate target is this repository's local/personal Career-Ops workflow, not a hosted multi-user SaaS.
+- The immediate target is this repository's local/personal Auto-Job workflow, not a hosted multi-user SaaS.
 - The user wants recommendations and tracking, not automatic application submission.
 - Gmail read access is needed only to detect hiring/application events; sending, deleting, archiving, and labeling are not part of this feature.
 - Codex Gmail skill access is acceptable for local/manual runs, but its results must be written into repo files before they are treated as system state.
@@ -320,7 +320,7 @@ Stage 2 performance risks are material:
 ## Key Decisions
 
 - Decision: For this repo, use Gmail skill/connector as the Stage 1 read adapter instead of building OAuth first.
-  Rationale: Career-Ops is currently local and repository-first; OAuth adds production infrastructure and Google verification concerns before the local model is validated.
+  Rationale: Auto-Job is currently local and repository-first; OAuth adds production infrastructure and Google verification concerns before the local model is validated.
 - Decision: Make derived email signals durable in repo artifacts before they drive tracker updates.
   Rationale: The repository is the only durable system of record.
 - Decision: Only exact existing tracker matches can mutate `data/applications.md` automatically.
@@ -337,8 +337,8 @@ Stage 2 performance risks are material:
   Rationale: `data/gmail-signals.jsonl` and `config/profile.yml` are user-specific local data. `bun run dashboard` can include them for the private local view, but `bun run dashboard:build` must not embed them into tracked `web/index.html`.
 - Decision: Run a dashboard-start Gmail refresh hook, not the Codex Gmail connector itself.
   Rationale: `bun run dashboard` runs in a normal Node/Bun process and cannot call Codex MCP app tools. The startup hook gives the dashboard a reliable refresh boundary and can execute a future OAuth/CLI scanner without pretending the Codex-only connector is available to package scripts.
-- Decision: Expose connector-assisted Gmail scanning as `/career-ops gmail-scan`.
-  Rationale: This matches the existing `newgrad-scan` project pattern: the checked-in `career-ops` skill routes to a mode file that defines prerequisites, execution, output artifacts, and verification. It keeps the Codex-only Gmail connector workflow explicit while preserving the future path for a standalone OAuth scanner.
+- Decision: Expose connector-assisted Gmail scanning as `/auto-job gmail-scan`.
+  Rationale: This matches the existing `newgrad-scan` project pattern: the checked-in `auto-job` skill routes to a mode file that defines prerequisites, execution, output artifacts, and verification. It keeps the Codex-only Gmail connector workflow explicit while preserving the future path for a standalone OAuth scanner.
 - Decision: Implement the standalone scanner with Google's Desktop OAuth loopback flow, PKCE, and `gmail.readonly`.
   Rationale: Google documents loopback redirect as the recommended desktop mechanism and `gmail.readonly` is the narrowest scope that can read bodies/snippets needed to classify OA, interview, offer, and rejection messages. The scanner stores tokens in gitignored local config and writes only derived signal JSONL.
 
@@ -346,7 +346,7 @@ Stage 2 performance risks are material:
 
 - Gmail skill access may not be available in non-Codex environments.
 - Dashboard startup can only run standalone local commands; it cannot directly invoke Codex Gmail app tools.
-- `/career-ops gmail-scan` requires a Codex session with the Gmail connector; non-Codex clients need the future OAuth scanner instead.
+- `/auto-job gmail-scan` requires a Codex session with the Gmail connector; non-Codex clients need the future OAuth scanner instead.
 - OAuth authorization creates persistent Gmail read access; the user must run `bun run gmail:auth` and approve the consent screen directly.
 - Gmail search scope can miss messages; every run must report coverage.
 - Parsing hiring emails is noisy; low-confidence signals must go to review queue.
@@ -407,21 +407,21 @@ Relevant primary sources:
 - 2026-04-25: Rebuilt the static dashboard and verified `web/index.html` no longer contains the Gmail account, Arista/Richard evidence, or Gmail message ids. Restarted the local server and re-verified the enriched private dashboard still shows the configured Gmail account, 63 synced signals, Gmail-only rows, and no browser console errors.
 - 2026-04-25: User requested that every `bun run dashboard` perform one Gmail update before showing the dashboard.
 - 2026-04-25: Added `scripts/refresh-gmail-signals.mjs` as the dashboard-start refresh boundary, wired `web/dashboard-server.mjs` to call it once before listening, added `bun run gmail:update`, and added a typo-compatible `dashborad` script for the user's command spelling.
-- 2026-04-25: Documented the refresh command contract: `CAREER_OPS_GMAIL_REFRESH_COMMAND` must be a JSON array for a standalone OAuth/CLI scanner that writes `data/gmail-signals.jsonl`; without that command, dashboard startup records a skipped refresh because Codex Gmail connector access is not callable from Node/Bun.
+- 2026-04-25: Documented the refresh command contract: `AUTO_JOB_GMAIL_REFRESH_COMMAND` must be a JSON array for a standalone OAuth/CLI scanner that writes `data/gmail-signals.jsonl`; without that command, dashboard startup records a skipped refresh because Codex Gmail connector access is not callable from Node/Bun.
 - 2026-04-25: Verified `node --check scripts/refresh-gmail-signals.mjs`, `node --check web/dashboard-server.mjs`, `node --check web/build-dashboard.mjs`, `node --check test-all.mjs`, `node scripts/refresh-gmail-signals.mjs`, `bun run dashboard:build`, `git diff --check`, and static privacy grep for Gmail account/Arista/Richard/message-id text.
 - 2026-04-25: Ran `node test-all.mjs --quick`; the new Gmail refresh parser/gitignore checks pass, and the suite still fails only on pre-existing absolute-path findings in older automation logs/plans outside this change.
 - 2026-04-25: Started the dashboard through `bun run dashboard`; the startup log shows one Gmail refresh hook attempt before the server listens. Browser-tested `http://127.0.0.1:47329/`; verified the Tracker tab shows the Gmail account, skipped refresh status, 63 synced signals, Arista rows, and no console errors.
-- 2026-04-25: User requested a Career-Ops skill entry point like `newgrad-scan` for the Gmail workflow.
-- 2026-04-25: Added `modes/gmail-scan.md`, routed `gmail-scan`/`gmail` through `.claude/skills/career-ops/SKILL.md`, added an OpenCode command wrapper, and updated `CLAUDE.md`, `docs/CODEX.md`, `docs/GMAIL_SIGNALS.md`, `web/README.md`, and `test-all.mjs`.
-- 2026-04-25: Updated the dashboard refresh skipped message to point users to `/career-ops gmail-scan` when no standalone refresh command is configured.
+- 2026-04-25: User requested a Auto-Job skill entry point like `newgrad-scan` for the Gmail workflow.
+- 2026-04-25: Added `modes/gmail-scan.md`, routed `gmail-scan`/`gmail` through `.claude/skills/auto-job/SKILL.md`, added an OpenCode command wrapper, and updated `CLAUDE.md`, `docs/CODEX.md`, `docs/GMAIL_SIGNALS.md`, `web/README.md`, and `test-all.mjs`.
+- 2026-04-25: Updated the dashboard refresh skipped message to point users to `/auto-job gmail-scan` when no standalone refresh command is configured.
 - 2026-04-25: Verified the Gmail-scan skill wiring with `node --check scripts/refresh-gmail-signals.mjs`, `node --check web/build-dashboard.mjs`, `node --check web/dashboard-server.mjs`, `node --check test-all.mjs`, `bun run gmail:update`, `bun run dashboard:build`, and `git diff --check`.
-- 2026-04-25: Re-ran `node test-all.mjs --quick`; the new `gmail-scan` mode existence and career-ops router checks pass. The suite still fails only on pre-existing absolute-path findings in older logs/plans.
-- 2026-04-25: Restarted `bun run dashboard` and browser-tested the Tracker tab; verified the updated refresh message points to `/career-ops gmail-scan`, synced signals remain 63, and console errors are empty.
+- 2026-04-25: Re-ran `node test-all.mjs --quick`; the new `gmail-scan` mode existence and auto-job router checks pass. The suite still fails only on pre-existing absolute-path findings in older logs/plans.
+- 2026-04-25: Restarted `bun run dashboard` and browser-tested the Tracker tab; verified the updated refresh message points to `/auto-job gmail-scan`, synced signals remain 63, and console errors are empty.
 - 2026-04-25: User requested `/superpowers` planning plus `/plan-eng-review` for the missing OAuth/CLI scanner so `bun run dashboard` can really pull Gmail on startup.
 - 2026-04-25: Ran the gstack plan-eng-review preamble; it reported branch `main`, repo mode `collaborative`, telemetry `community`, and an available gstack upgrade. Auto-upgrade is disabled, so implementation continued with the current skill version.
 - 2026-04-25: Checked current official Google docs for Gmail `users.messages.list`, `users.messages.get`, and OAuth 2.0 desktop/native loopback flow before implementing the scanner.
 - 2026-04-25: Added `scripts/gmail-oauth-refresh.mjs` with `auth` and `scan` modes, Desktop OAuth PKCE loopback support, refresh-token reuse, Gmail API message list/get calls, hiring-event classification, signal merge/dedupe, and JSONL output.
-- 2026-04-25: Updated `scripts/refresh-gmail-signals.mjs` so dashboard startup defaults to the OAuth scanner when no explicit `CAREER_OPS_GMAIL_REFRESH_COMMAND` is set, and reports `setup_required` instead of failing hard when OAuth credentials/tokens are not configured.
+- 2026-04-25: Updated `scripts/refresh-gmail-signals.mjs` so dashboard startup defaults to the OAuth scanner when no explicit `AUTO_JOB_GMAIL_REFRESH_COMMAND` is set, and reports `setup_required` instead of failing hard when OAuth credentials/tokens are not configured.
 - 2026-04-25: Added `bun run gmail:auth` and `bun run gmail:scan`, gitignored `config/gmail-oauth-credentials.json` and `config/gmail-oauth-token.json`, and documented the setup in `docs/GMAIL_SIGNALS.md`, `web/README.md`, and `modes/gmail-scan.md`.
 - 2026-04-25: Verified the OAuth scanner path with syntax checks, the dashboard refresh wrapper, static privacy grep, `bun run dashboard:build`, `git diff --check`, and `node test-all.mjs --quick`; the new Gmail OAuth parser/merge and gitignore checks pass, while the quick suite still fails only on pre-existing absolute-path findings in older logs/plans.
 - 2026-04-25: Restarted `bun run dashboard`; startup now attempts the OAuth scanner first and reports `setup_required` until `config/gmail-oauth-credentials.json` and `config/gmail-oauth-token.json` exist. Browser-tested the Tracker tab and verified the private dashboard still shows the Gmail account, 63 signals, Arista/Formant/Rokt action rows, and no JavaScript console errors.

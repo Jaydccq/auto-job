@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run `PTiGN2WdXq2oJtHZ5ReXK` requests report `323` for FanDuel's `Software Engineer` role from the cached local JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-PTiGN2WdXq2oJtHZ5ReXK.txt`.
+Bridge batch run `PTiGN2WdXq2oJtHZ5ReXK` requests report `323` for FanDuel's `Software Engineer` role from the cached local JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-PTiGN2WdXq2oJtHZ5ReXK.txt`.
 
 ## Goal
 

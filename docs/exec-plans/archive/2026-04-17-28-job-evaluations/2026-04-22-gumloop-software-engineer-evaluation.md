@@ -4,7 +4,7 @@
 
 Batch worker run `g_bewiK_rLXgI4e_i-wdV` evaluates Gumloop's Software Engineer role for Hongxi Chen.
 
-Primary local JD cache: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-g_bewiK_rLXgI4e_i-wdV.txt`.
+Primary local JD cache: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-g_bewiK_rLXgI4e_i-wdV.txt`.
 
 The cache contains role metadata, local enrichment, requirements, responsibilities, and a short description excerpt. Minimal external lookup was used only to fill missing compensation and posting-detail context.
 

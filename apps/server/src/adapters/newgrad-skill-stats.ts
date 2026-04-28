@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import type { NewGradRow, NewGradScanConfig } from "@career-ops/shared";
+import type { NewGradRow, NewGradScanConfig } from "@auto-job/shared";
 import { findSkillKeywordMatches } from "./newgrad-skill-match.js";
 
 const SKILL_STATS_PATH = "data/newgrad-skill-stats.json";

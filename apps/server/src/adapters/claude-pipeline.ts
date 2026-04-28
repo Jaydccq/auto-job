@@ -26,8 +26,8 @@ import type {
   TrackerMergeSummary,
   TrackerRow,
   TrackerStatus,
-} from "@career-ops/shared";
-import type { BridgeError } from "@career-ops/shared";
+} from "@auto-job/shared";
+import type { BridgeError } from "@auto-job/shared";
 import type {
   FilteredRow,
   NewGradRow,
@@ -36,7 +36,7 @@ import type {
   NewGradEnrichResult,
   NewGradEnrichSkip,
   PipelineEntry,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 
 import { spawn } from "node:child_process";
 import {
@@ -82,7 +82,7 @@ import { jobCompanyRoleKey } from "./job-identity.js";
 import { pipelineTagForSource, scanSourceForRow } from "./newgrad-source.js";
 import { canonicalizeJobUrl } from "../lib/canonical-job-url.js";
 import { detectActiveSecurityClearanceRequirement } from "../lib/security-clearance.js";
-import { JD_MIN_CHARS as JD_MIN_CHARS_VALUE } from "@career-ops/shared";
+import { JD_MIN_CHARS as JD_MIN_CHARS_VALUE } from "@auto-job/shared";
 import { writeJdFile } from "../lib/write-jd-file.js";
 import { readAutofillProfile, readAutofillResume } from "./autofill-profile.js";
 
@@ -534,7 +534,7 @@ export function createClaudePipelineAdapter(
       const reportNumber = reserveReportNumber(config.repoRoot, jobId);
       const reportNumberText = formatReportNumber(reportNumber);
       const today = todayDate();
-      const jdPath = join(tmpdir(), `career-ops-bridge-jd-${jobId}.txt`);
+      const jdPath = join(tmpdir(), `auto-job-bridge-jd-${jobId}.txt`);
       const promptPath = join(batchDir, `.bridge-prompt-${jobId}.md`);
       const logPath = join(logsDir, `${reportNumberText}-${jobId}.log`);
       let executionPlan: ExecutionPlan | null = null;
@@ -2417,7 +2417,7 @@ function buildCodexPrompt(promptPath: string, task: string): string {
     "Final response rules:",
     "- Return only a JSON object. No prose, no markdown fences.",
     "- The JSON must match the provided output schema exactly.",
-    "- Keep file writes in the normal career-ops locations required by the prompt.",
+    "- Keep file writes in the normal auto-job locations required by the prompt.",
   ].join("\n");
 }
 
@@ -3493,7 +3493,7 @@ function resolveArtifactPath(
   if (!trimmed) return undefined;
   return trimmed.startsWith("/")
     ? trimmed
-    : resolve(repoRoot, trimmed.replace(/^career-ops\//, ""));
+    : resolve(repoRoot, trimmed.replace(/^auto-job\//, ""));
 }
 
 function coerceScore(

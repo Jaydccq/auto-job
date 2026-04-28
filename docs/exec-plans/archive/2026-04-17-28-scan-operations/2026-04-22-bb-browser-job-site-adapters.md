@@ -4,7 +4,7 @@
 
 The repository already keeps a versioned `bb-browser/sites/jobright/newgrad.js`
 adapter and installs it into `~/.bb-browser/sites/` for `bb-browser site`.
-Built In is supported by Career-Ops scan flows, but there is no direct
+Built In is supported by Auto-Job scan flows, but there is no direct
 `bb-browser site builtin/...` adapter. Indeed has no local adapter.
 
 ## Goal
@@ -24,13 +24,13 @@ In scope:
 
 Out of scope:
 - Applying to jobs, saving jobs, uploading resumes, or creating alerts.
-- Replacing `scan.mjs`, `/career-ops builtin-scan`, or extension scanners.
+- Replacing `scan.mjs`, `/auto-job builtin-scan`, or extension scanners.
 - Adding a generalized job-site framework.
 
 ## Assumptions
 
 - "CLI 化" means adding `bb-browser site` adapters, not changing the
-  Career-Ops scan pipeline.
+  Auto-Job scan pipeline.
 - A search/list command per site is the smallest useful interface.
 - Built In and Indeed can be read from browser-authenticated pages with
   `fetch(..., { credentials: "include" })` or current-page DOM parsing.

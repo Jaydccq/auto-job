@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Add a first-class cover letter generation feature to career-ops that produces an ATS-clean, visually-matched PDF using the same "I'm choosing you" tone as form answers, triggered both via auto-pipeline (when score ≥ 4.5) and via an explicit `/career-ops cover-letter` command.
+**Goal:** Add a first-class cover letter generation feature to auto-job that produces an ATS-clean, visually-matched PDF using the same "I'm choosing you" tone as form answers, triggered both via auto-pipeline (when score ≥ 4.5) and via an explicit `/auto-job cover-letter` command.
 
 **Architecture:** Three-layer extension that mirrors the existing `pdf` mode:
 1. **Mode layer** (`modes/cover-letter.md`) — natural-language instructions the agent reads to know *what* to write and *how* to invoke the script.
@@ -17,7 +17,7 @@ The mode is wired into routing (`SKILL.md` + `_shared.md` + `auto-pipeline.md`) 
 
 ## Context for the Implementing Engineer
 
-**You are about to extend an AI-driven job search tool called career-ops.** Read these files first to understand the conventions you must follow:
+**You are about to extend an AI-driven job search tool called auto-job.** Read these files first to understand the conventions you must follow:
 
 | File | Why you need it |
 |------|-----------------|
@@ -60,7 +60,7 @@ Captured during brainstorming with the user. These are locked:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  User says: /career-ops cover-letter                            │
+│  User says: /auto-job cover-letter                            │
 │        OR: pastes JD → auto-pipeline → score ≥ 4.5 → triggers   │
 └────────────────────────┬────────────────────────────────────────┘
                          │
@@ -111,7 +111,7 @@ Captured during brainstorming with the user. These are locked:
 
 | Path | What changes |
 |------|--------------|
-| `.claude/skills/career-ops/SKILL.md` | Add `cover-letter` row to mode routing table; add to discovery menu; add to context-loading section |
+| `.claude/skills/auto-job/SKILL.md` | Add `cover-letter` row to mode routing table; add to discovery menu; add to context-loading section |
 | `modes/auto-pipeline.md` | Add "Paso 4b — Generate Cover Letter (si score ≥ 4.5)" between Paso 4 and Paso 5 |
 | `package.json` | Add `"cover-letter": "node generate-cover-letter.mjs"` to scripts |
 | `README.md` | Add `cover-letter` row to the feature table and modes list |
@@ -132,7 +132,7 @@ Captured during brainstorming with the user. These are locked:
 Run these commands first. If any fails, stop and investigate before starting.
 
 ```bash
-cd "$(git rev-parse --show-toplevel)"  # Run from career-ops project root
+cd "$(git rev-parse --show-toplevel)"  # Run from auto-job project root
 
 # Check 1: We're on a clean branch
 git status                                  # Expected: clean working tree (or only the plan file)
@@ -759,7 +759,7 @@ as a Learning Mode contribution point for the user."
 ```markdown
 # Modo: cover-letter — Single-Page Cover Letter PDF
 
-When the user runs `/career-ops cover-letter` (or auto-pipeline triggers
+When the user runs `/auto-job cover-letter` (or auto-pipeline triggers
 this at score ≥ 4.5), produce a one-page cover letter PDF that mirrors
 the CV's visual identity and uses the "I'm choosing you" tone defined
 in `modes/auto-pipeline.md`.
@@ -917,12 +917,12 @@ _shared.md cliché bans and the existing pdf.md placeholder convention."
 ## Task 5: Wire `cover-letter` into the SKILL.md routing table
 
 **Files:**
-- Modify: `.claude/skills/career-ops/SKILL.md`
+- Modify: `.claude/skills/auto-job/SKILL.md`
 
 **Step 1: Read the file to find the exact insertion points**
 
 ```bash
-cat .claude/skills/career-ops/SKILL.md
+cat .claude/skills/auto-job/SKILL.md
 ```
 
 Identify three insertion points:
@@ -950,17 +950,17 @@ The three aliases (`cover-letter`, `cover`, `cl`) match what users actually type
 
 **Step 3: Edit the discovery menu**
 
-Find the line `  /career-ops patterns  → Analyze rejection patterns and improve targeting` and add immediately after:
+Find the line `  /auto-job patterns  → Analyze rejection patterns and improve targeting` and add immediately after:
 
 Old:
 ```
-  /career-ops patterns  → Analyze rejection patterns and improve targeting
+  /auto-job patterns  → Analyze rejection patterns and improve targeting
 ```
 
 New:
 ```
-  /career-ops patterns  → Analyze rejection patterns and improve targeting
-  /career-ops cover-letter → Generate single-page cover letter PDF (matches CV design)
+  /auto-job patterns  → Analyze rejection patterns and improve targeting
+  /auto-job cover-letter → Generate single-page cover letter PDF (matches CV design)
 ```
 
 **Step 4: Edit the argument-hint frontmatter**
@@ -992,7 +992,7 @@ This tells the router that `cover-letter` mode requires loading `modes/_shared.m
 **Step 6: Verify all four edits are present**
 
 ```bash
-grep -n "cover-letter\|cover.*cl" .claude/skills/career-ops/SKILL.md
+grep -n "cover-letter\|cover.*cl" .claude/skills/auto-job/SKILL.md
 ```
 
 Expected: 4 matches (frontmatter, routing table, discovery menu, context-loading).
@@ -1000,8 +1000,8 @@ Expected: 4 matches (frontmatter, routing table, discovery menu, context-loading
 **Step 7: Commit**
 
 ```bash
-git add .claude/skills/career-ops/SKILL.md
-git commit -m "feat: route cover-letter command in career-ops SKILL.md
+git add .claude/skills/auto-job/SKILL.md
+git commit -m "feat: route cover-letter command in auto-job SKILL.md
 
 Adds 'cover-letter' (with 'cover' and 'cl' aliases) to the mode
 routing table, discovery menu, argument hint, and context-loading
@@ -1160,7 +1160,7 @@ Find this row in the features table:
 Insert immediately after:
 
 ```markdown
-| **Cover Letter PDF** | Single-page cover letter PDF that matches CV design, auto-generated for offers scoring ≥ 4.5 (or on-demand via `/career-ops cover-letter`) |
+| **Cover Letter PDF** | Single-page cover letter PDF that matches CV design, auto-generated for offers scoring ≥ 4.5 (or on-demand via `/auto-job cover-letter`) |
 ```
 
 **Step 3: Find the usage commands list**
@@ -1169,20 +1169,20 @@ Insert immediately after:
 sed -n '110,130p' README.md
 ```
 
-You'll see a code block with `/career-ops` commands.
+You'll see a code block with `/auto-job` commands.
 
 **Step 4: Add the cover-letter command**
 
 Find this line:
 
 ```
-/career-ops pdf            → Generate ATS-optimized CV
+/auto-job pdf            → Generate ATS-optimized CV
 ```
 
 Insert immediately after:
 
 ```
-/career-ops cover-letter   → Generate single-page cover letter PDF
+/auto-job cover-letter   → Generate single-page cover letter PDF
 ```
 
 **Step 5: Verify**
@@ -1201,7 +1201,7 @@ git commit -m "docs: document cover letter feature in README
 
 Adds the feature table row and usage command. Mentions that the
 cover letter PDF auto-generates for high-fit offers (>=4.5) and is
-available on-demand via /career-ops cover-letter."
+available on-demand via /auto-job cover-letter."
 ```
 
 ---
@@ -1215,7 +1215,7 @@ available on-demand via /career-ops cover-letter."
 **Step 1: Run the full smoke test from a clean state**
 
 ```bash
-cd "$(git rev-parse --show-toplevel)"  # Run from career-ops project root
+cd "$(git rev-parse --show-toplevel)"  # Run from auto-job project root
 rm -f /tmp/test-cover-letter.pdf /tmp/cover-letter-acme-ai.html
 
 # Via package script
@@ -1277,7 +1277,7 @@ Expected: 8 commits in order (Task 1 through Task 8), all with conventional comm
 Start a new session (or simulate by reading the SKILL.md as the agent would):
 
 ```bash
-grep -A1 "cover-letter\|cover.*cl" .claude/skills/career-ops/SKILL.md
+grep -A1 "cover-letter\|cover.*cl" .claude/skills/auto-job/SKILL.md
 ```
 
 Expected: confirms the routing entries are present in all four locations.
@@ -1304,7 +1304,7 @@ The feature is complete when ALL of the following are true:
 - [ ] `bun run cover-letter -- examples/sample-cover-letter.json /tmp/test.pdf` does the same
 - [ ] `node test-all.mjs --quick` reports `failed: 0`
 - [ ] `git diff generate-pdf.mjs cv.md config/profile.yml modes/_profile.md` is empty
-- [ ] `grep -c "cover-letter\|Cover Letter" .claude/skills/career-ops/SKILL.md` returns ≥ 4
+- [ ] `grep -c "cover-letter\|Cover Letter" .claude/skills/auto-job/SKILL.md` returns ≥ 4
 - [ ] `modes/auto-pipeline.md` contains exactly one `## Paso 4b` heading
 - [ ] `README.md` mentions cover letter in the features table AND command list
 - [ ] Visually opening the generated PDF shows: gradient header + 4 paragraphs + purple signature, no placeholder leakage

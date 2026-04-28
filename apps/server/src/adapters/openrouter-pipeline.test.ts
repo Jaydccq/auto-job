@@ -14,7 +14,7 @@ import type {
   EvaluationResult,
   JobId,
   PhaseTransition,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 
 /* -------------------------------------------------------------------------- */
 /*  Test scaffolding                                                          */
@@ -23,7 +23,7 @@ import type {
 function makeRepoRoot(): string {
   const root = join(
     tmpdir(),
-    `career-ops-openrouter-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    `auto-job-openrouter-${Date.now()}-${Math.random().toString(36).slice(2)}`
   );
   mkdirSync(join(root, "batch"), { recursive: true });
   mkdirSync(join(root, "batch/tracker-additions"), { recursive: true });
@@ -147,7 +147,7 @@ test("resolveOpenRouterApiKey reads from process.env first", () => {
 
 test("resolveOpenRouterApiKey throws helpful message when env and key file both missing", () => {
   // Override homedir to a directory that we know contains no key file.
-  const fakeHome = join(tmpdir(), `career-ops-no-key-${Date.now()}`);
+  const fakeHome = join(tmpdir(), `auto-job-no-key-${Date.now()}`);
   mkdirSync(fakeHome, { recursive: true });
   cleanupRoots.push(fakeHome);
 

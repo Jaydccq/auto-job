@@ -1,6 +1,6 @@
 # OpenRouter adapter
 
-The OpenRouter adapter routes career-ops bridge evaluations through the
+The OpenRouter adapter routes auto-job bridge evaluations through the
 [OpenRouter](https://openrouter.ai/) HTTP API instead of a local CLI
 subprocess (`claude -p` or `codex exec`). It is the right choice when:
 
@@ -27,36 +27,36 @@ minimum.
 The adapter resolves the key in this order:
 
 1. `OPENROUTER_API_KEY` environment variable.
-2. `~/.config/career-ops/openrouter.key` (the file is read verbatim and
+2. `~/.config/auto-job/openrouter.key` (the file is read verbatim and
    trimmed; recommended `chmod 600`).
 
 If neither is set the bridge throws on startup with a message pointing
 you here.
 
 ```sh
-mkdir -p ~/.config/career-ops
-printf '%s' "sk-or-v1-…" > ~/.config/career-ops/openrouter.key
-chmod 600 ~/.config/career-ops/openrouter.key
+mkdir -p ~/.config/auto-job
+printf '%s' "sk-or-v1-…" > ~/.config/auto-job/openrouter.key
+chmod 600 ~/.config/auto-job/openrouter.key
 ```
 
 ### 3. Start the bridge in OpenRouter mode
 
 ```sh
-CAREER_OPS_BACKEND=real-openrouter bun run server
+AUTO_JOB_BACKEND=real-openrouter bun run server
 ```
 
 Equivalent direct invocation:
 
 ```sh
-CAREER_OPS_BRIDGE_MODE=real \
-  CAREER_OPS_REAL_EXECUTOR=openrouter \
+AUTO_JOB_BRIDGE_MODE=real \
+  AUTO_JOB_REAL_EXECUTOR=openrouter \
   bun run server
 ```
 
 Verify with `/v1/health`:
 
 ```sh
-curl -s -H "X-Career-Ops-Token: $(cat apps/server/.bridge-token)" \
+curl -s -H "X-Auto-Job-Token: $(cat apps/server/.bridge-token)" \
   http://127.0.0.1:47319/v1/health | jq '.result.execution'
 # { "mode": "real", "realExecutor": "openrouter" }
 ```
@@ -101,7 +101,7 @@ OpenRouter dashboard to cap your exposure.
   deltas. A 10-minute `AbortController` timeout protects against hung
   connections; tune it via `OpenRouterConfig.timeout`.
 - **Attribution headers.** The bridge sends `HTTP-Referer:
-  https://career-ops.local` and `X-Title: Career Ops` so OpenRouter
+  https://auto-job.local` and `X-Title: Auto Job` so OpenRouter
   can attribute usage. These are required by OpenRouter's API
   guidelines. Override with `httpReferer` / `xTitle` if you want your
   own attribution to appear in the OpenRouter dashboard.
@@ -123,7 +123,7 @@ OpenRouter dashboard to cap your exposure.
 - `OPENROUTER_API_KEY is not set` on boot — set the env var or write
   the key file as shown above.
 - `429 Too Many Requests` — OpenRouter has soft per-minute caps. Lower
-  `CAREER_OPS_BRIDGE_EVAL_RPM` or upgrade your account.
+  `AUTO_JOB_BRIDGE_EVAL_RPM` or upgrade your account.
 - `model output was not a valid report` — the model didn't follow the
   instructed schema. This is rare with Sonnet/4o-class models but more
   common with Haiku/Flash. Switch to a stronger default model.

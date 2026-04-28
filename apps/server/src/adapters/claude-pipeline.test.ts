@@ -11,7 +11,7 @@ import type {
   NewGradDetail,
   NewGradRow,
   ScoredRow,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 
 test("extractTerminalJsonObject returns the final Claude JSON payload", () => {
   const stdout = [
@@ -54,7 +54,7 @@ test("buildCodexTerminalSchema keeps legitimacy in the required schema", () => {
 });
 
 test("codex evaluation plans pin model to 5.4 mini and reasoning effort to medium", () => {
-  const repoRoot = `${tmpdir()}/career-ops-codex-effort-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const repoRoot = `${tmpdir()}/auto-job-codex-effort-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const logsDir = join(repoRoot, "batch", "logs");
   const promptPath = join(repoRoot, "batch", "batch-prompt.md");
   mkdirSync(logsDir, { recursive: true });
@@ -1181,7 +1181,7 @@ test("buildLocalQuickScreen skips explicit TS/SCI clearance requirements", () =>
 
 test("buildQuickEvaluationArtifacts marks low-value screens as SKIP", () => {
   const artifacts = __internal.buildQuickEvaluationArtifacts({
-    repoRoot: "/tmp/career-ops",
+    repoRoot: "/tmp/auto-job",
     reportNumber: 17,
     date: "2026-04-16",
     url: "https://example.com/job",
@@ -1201,7 +1201,7 @@ test("buildQuickEvaluationArtifacts marks low-value screens as SKIP", () => {
     },
   });
 
-  expect(artifacts.reportPath).toContain("/tmp/career-ops/reports/017-example-2026-04-16.md");
+  expect(artifacts.reportPath).toContain("/tmp/auto-job/reports/017-example-2026-04-16.md");
   expect(artifacts.reportMarkdown).toContain("## A) Quick Screen Summary");
   expect(artifacts.reportMarkdown).toContain("## B) Structured Value Signals");
   expect(artifacts.trackerRow.status).toBe("SKIP");
@@ -1210,7 +1210,7 @@ test("buildQuickEvaluationArtifacts marks low-value screens as SKIP", () => {
 
 test("buildQuickEvaluationArtifacts marks manual review screens as Evaluated", () => {
   const artifacts = __internal.buildQuickEvaluationArtifacts({
-    repoRoot: "/tmp/career-ops",
+    repoRoot: "/tmp/auto-job",
     reportNumber: 18,
     date: "2026-04-16",
     url: "https://example.com/manual-review",
@@ -1236,7 +1236,7 @@ test("buildQuickEvaluationArtifacts marks manual review screens as Evaluated", (
     },
   });
 
-  expect(artifacts.reportPath).toContain("/tmp/career-ops/reports/018-manual-review-co-2026-04-16.md");
+  expect(artifacts.reportPath).toContain("/tmp/auto-job/reports/018-manual-review-co-2026-04-16.md");
   expect(artifacts.reportMarkdown).toContain("**Decision:** manual_review");
   expect(artifacts.reportMarkdown).toContain("uncertain sponsorship");
   expect(artifacts.trackerRow.status).toBe("Evaluated");
@@ -1297,7 +1297,7 @@ test("parseReportMarkdown accepts unaccented Spanish report heading", () => {
 });
 
 function makeRepoRoot(): string {
-  const repoRoot = `${tmpdir()}/career-ops-claude-pipeline-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const repoRoot = `${tmpdir()}/auto-job-claude-pipeline-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   mkdirSync(join(repoRoot, "config"), { recursive: true });
   mkdirSync(join(repoRoot, "data"), { recursive: true });
   writeFileSync(

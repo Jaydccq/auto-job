@@ -22,8 +22,8 @@ contents as private and start with your own.
   and desktop.
 - **Root scripts (`*.mjs`)** — operator CLIs: `verify`, `merge`, `dedup`,
   `normalize`, `pdf`, `liveness`, `scan`, `doctor`.
-- **`modes/`** — operator instructions read by the Claude Code skill
-  (`.claude/skills/career-ops/SKILL.md`).
+- **`modes/`** — operator instructions read by the repository agent skill
+  (`skills/auto-job/SKILL.md`; `.claude/skills/` is a runtime mirror).
 - **`batch/`** — system prompt and orchestration files for the batch worker.
 - **`web/`** — local dashboard build target.
 
@@ -33,7 +33,7 @@ contents as private and start with your own.
 
 ```bash
 bun run --cwd apps/desktop package
-open "apps/desktop/release/mac-arm64/Career Ops.app"
+open "apps/desktop/release/mac-arm64/Auto Job.app"
 ```
 
 Tray icon, dashboard window, settings panel. The extension talks to it on
@@ -54,8 +54,8 @@ Server runs at login. No window.
 
 ```bash
 bun run server                                       # Codex backend
-CAREER_OPS_BACKEND=fake bun run server               # fake adapter
-CAREER_OPS_BACKEND=real-openrouter bun run server    # OpenRouter
+AUTO_JOB_BACKEND=fake bun run server               # fake adapter
+AUTO_JOB_BACKEND=real-openrouter bun run server    # OpenRouter
 ```
 
 Then visit `http://127.0.0.1:47319/dashboard/`.
@@ -76,8 +76,8 @@ Onboard a fresh user:
 2. Copy `config/profile.example.yml` to `config/profile.yml`; fill it in.
 3. Copy `templates/portals.example.yml` to `portals.yml`; trim it.
 4. Run `bun run doctor` until it's all green.
-5. Open Claude Code in this repo and paste a job posting URL. The
-   `career-ops` skill takes it from there.
+5. Open Codex or Claude Code in this repo and paste a job posting URL. The
+   `auto-job` skill takes it from there.
 
 ## Data layout
 

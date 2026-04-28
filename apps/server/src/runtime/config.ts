@@ -2,7 +2,7 @@
  * config.ts — bridge bootstrap configuration.
  *
  * Responsibilities:
- *   1. Locate the career-ops repo root (the directory containing this
+ *   1. Locate the auto-job repo root (the directory containing this
  *      apps/server/ directory).
  *   2. Load or generate the shared-secret token at apps/server/.bridge-token.
  *   3. Resolve `claude`, `codex`, and `node` binaries from PATH.
@@ -26,7 +26,7 @@ export type BridgeMode = "fake" | "real";
 export type RealExecutor = "claude" | "codex" | "openrouter";
 
 export interface BridgeConfig {
-  /** Absolute path to career-ops repo root. cwd for every shell-out. */
+  /** Absolute path to auto-job repo root. cwd for every shell-out. */
   repoRoot: string;
   /** Absolute path to apps/server/ directory (inside repoRoot). */
   bridgeDir: string;
@@ -34,7 +34,7 @@ export interface BridgeConfig {
   host: string;
   /** Port to bind. */
   port: number;
-  /** Shared secret for the x-career-ops-token header. */
+  /** Shared secret for the x-auto-job-token header. */
   token: string;
   /** Absolute path to the claude CLI, or null if unresolved. */
   claudeBin: string | null;
@@ -60,7 +60,7 @@ export interface BridgeConfig {
   livenessTimeoutSec: number;
   /** Bridge semver, pulled from package.json. */
   bridgeVersion: string;
-  /** Contents of the career-ops VERSION file. */
+  /** Contents of the auto-job VERSION file. */
   careerOpsVersion: string;
 }
 
@@ -79,16 +79,16 @@ function here(): string {
 
 /**
  * Walk upward from src/runtime until we find apps/server/package.json
- * (the @career-ops/server package), then continue walking up to find
- * the career-ops repo root (identified by cv.md + modes/ + data/).
+ * (the @auto-job/server package), then continue walking up to find
+ * the auto-job repo root (identified by cv.md + modes/ + data/).
  *
- * If CAREER_OPS_REPO_ROOT is set, it overrides the repo-root search —
+ * If AUTO_JOB_REPO_ROOT is set, it overrides the repo-root search —
  * required for the packaged Electron app, where the server source is
  * inside the .app bundle but the user's data lives in their home dir.
  * The bridgeDir (for the .bridge-token) still comes from the walk-up.
  */
 function findRepoRoot(): { repoRoot: string; bridgeDir: string } {
-  const override = parseOptionalString(process.env.CAREER_OPS_REPO_ROOT);
+  const override = parseOptionalString(process.env.AUTO_JOB_REPO_ROOT);
   let dir = here();
   let bridgeDir: string | null = null;
   let walkedRepoRoot: string | null = null;
@@ -97,7 +97,7 @@ function findRepoRoot(): { repoRoot: string; bridgeDir: string } {
     if (existsSync(pkg)) {
       try {
         const content = JSON.parse(readFileSync(pkg, "utf-8"));
-        if (content.name === "@career-ops/server" && bridgeDir === null) {
+        if (content.name === "@auto-job/server" && bridgeDir === null) {
           bridgeDir = dir;
         }
       } catch {
@@ -123,7 +123,7 @@ function findRepoRoot(): { repoRoot: string; bridgeDir: string } {
   if (override) {
     // Always prefer a writable bridgeDir under the override. In a
     // packaged Electron app, the walked bridgeDir lands inside the
-    // read-only app.asar (e.g. .../app.asar/node_modules/@career-ops/
+    // read-only app.asar (e.g. .../app.asar/node_modules/@auto-job/
     // server), which the token writer can't open.
     //
     // Prefer (in order):
@@ -141,8 +141,8 @@ function findRepoRoot(): { repoRoot: string; bridgeDir: string } {
     return { repoRoot: walkedRepoRoot, bridgeDir };
   }
   throw new Error(
-    "bridge bootstrap: could not locate @career-ops/server package.json or career-ops repo root. " +
-      "Set CAREER_OPS_REPO_ROOT to point at your career-ops checkout if running from a packaged app."
+    "bridge bootstrap: could not locate @auto-job/server package.json or auto-job repo root. " +
+      "Set AUTO_JOB_REPO_ROOT to point at your auto-job checkout if running from a packaged app."
   );
 }
 
@@ -219,7 +219,7 @@ function parseMode(raw: string | undefined): BridgeMode {
   if (raw === "real") return "real";
   if (raw === "fake" || raw === undefined) return "fake";
   throw new Error(
-    `CAREER_OPS_BRIDGE_MODE must be "fake" or "real", got "${raw}"`
+    `AUTO_JOB_BRIDGE_MODE must be "fake" or "real", got "${raw}"`
   );
 }
 
@@ -229,7 +229,7 @@ function parseRealExecutor(raw: string | undefined): RealExecutor {
   if (raw === "openrouter") return "openrouter";
   if (raw === undefined || raw === "") return "codex";
   throw new Error(
-    `CAREER_OPS_REAL_EXECUTOR must be "claude", "codex", or "openrouter", got "${raw}"`
+    `AUTO_JOB_REAL_EXECUTOR must be "claude", "codex", or "openrouter", got "${raw}"`
   );
 }
 
@@ -237,7 +237,7 @@ function parsePort(raw: string | undefined, fallback: number): number {
   if (raw === undefined || raw === "") return fallback;
   const n = Number(raw);
   if (!Number.isInteger(n) || n < 1 || n > 65535) {
-    throw new Error(`CAREER_OPS_BRIDGE_PORT invalid: "${raw}"`);
+    throw new Error(`AUTO_JOB_BRIDGE_PORT invalid: "${raw}"`);
   }
   return n;
 }
@@ -265,7 +265,7 @@ export function loadConfig(): BridgeConfig {
     const p = join(repoRoot, rel);
     if (!existsSync(p)) {
       throw new Error(
-        `bridge bootstrap: repo root ${repoRoot} is missing ${rel}. This does not look like a career-ops repo.`
+        `bridge bootstrap: repo root ${repoRoot} is missing ${rel}. This does not look like a auto-job repo.`
       );
     }
   }
@@ -287,25 +287,25 @@ export function loadConfig(): BridgeConfig {
   const token = loadOrGenerateToken(bridgeDir);
   const claudeBin = resolveBin("claude");
   const codexBin = resolveBin("codex");
-  const codexModel = parseOptionalString(process.env.CAREER_OPS_CODEX_MODEL) ?? DEFAULT_CODEX_MODEL;
+  const codexModel = parseOptionalString(process.env.AUTO_JOB_CODEX_MODEL) ?? DEFAULT_CODEX_MODEL;
   const codexReasoningEffort =
-    parseOptionalString(process.env.CAREER_OPS_CODEX_REASONING_EFFORT) ??
+    parseOptionalString(process.env.AUTO_JOB_CODEX_REASONING_EFFORT) ??
     DEFAULT_CODEX_REASONING_EFFORT;
   const nodeBin = resolveBin("node") ?? process.execPath;
-  const mode = parseMode(process.env.CAREER_OPS_BRIDGE_MODE);
-  const realExecutor = parseRealExecutor(process.env.CAREER_OPS_REAL_EXECUTOR);
+  const mode = parseMode(process.env.AUTO_JOB_BRIDGE_MODE);
+  const realExecutor = parseRealExecutor(process.env.AUTO_JOB_REAL_EXECUTOR);
 
   if (mode === "real" && realExecutor === "claude" && !claudeBin) {
     throw new Error(
-      `bridge bootstrap: CAREER_OPS_BRIDGE_MODE=real but 'claude' CLI is not on PATH. ` +
-        `Install Claude Code or switch to CAREER_OPS_BRIDGE_MODE=fake.`
+      `bridge bootstrap: AUTO_JOB_BRIDGE_MODE=real but 'claude' CLI is not on PATH. ` +
+        `Install Claude Code or switch to AUTO_JOB_BRIDGE_MODE=fake.`
     );
   }
 
   if (mode === "real" && realExecutor === "codex" && !codexBin) {
     throw new Error(
-      `bridge bootstrap: CAREER_OPS_BRIDGE_MODE=real and CAREER_OPS_REAL_EXECUTOR=codex but 'codex' CLI is not on PATH. ` +
-        `Install Codex CLI or switch CAREER_OPS_REAL_EXECUTOR=claude.`
+      `bridge bootstrap: AUTO_JOB_BRIDGE_MODE=real and AUTO_JOB_REAL_EXECUTOR=codex but 'codex' CLI is not on PATH. ` +
+        `Install Codex CLI or switch AUTO_JOB_REAL_EXECUTOR=claude.`
     );
   }
 
@@ -315,8 +315,8 @@ export function loadConfig(): BridgeConfig {
   return {
     repoRoot,
     bridgeDir,
-    host: process.env.CAREER_OPS_BRIDGE_HOST ?? DEFAULT_HOST,
-    port: parsePort(process.env.CAREER_OPS_BRIDGE_PORT, DEFAULT_PORT),
+    host: process.env.AUTO_JOB_BRIDGE_HOST ?? DEFAULT_HOST,
+    port: parsePort(process.env.AUTO_JOB_BRIDGE_PORT, DEFAULT_PORT),
     token,
     claudeBin,
     codexBin,
@@ -327,14 +327,14 @@ export function loadConfig(): BridgeConfig {
     realExecutor,
     evaluationTimeoutSec: DEFAULT_EVAL_TIMEOUT_SEC,
     evaluationConcurrency: parsePositiveInt(
-      process.env.CAREER_OPS_BRIDGE_EVAL_CONCURRENCY,
+      process.env.AUTO_JOB_BRIDGE_EVAL_CONCURRENCY,
       DEFAULT_EVAL_CONCURRENCY,
-      "CAREER_OPS_BRIDGE_EVAL_CONCURRENCY",
+      "AUTO_JOB_BRIDGE_EVAL_CONCURRENCY",
     ),
     evaluationRateLimitPerMinute: parsePositiveInt(
-      process.env.CAREER_OPS_BRIDGE_EVAL_RPM,
+      process.env.AUTO_JOB_BRIDGE_EVAL_RPM,
       DEFAULT_EVAL_RPM,
-      "CAREER_OPS_BRIDGE_EVAL_RPM",
+      "AUTO_JOB_BRIDGE_EVAL_RPM",
     ),
     livenessTimeoutSec: DEFAULT_LIVENESS_TIMEOUT_SEC,
     bridgeVersion,

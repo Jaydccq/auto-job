@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run `Fk77r5wrdwEQXGB6p583R` requests a full A-G evaluation for R1 RCM's `Software Engineer` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-Fk77r5wrdwEQXGB6p583R.txt`.
+Bridge batch run `Fk77r5wrdwEQXGB6p583R` requests a full A-G evaluation for R1 RCM's `Software Engineer` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-Fk77r5wrdwEQXGB6p583R.txt`.
 
 ## Goal
 

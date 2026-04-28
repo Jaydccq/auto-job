@@ -1,6 +1,6 @@
 # Browser Extension + Local Bridge
 
-This workflow lets you evaluate a job posting directly from Chrome without duplicating the existing career-ops pipeline. The extension captures the active tab, sends the page to a local bridge on `127.0.0.1`, and the bridge writes the same report and tracker artifacts used by the CLI flow.
+This workflow lets you evaluate a job posting directly from Chrome without duplicating the existing auto-job pipeline. The extension captures the active tab, sends the page to a local bridge on `127.0.0.1`, and the bridge writes the same report and tracker artifacts used by the CLI flow.
 
 ## What It Includes
 
@@ -12,8 +12,8 @@ This workflow lets you evaluate a job posting directly from Chrome without dupli
 
 - Workspace dependencies installed: `bun install` (root)
 - Playwright Chromium installed if you want live liveness checks: `bunx playwright install chromium`
-- For `CAREER_OPS_BACKEND=real-codex` (default) or `real-claude`: the matching CLI on `PATH`
-- For `CAREER_OPS_BACKEND=real-openrouter`: `OPENROUTER_API_KEY` in the environment
+- For `AUTO_JOB_BACKEND=real-codex` (default) or `real-claude`: the matching CLI on `PATH`
+- For `AUTO_JOB_BACKEND=real-openrouter`: `OPENROUTER_API_KEY` in the environment
 
 ## Verify Everything
 
@@ -49,8 +49,8 @@ Other common shortcuts:
 ```bash
 bun run ext:build
 bun run server                                  # real / codex (default)
-CAREER_OPS_BACKEND=real-claude bun run server   # real / claude
-CAREER_OPS_BACKEND=fake bun run server          # fake (UI smoke)
+AUTO_JOB_BACKEND=real-claude bun run server   # real / claude
+AUTO_JOB_BACKEND=fake bun run server          # fake (UI smoke)
 ```
 
 If you want a simple macOS picker instead of remembering commands:
@@ -82,13 +82,13 @@ Default mode is `fake`, which is safe for UI and integration testing.
 bun run server
 ```
 
-Optional modes (set `CAREER_OPS_BACKEND` to pick the adapter):
+Optional modes (set `AUTO_JOB_BACKEND` to pick the adapter):
 
 ```bash
-CAREER_OPS_BACKEND=real-codex bun run server
-CAREER_OPS_BACKEND=real-claude bun run server
-CAREER_OPS_BACKEND=real-openrouter OPENROUTER_API_KEY=... bun run server
-CAREER_OPS_BACKEND=fake bun run server
+AUTO_JOB_BACKEND=real-codex bun run server
+AUTO_JOB_BACKEND=real-claude bun run server
+AUTO_JOB_BACKEND=real-openrouter OPENROUTER_API_KEY=... bun run server
+AUTO_JOB_BACKEND=fake bun run server
 ```
 
 The raw commands above still work; the root aliases are just shorter wrappers around them.
@@ -97,15 +97,15 @@ Bridge notes:
 
 - Binds to `127.0.0.1:47319` by default
 - Generates or reuses `apps/server/.bridge-token`
-- Rejects requests without `x-career-ops-token`
+- Rejects requests without `x-auto-job-token`
 - Refuses to boot `real-openrouter` mode unless `OPENROUTER_API_KEY` is present
-- Default backend is `real-codex`; set `CAREER_OPS_BACKEND=real-claude` to run the same bridge flow through `claude -p`
-- Codex bridge evaluations default to `CAREER_OPS_CODEX_MODEL=gpt-5.4-mini` and `CAREER_OPS_CODEX_REASONING_EFFORT=medium`, overriding user-level Codex defaults for stable cost/latency.
+- Default backend is `real-codex`; set `AUTO_JOB_BACKEND=real-claude` to run the same bridge flow through `claude -p`
+- Codex bridge evaluations default to `AUTO_JOB_CODEX_MODEL=gpt-5.4-mini` and `AUTO_JOB_CODEX_REASONING_EFFORT=medium`, overriding user-level Codex defaults for stable cost/latency.
 
 Quick health check:
 
 ```bash
-curl -s -H "x-career-ops-token: $(cat apps/server/.bridge-token)" http://127.0.0.1:47319/v1/health
+curl -s -H "x-auto-job-token: $(cat apps/server/.bridge-token)" http://127.0.0.1:47319/v1/health
 ```
 
 ## Build and Load the Extension
@@ -124,7 +124,7 @@ Then in Chrome:
 `chrome://extensions` is only for loading or reloading the unpacked extension.
 The toolbar action cannot open the in-page panel on Chrome's own pages. After
 loading, switch to a regular `http` or `https` job posting tab, then click the
-career-ops toolbar icon or press `Alt+Shift+C`.
+auto-job toolbar icon or press `Alt+Shift+C`.
 
 The popup will ask for the bridge token on first use. Paste the contents of `apps/server/.bridge-token`.
 
@@ -137,7 +137,7 @@ The popup will ask for the bridge token on first use. Paste the contents of `app
 5. Run liveness or evaluation
 6. Open the generated report or tracker output from the popup
 
-Artifacts still land in the normal career-ops locations:
+Artifacts still land in the normal auto-job locations:
 
 - reports: `reports/*.md`
 - tracker additions: `batch/tracker-additions/*.tsv`

@@ -23,7 +23,7 @@ afterEach(() => {
 });
 
 function makeRepo(): string {
-  const repoRoot = mkdtempSync(join(tmpdir(), "career-ops-merge-tracker-"));
+  const repoRoot = mkdtempSync(join(tmpdir(), "auto-job-merge-tracker-"));
   tempRoots.push(repoRoot);
   mkdirSync(join(repoRoot, "data"), { recursive: true });
   mkdirSync(join(repoRoot, "batch", "tracker-additions"), { recursive: true });
@@ -45,7 +45,7 @@ test("newer evaluated rerun replaces older quick skip even when score is lower",
   writeFileSync(
     join(repoRoot, "data", "applications.md"),
     [
-      "# Career-Ops Applications Tracker",
+      "# Auto-Job Applications Tracker",
       "",
       "| # | Date | Company | Role | Score | Status | PDF | Report | Notes |",
       "|---|------|---------|------|-------|--------|-----|--------|-------|",
@@ -81,7 +81,7 @@ test("higher score duplicate uses rerun status instead of preserving stale skip"
   writeFileSync(
     join(repoRoot, "data", "applications.md"),
     [
-      "# Career-Ops Applications Tracker",
+      "# Auto-Job Applications Tracker",
       "",
       "| # | Date | Company | Role | Score | Status | PDF | Report | Notes |",
       "|---|------|---------|------|-------|--------|-----|--------|-------|",
@@ -117,7 +117,7 @@ test("sanitizes pipe characters before writing markdown tracker cells", () => {
   writeFileSync(
     join(repoRoot, "data", "applications.md"),
     [
-      "# Career-Ops Applications Tracker",
+      "# Auto-Job Applications Tracker",
       "",
       "| # | Date | Company | Role | Score | Status | PDF | Report | Notes |",
       "|---|------|---------|------|-------|--------|-----|--------|-------|",

@@ -15,7 +15,7 @@ import type {
   NewGradScanConfig,
   ScoreBreakdown,
   ScoredRow,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 import { matchActiveSecurityClearanceRequirement } from "../lib/security-clearance.js";
 import { jobCompanyRoleKey } from "./job-identity.js";
 import { findSkillKeywordMatches } from "./newgrad-skill-match.js";

@@ -4,7 +4,7 @@
 
 Bridge batch run `gPQddywsGbi81ezp150VP` requested a repository-backed evaluation for AgileGrid Solutions' Software Developer -Python posting from BestJobTool/LinkedIn.
 
-Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-gPQddywsGbi81ezp150VP.txt`.
+Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-gPQddywsGbi81ezp150VP.txt`.
 
 ## Goal
 

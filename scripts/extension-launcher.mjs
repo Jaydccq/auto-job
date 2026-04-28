@@ -26,7 +26,7 @@ const PRIMARY_ACTIONS = [
   {
     label: "Desktop launchpad (Claude)",
     description: "Build, start the Claude bridge, reveal dist, and open chrome://extensions.",
-    terminalCommand: "bun run ext:build && CAREER_OPS_BACKEND=real-claude bun run server",
+    terminalCommand: "bun run ext:build && AUTO_JOB_BACKEND=real-claude bun run server",
     afterOpen: [
       { type: "path", target: distDir },
       { type: "chrome-extensions" },
@@ -50,11 +50,11 @@ const ADVANCED_ACTIONS = [
   },
   {
     label: "Start bridge (Claude)",
-    terminalCommand: "CAREER_OPS_BACKEND=real-claude bun run server",
+    terminalCommand: "AUTO_JOB_BACKEND=real-claude bun run server",
   },
   {
     label: "Start bridge (Fake)",
-    terminalCommand: "CAREER_OPS_BACKEND=fake bun run server",
+    terminalCommand: "AUTO_JOB_BACKEND=fake bun run server",
   },
   {
     label: "Build + start (Codex)",
@@ -62,7 +62,7 @@ const ADVANCED_ACTIONS = [
   },
   {
     label: "Build + start (Claude)",
-    terminalCommand: "bun run ext:build && CAREER_OPS_BACKEND=real-claude bun run server",
+    terminalCommand: "bun run ext:build && AUTO_JOB_BACKEND=real-claude bun run server",
   },
   {
     label: "Reveal extension/dist",
@@ -183,7 +183,7 @@ function chooseFromList(actions, prompt, defaultLabel) {
 function choosePrimaryAction() {
   return chooseFromList(
     PRIMARY_ACTIONS,
-    "Choose a career-ops extension workflow:",
+    "Choose a auto-job extension workflow:",
     "Desktop launchpad (Codex)",
   );
 }
