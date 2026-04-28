@@ -153,3 +153,37 @@ test('isGenericCompany still rejects "the X" lowercase prose fragments', () => {
   assert.equal(isGenericCompany('the ideal candidate'), true);
   assert.equal(isGenericCompany('the role'), true);
 });
+
+test('classifyEvent: hard rejection phrase alone is enough', () => {
+  for (const phrase of [
+    'we will not be moving forward with your application',
+    'we have decided not to proceed with your candidacy',
+    'this position has been filled',
+    'unfortunately you have not been selected for the role',
+  ]) {
+    const event = classifyEvent({
+      subject: 'Application Update',
+      text: `Hi Hongxi, ${phrase}. Best, The Team`,
+      from: { name: 'Acme Hiring Team', email: 'no-reply@ashbyhq.com' },
+    });
+    assert.equal(event, 'rejected', `expected rejected for: ${phrase}`);
+  }
+});
+
+test('classifyEvent: soft phrase alone is NOT rejection', () => {
+  const event = classifyEvent({
+    subject: 'Application Update',
+    text: 'Hi Hongxi, unfortunately our schedule is full this week. We hope to follow up soon.',
+    from: { name: 'Acme Hiring Team', email: 'no-reply@ashbyhq.com' },
+  });
+  assert.notEqual(event, 'rejected');
+});
+
+test('classifyEvent: applied receipt is not rejection even if body has filler "unfortunately"', () => {
+  const event = classifyEvent({
+    subject: 'Thank you for applying to Acme!',
+    text: 'Thanks for applying for the Software Engineer role at Acme. Unfortunately our team is large so review may take time. We will reach out soon.',
+    from: { name: 'Acme Hiring Team', email: 'no-reply@ashbyhq.com' },
+  });
+  assert.equal(event, 'applied');
+});

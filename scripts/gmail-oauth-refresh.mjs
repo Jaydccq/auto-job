@@ -108,6 +108,24 @@ const APPLICATION_RECEIPT_PATTERNS = [
   /\bsubmitted your application\b/i,
 ];
 
+const HARD_REJECTION_PATTERNS = [
+  /\bnot moving forward\b/i,
+  /\bwill not be moving forward\b/i,
+  /\bnot selected (?:for|to|at)\b/i,
+  /\bnot been selected\b/i,
+  /\bdecided not to proceed\b/i,
+  /\b(?:filled the position|position has been filled|closed the role|role has been (?:closed|filled))\b/i,
+  /\bunable to (?:move forward|proceed)\b/i,
+  /\bnot able to offer\b/i,
+];
+
+const SOFT_REJECTION_PATTERNS = [
+  /\bunfortunately\b/i,
+  /\bnot (?:an? )?(?:ideal|right) fit\b/i,
+  /\bother candidates\b/i,
+  /\bmore aligned with\b/i,
+];
+
 const APPLICATION_REVIEW_ONLY_PATTERNS = [
   /\bcurrently reviewing\b/i,
   /\bwill be reviewed\b/i,
@@ -732,7 +750,14 @@ export function classifyEvent({ subject = '', text = '', from = {} }) {
     const result = decide('offer');
     if (result) return result;
   }
-  if (/\b(unfortunately|not moving forward|will not be moving forward|not selected|decided not to proceed|filled the position|closed the role|position has been filled)\b/.test(lower)) {
+  const hasHardRejection = hasAnyPattern(HARD_REJECTION_PATTERNS, lower);
+  const hasSoftRejection = hasAnyPattern(SOFT_REJECTION_PATTERNS, lower);
+  if (hasHardRejection) {
+    const result = decide('rejected');
+    if (result) return result;
+  }
+  if (hasSoftRejection && /\b(?:application|candidacy|interview|role|position)\b/i.test(lower) &&
+      !hasAnyPattern(APPLICATION_RECEIPT_PATTERNS, lower)) {
     const result = decide('rejected');
     if (result) return result;
   }
