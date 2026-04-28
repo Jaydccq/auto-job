@@ -726,6 +726,17 @@ export function isGenericCompany(value = '') {
   return false;
 }
 
+export function computeConfidence(features = {}) {
+  let score = 0.2;
+  if (features.isTrustedAtsSender) score += 0.30;
+  if (features.hasExplicitCompany) score += 0.20;
+  if (features.hasExplicitRole) score += 0.15;
+  if (features.hasHardEventPhrase) score += 0.15;
+  if (features.hasWeakEventPhrase && !features.hasHardEventPhrase) score += 0.05;
+  if (features.hasExplicitSubjectMatch) score += 0.10;
+  return Math.max(0, Math.min(1, Number(score.toFixed(2))));
+}
+
 function isGenericRole(value = '') {
   return !value ||
     value.length > 90 ||
@@ -841,6 +852,18 @@ export function extractSignalFromMessage(message) {
       ? new Date(headers.date).toISOString()
       : new Date().toISOString();
 
+  const policy = senderClassificationPolicy(from);
+  const confidence = computeConfidence({
+    isTrustedAtsSender: policy.isTrusted,
+    hasExplicitCompany: Boolean(company) && !isGenericCompany(company),
+    hasExplicitRole: Boolean(extractedRole),
+    hasHardEventPhrase: hasAnyPattern(HARD_REJECTION_PATTERNS, searchText) ||
+      /\b(offer letter|job offer|interview is scheduled|online assessment)\b/i.test(searchText),
+    hasWeakEventPhrase: hasWeakHiringContext(searchText),
+    hasExplicitSubjectMatch: hasAnyPattern(APPLICATION_RECEIPT_PATTERNS, subject) ||
+      /\b(application update|interview|offer|assessment)\b/i.test(subject),
+  });
+
   return {
     id: `${message.id}:${eventType}`,
     company: company || 'Unknown Company',
@@ -855,7 +878,7 @@ export function extractSignalFromMessage(message) {
     snippet: compactText(sanitizeMessageText(message.snippet || bodyText), 220),
     messageId: message.id,
     threadId: message.threadId,
-    confidence: company ? 0.78 : 0.52,
+    confidence,
   };
 }
 

@@ -187,3 +187,45 @@ test('classifyEvent: applied receipt is not rejection even if body has filler "u
   });
   assert.equal(event, 'applied');
 });
+
+import { computeConfidence } from './gmail-oauth-refresh.mjs';
+
+test('computeConfidence: full feature stack scores ≥ 0.85', () => {
+  const score = computeConfidence({
+    isTrustedAtsSender: true,
+    hasExplicitCompany: true,
+    hasExplicitRole: true,
+    hasHardEventPhrase: true,
+  });
+  assert.ok(score >= 0.85, `got ${score}`);
+  assert.ok(score <= 1.0);
+});
+
+test('computeConfidence: only weak inference scores ≤ 0.5', () => {
+  const score = computeConfidence({
+    isTrustedAtsSender: false,
+    hasExplicitCompany: false,
+    hasExplicitRole: false,
+    hasHardEventPhrase: false,
+    hasWeakEventPhrase: true,
+  });
+  assert.ok(score <= 0.5, `got ${score}`);
+});
+
+test('computeConfidence: ATS sender + explicit company alone passes 0.5', () => {
+  const score = computeConfidence({
+    isTrustedAtsSender: true,
+    hasExplicitCompany: true,
+    hasExplicitRole: false,
+    hasHardEventPhrase: false,
+  });
+  assert.ok(score > 0.5, `got ${score}`);
+});
+
+test('extractSignalFromMessage: signal from ATS produces realistic confidence (not the fixed 0.78)', () => {
+  const signal = extractSignalFromMessage(fakeAtsMessage());
+  assert.notEqual(signal.confidence, 0.78);
+  assert.notEqual(signal.confidence, 0.52);
+  assert.ok(signal.confidence >= 0.6 && signal.confidence <= 1.0,
+    `expected confidence in [0.6, 1.0], got ${signal.confidence}`);
+});
