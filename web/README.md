@@ -36,7 +36,7 @@ this URL — there is no separate dashboard server process anymore.
    queue) that the bridge route wires into Fastify.
 3. Apply Next PDF buttons call `/dashboard/api/apply-docs/*`, which reuses
    `generate-pdf.mjs` and `generate-cover-letter.mjs`, creates PDFs under
-   `output/`, and copies them into `~/Downloads` when the download button is
+   `output/`, and copies them into `~/Desktop` when the save button is
    clicked.
 4. Tracker rows read quick-screen decisions from report metadata such as
    `**Decision:** manual_review`. `manual_review` rows show a **Full Eval**
