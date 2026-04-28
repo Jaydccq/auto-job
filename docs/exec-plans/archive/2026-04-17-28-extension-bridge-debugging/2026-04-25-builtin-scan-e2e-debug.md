@@ -2,7 +2,7 @@
 
 ## Background
 
-The user asked to fully debug and test the Career-Ops Built In scan flow,
+The user asked to fully debug and test the Auto-Job Built In scan flow,
 especially whether information extraction is correct. Built In scanning should
 reuse the existing browser-backed scanner, bridge scoring/enrich flow, pipeline
 history, and optional direct evaluation. It must remain read-only with respect

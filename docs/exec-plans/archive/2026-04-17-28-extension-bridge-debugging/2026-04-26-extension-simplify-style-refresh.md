@@ -14,7 +14,7 @@ soft status surfaces, and compact progress/tracker affordances.
 
 Refresh the extension frontend so the popup, injected panel, permission page,
 and unsupported page feel lighter, clearer, and friendlier while preserving the
-existing career-ops behavior.
+existing auto-job behavior.
 
 ## Scope
 
@@ -119,12 +119,12 @@ Verification:
 - `npm --prefix extension run typecheck`: passed.
 - `npm --prefix extension run build`: passed.
 - `git diff --check`: passed.
-- `node /tmp/career-ops-extension-simplify-smoke.mjs`: passed after running
+- `node /tmp/auto-job-extension-simplify-smoke.mjs`: passed after running
   headless Chromium with approval; generated screenshots:
-  - `/tmp/career-ops-extension-popup-simplify.png`
-  - `/tmp/career-ops-extension-permission-simplify.png`
-  - `/tmp/career-ops-extension-unsupported-simplify.png`
-  - `/tmp/career-ops-extension-panel-simplify.png`
+  - `/tmp/auto-job-extension-popup-simplify.png`
+  - `/tmp/auto-job-extension-permission-simplify.png`
+  - `/tmp/auto-job-extension-unsupported-simplify.png`
+  - `/tmp/auto-job-extension-panel-simplify.png`
 
 Remaining notes:
 - No scan/evaluation behavior was changed.

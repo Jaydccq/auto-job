@@ -24,4 +24,4 @@ This directory is intentionally compact.
   - `summaries/summary-2026-04-17-28-job-evaluations.md`
   - `summaries/summary-2026-04-17-28-scan-operations.md`
   - `summaries/summary-2026-04-17-28-extension-bridge-debugging.md`
-- Use `python3 .claude/skills/exec-plan-consolidator/scripts/plan_inventory.py` to inspect active-plan sprawl and consolidation candidates.
+- Use `python3 skills/exec-plan-consolidator/scripts/plan_inventory.py` to inspect active-plan sprawl and consolidation candidates.

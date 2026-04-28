@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run `LeWMoGgxvtcOJvb6yVyhu` requests a full A-G evaluation for Peloton Interactive's `Software Engineer I` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-LeWMoGgxvtcOJvb6yVyhu.txt`.
+Bridge batch run `LeWMoGgxvtcOJvb6yVyhu` requests a full A-G evaluation for Peloton Interactive's `Software Engineer I` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-LeWMoGgxvtcOJvb6yVyhu.txt`.
 
 ## Goal
 

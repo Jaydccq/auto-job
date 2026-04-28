@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run `95oDCENEmuYdRnTlWejiT` requests a full A-G evaluation for Intuit's `Software Engineer 1 - Fullstack` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-95oDCENEmuYdRnTlWejiT.txt`.
+Bridge batch run `95oDCENEmuYdRnTlWejiT` requests a full A-G evaluation for Intuit's `Software Engineer 1 - Fullstack` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-95oDCENEmuYdRnTlWejiT.txt`.
 
 ## Goal
 

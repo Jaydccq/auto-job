@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Upgrade `/career-ops builtin-scan` and add `/career-ops indeed-scan` as full LinkedIn-style closed-loop scanners using read-only `bb-browser site` adapters.
+**Goal:** Upgrade `/auto-job builtin-scan` and add `/auto-job indeed-scan` as full LinkedIn-style closed-loop scanners using read-only `bb-browser site` adapters.
 
 **Architecture:** Add one shared browser-backed job-board scan runner that calls `bb-browser site builtin/jobs` or `bb-browser site indeed/jobs`, normalizes adapter JSON into `NewGradRow`, and reuses existing bridge score, enrich, pipeline/history, and direct evaluation behavior. Keep site-specific behavior in small normalizer helpers and mode docs.
 
@@ -16,7 +16,7 @@ LinkedIn scanning already proves the desired shape: browser-backed collection,
 source normalization, bridge scoring, detail enrichment, pipeline/history writes,
 and capped direct evaluation. Built In has an older `scan.mjs --builtin-only`
 path plus a pending endpoint. Indeed has a read-only `bb-browser site` adapter
-but no Career-Ops mode.
+but no Auto-Job mode.
 
 2026-04-23 follow-up: after finding low-value `Description excerpt` pollution in
 LinkedIn and JobRight/newgrad enrich paths, the user asked for the same logic to
@@ -37,8 +37,8 @@ collect -> dedupe -> score -> enrich/detail text -> persist -> direct evaluate -
 
 Implement a shared runner and source plumbing so:
 
-1. `/career-ops builtin-scan` can run through `bb-browser site builtin/jobs`.
-2. `/career-ops indeed-scan` can run through `bb-browser site indeed/jobs`.
+1. `/auto-job builtin-scan` can run through `bb-browser site builtin/jobs`.
+2. `/auto-job indeed-scan` can run through `bb-browser site indeed/jobs`.
 3. Both commands support score-only previews, no-evaluate pipeline writes, and
    capped direct evaluations.
 4. Indeed preserves the user-provided full URL filters, especially
@@ -656,7 +656,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 
 function usage(): string {
-  return `career-ops browser-backed job-board scan
+  return `auto-job browser-backed job-board scan
 
 Usage:
   npm run builtin-scan -- [options]
@@ -1168,7 +1168,7 @@ Create `modes/indeed-scan.md` with these sections:
 
 - [ ] **Step 3: Update routing docs**
 
-In `CLAUDE.md`, add `/career-ops-indeed-scan` next to the existing scan command
+In `CLAUDE.md`, add `/auto-job-indeed-scan` next to the existing scan command
 table and add `indeed-scan` to the skill mode map.
 
 In `docs/CODEX.md`, add:
@@ -1312,13 +1312,13 @@ CODE PATH COVERAGE
 ```text
 USER FLOW COVERAGE
 ==================
-/career-ops builtin-scan
+/auto-job builtin-scan
     |
     +-- [GAP] score-only preview
     +-- [GAP] no-evaluate save/enrich
     +-- [GAP] capped direct evaluation
 
-/career-ops indeed-scan
+/auto-job indeed-scan
     |
     +-- [GAP] full URL with entry-level sc filter preserved
     +-- [GAP] score-only preview
@@ -1418,8 +1418,8 @@ fetch now has live coverage for both Built In and Indeed promoted rows.
   indeed/jobs --json` now exposes the `url` arg.
 - 2026-04-22: Updated durable routing/docs: `modes/builtin-scan.md`,
   `modes/indeed-scan.md`, `CLAUDE.md`, `docs/CODEX.md`,
-  `.claude/skills/career-ops/SKILL.md`, and
-  `.opencode/commands/career-ops-indeed-scan.md`.
+  `.claude/skills/auto-job/SKILL.md`, and
+  `.opencode/commands/auto-job-indeed-scan.md`.
 - 2026-04-22: Verification results:
   - `npm --prefix bridge run test -- src/adapters/job-board-scan-normalizer.test.ts src/adapters/newgrad-scorer.test.ts src/adapters/newgrad-source.test.ts src/adapters/newgrad-pending.test.ts src/adapters/newgrad-scan-history.test.ts`: passed, 5 files / 92 tests.
   - `node --check bb-browser/sites/indeed/jobs.js`: passed.
@@ -1476,8 +1476,8 @@ fetch now has live coverage for both Built In and Indeed promoted rows.
 
 ## Final Outcome
 
-Implemented. `/career-ops builtin-scan` now uses the shared bb-browser-backed
-runner with a legacy alias, `/career-ops indeed-scan` is routed and documented,
+Implemented. `/auto-job builtin-scan` now uses the shared bb-browser-backed
+runner with a legacy alias, `/auto-job indeed-scan` is routed and documented,
 Indeed full URL filters are preserved, and adapter rows flow through the
 existing newgrad scoring/source/pending/history contracts. Verification passed
 for focused tests, bridge typecheck, command help, live score-only smokes,

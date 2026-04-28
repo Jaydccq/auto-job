@@ -1,5 +1,5 @@
 import { mkdirSync, mkdtempSync, writeFileSync, rmSync, existsSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,7 +21,7 @@ function makeAdapter(): PipelineAdapter {
       return {
         ok: true,
         repo: {
-          rootPath: "/tmp/career-ops-test",
+          rootPath: "/tmp/auto-job-test",
           careerOpsVersion: "test",
           trackerOk: true,
           cvOk: true,
@@ -109,7 +109,7 @@ describe("dashboard routes", () => {
   let reportsDir: string;
 
   beforeEach(() => {
-    tmpRepoRoot = mkdtempSync(join(tmpdir(), "career-ops-dashboard-"));
+    tmpRepoRoot = mkdtempSync(join(tmpdir(), "auto-job-dashboard-"));
     reportsDir = join(tmpRepoRoot, "reports");
     mkdirSync(reportsDir, { recursive: true });
     writeFileSync(
@@ -133,7 +133,7 @@ describe("dashboard routes", () => {
       expect(res.statusCode).toBe(200);
       expect(res.headers["content-type"]).toMatch(/text\/html/);
       expect(res.body).toContain(
-        `<meta name="career-ops-token" content="${TOKEN}">`,
+        `<meta name="auto-job-token" content="${TOKEN}">`,
       );
     } finally {
       await fastify.close();
@@ -153,7 +153,7 @@ describe("dashboard routes", () => {
       expect(res.statusCode).toBe(200);
       expect(res.headers["content-type"]).toMatch(/text\/html/);
       expect(res.body).toContain(
-        `<meta name="career-ops-token" content="${TOKEN}">`,
+        `<meta name="auto-job-token" content="${TOKEN}">`,
       );
     } finally {
       await fastify.close();
@@ -170,7 +170,7 @@ describe("dashboard routes", () => {
       expect(res.statusCode).toBe(200);
       // Inline JS must not reference the legacy bridge port or header.
       expect(res.body).not.toContain("127.0.0.1:47329");
-      expect(res.body).not.toContain("x-career-ops-pdf-token");
+      expect(res.body).not.toContain("x-auto-job-pdf-token");
       expect(res.body).not.toContain("PDF_API_TOKEN");
     } finally {
       await fastify.close();
@@ -282,12 +282,33 @@ describe("dashboard routes", () => {
         const res = await fastify.inject({
           method: "GET",
           url: "/dashboard/api/health",
-          headers: { "x-career-ops-token": TOKEN },
+          headers: { "x-auto-job-token": TOKEN },
         });
         expect(res.statusCode).toBe(200);
         expect(res.json()).toEqual({
           ok: true,
           downloadsDir: "/tmp/test-downloads",
+        });
+      } finally {
+        await fastify.close();
+      }
+    });
+
+    it("reports Desktop as the default document save directory", async () => {
+      const { fastify } = buildServer({
+        config: makeConfig(tmpRepoRoot),
+        adapter: makeAdapter(),
+      });
+      try {
+        const res = await fastify.inject({
+          method: "GET",
+          url: "/dashboard/api/health",
+          headers: { "x-auto-job-token": TOKEN },
+        });
+        expect(res.statusCode).toBe(200);
+        expect(res.json()).toEqual({
+          ok: true,
+          downloadsDir: join(homedir(), "Desktop"),
         });
       } finally {
         await fastify.close();
@@ -327,7 +348,7 @@ describe("dashboard routes", () => {
         const res = await fastify.inject({
           method: "POST",
           url: "/dashboard/api/apply-docs/generate",
-          headers: { "x-career-ops-token": TOKEN },
+          headers: { "x-auto-job-token": TOKEN },
           payload: { role: "SWE" },
         });
         expect(res.statusCode).toBe(400);
@@ -359,7 +380,7 @@ describe("dashboard routes", () => {
         const res = await fastify.inject({
           method: "POST",
           url: "/dashboard/api/apply-docs/generate",
-          headers: { "x-career-ops-token": TOKEN },
+          headers: { "x-auto-job-token": TOKEN },
           payload: { type: "cv", company: "Acme", role: "SWE" },
         });
         expect(res.statusCode).toBe(200);
@@ -395,7 +416,7 @@ describe("dashboard routes", () => {
         type: "cv",
         filename: "cv.pdf",
         outputPath: "/tmp/x/cv.pdf",
-        savedPath: "/Users/test/Downloads/cv.pdf",
+        savedPath: "/Users/test/Desktop/cv.pdf",
       };
       const { fastify } = buildServer({
         config: makeConfig(tmpRepoRoot),
@@ -411,7 +432,7 @@ describe("dashboard routes", () => {
         const res = await fastify.inject({
           method: "POST",
           url: "/dashboard/api/apply-docs/download",
-          headers: { "x-career-ops-token": TOKEN },
+          headers: { "x-auto-job-token": TOKEN },
           payload: { id: "abc" },
         });
         expect(res.statusCode).toBe(200);
@@ -456,7 +477,7 @@ describe("dashboard routes", () => {
         const res = await fastify.inject({
           method: "POST",
           url: "/dashboard/api/apply-status",
-          headers: { "x-career-ops-token": TOKEN },
+          headers: { "x-auto-job-token": TOKEN },
           payload: { num: 7, applied: true },
         });
         expect(res.statusCode).toBe(200);
@@ -530,7 +551,7 @@ describe("dashboard routes", () => {
         const res = await fastify.inject({
           method: "POST",
           url: "/dashboard/api/full-evaluation",
-          headers: { "x-career-ops-token": TOKEN },
+          headers: { "x-auto-job-token": TOKEN },
           payload: {
             reportPath: `reports/${fixtureFilename}`,
             company: "Acme",
@@ -597,7 +618,7 @@ describe("dashboard routes", () => {
         const res = await fastify.inject({
           method: "POST",
           url: "/dashboard/api/full-evaluation/status",
-          headers: { "x-career-ops-token": TOKEN },
+          headers: { "x-auto-job-token": TOKEN },
           payload: { jobId: "job-xyz" },
         });
         expect(res.statusCode).toBe(200);

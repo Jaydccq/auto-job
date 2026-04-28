@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { execSync } from "node:child_process";
 
-const LABEL = "io.hongxi.career-ops";
+const LABEL = "io.hongxi.auto-job";
 
 try {
     const out = execSync(`launchctl list ${LABEL}`, { encoding: "utf8" });

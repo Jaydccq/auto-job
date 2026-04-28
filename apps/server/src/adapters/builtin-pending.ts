@@ -5,7 +5,7 @@ import type {
   BuiltInPendingEntry,
   BuiltInPendingResult,
   NewGradScanConfig,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 import { detectActiveSecurityClearanceRequirement } from "../lib/security-clearance.js";
 import { loadEvaluatedJobIdentities } from "./evaluated-report-urls.js";
 import { jobCompanyRoleKey, normalizeJobUrl } from "./job-identity.js";

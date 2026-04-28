@@ -436,7 +436,7 @@ async function postEnvelope(bridgeBase, token, path, payload) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-career-ops-token": token,
+      "x-auto-job-token": token,
     },
     body: JSON.stringify({
       protocol: PROTOCOL_VERSION,
@@ -454,7 +454,7 @@ async function postEnvelope(bridgeBase, token, path, payload) {
 
 async function getEnvelope(bridgeBase, token, path) {
   const res = await fetch(`${bridgeBase}${path}`, {
-    headers: { "x-career-ops-token": token },
+    headers: { "x-auto-job-token": token },
   });
   const body = await res.json();
   if (!body.ok) {

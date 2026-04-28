@@ -8,28 +8,28 @@ const MODES = {
   fake: {
     label: "fake",
     env: {
-      CAREER_OPS_BRIDGE_MODE: "fake",
+      AUTO_JOB_BRIDGE_MODE: "fake",
     },
   },
   "real-claude": {
     label: "real / claude",
     env: {
-      CAREER_OPS_BRIDGE_MODE: "real",
-      CAREER_OPS_REAL_EXECUTOR: "claude",
+      AUTO_JOB_BRIDGE_MODE: "real",
+      AUTO_JOB_REAL_EXECUTOR: "claude",
     },
   },
   "real-codex": {
     label: "real / codex",
     env: {
-      CAREER_OPS_BRIDGE_MODE: "real",
-      CAREER_OPS_REAL_EXECUTOR: "codex",
+      AUTO_JOB_BRIDGE_MODE: "real",
+      AUTO_JOB_REAL_EXECUTOR: "codex",
     },
   },
   "real-openrouter": {
     label: "real / openrouter",
     env: {
-      CAREER_OPS_BRIDGE_MODE: "real",
-      CAREER_OPS_REAL_EXECUTOR: "openrouter",
+      AUTO_JOB_BRIDGE_MODE: "real",
+      AUTO_JOB_REAL_EXECUTOR: "openrouter",
     },
   },
 };
@@ -44,14 +44,14 @@ function usage() {
 
 Mode resolution (first match wins):
   1. positional argument: ${VALID_MODES.join(" | ")}
-  2. CAREER_OPS_BACKEND env var: ${VALID_MODES.join(" | ")}
+  2. AUTO_JOB_BACKEND env var: ${VALID_MODES.join(" | ")}
   3. default: ${DEFAULT_MODE}`);
 }
 
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const positionalArg = args.find((arg) => !arg.startsWith("--"));
-const envArg = process.env.CAREER_OPS_BACKEND;
+const envArg = process.env.AUTO_JOB_BACKEND;
 
 let modeKey;
 if (positionalArg) {
@@ -63,7 +63,7 @@ if (positionalArg) {
 } else if (envArg) {
   if (!(envArg in MODES)) {
     console.error(
-      `CAREER_OPS_BACKEND must be one of: ${VALID_MODES.join(", ")} (got "${envArg}")`
+      `AUTO_JOB_BACKEND must be one of: ${VALID_MODES.join(", ")} (got "${envArg}")`
     );
     process.exit(1);
   }

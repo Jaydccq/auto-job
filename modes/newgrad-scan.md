@@ -112,7 +112,7 @@ Run artifacts:
 If browser automation is unavailable, use the extension fallback:
 
 > "Open https://www.newgrad-jobs.com/ in Chrome.
-> The career-ops panel will detect the page and show the scanner UI.
+> The auto-job panel will detect the page and show the scanner UI.
 > Click **Scan & Score** to extract and filter listings.
 > Then click **Enrich detail pages** to gather full JD data.
 > Results will be written to `data/pipeline.md`."
@@ -124,7 +124,7 @@ After the scan completes, offer:
 > "Scan complete. Enrich survivors were queued for formal evaluation and tracker
 > merge. Any completed `Evaluated` rows at `4.0/5+` will appear in Apply Now;
 > `3.5-3.95/5` rows will appear in Selective Apply. If you used
-> `--no-evaluate`, run `/career-ops pipeline` or `/career-ops batch` on the
+> `--no-evaluate`, run `/auto-job pipeline` or `/auto-job batch` on the
 > pipeline entries."
 
 ## Scoring Configuration

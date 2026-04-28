@@ -129,7 +129,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 
 function usage(): string {
-  return `career-ops browser-backed job-board scan
+  return `auto-job browser-backed job-board scan
 
 Usage:
   bun run builtin-scan -- [options]
@@ -973,7 +973,7 @@ async function postEnvelope<T>(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-career-ops-token": token,
+      "x-auto-job-token": token,
     },
     body: JSON.stringify({
       protocol: PROTOCOL_VERSION,
@@ -996,7 +996,7 @@ async function getEnvelope<T>(
   path: string,
 ): Promise<T> {
   const res = await fetch(`${bridgeBase}${path}`, {
-    headers: { "x-career-ops-token": token },
+    headers: { "x-auto-job-token": token },
   });
   const body = await res.json() as BridgeResponse<T>;
   if (!body.ok) {
@@ -1139,7 +1139,7 @@ async function runProcess(
   args: readonly string[],
   options: { allowJsonError: boolean },
 ): Promise<{ stdout: string; stderr: string }> {
-  const tempDir = await mkdtemp(join(tmpdir(), "career-ops-bb-site-"));
+  const tempDir = await mkdtemp(join(tmpdir(), "auto-job-bb-site-"));
   const stdoutPath = join(tempDir, "stdout");
   const stdoutFile = await open(stdoutPath, "w");
   let fileClosed = false;
@@ -1205,7 +1205,7 @@ async function runProcess(
 }
 
 async function runProcessToStdoutFile(command: string, args: readonly string[]): Promise<string> {
-  const tempDir = await mkdtemp(join(tmpdir(), "career-ops-bb-fetch-"));
+  const tempDir = await mkdtemp(join(tmpdir(), "auto-job-bb-fetch-"));
   const stdoutPath = join(tempDir, "stdout");
   const stdoutFile = await open(stdoutPath, "w");
   let fileClosed = false;

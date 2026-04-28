@@ -38,7 +38,7 @@ Use shell checks for file existence, key report markers, TSV column count, and a
 
 ## Progress Log
 
-- 2026-04-17: Loaded career-ops instructions, `CLAUDE.md`, cached JD, candidate CV, article digest, profile, applications tracker, scan history, and states file.
+- 2026-04-17: Loaded auto-job instructions, `CLAUDE.md`, cached JD, candidate CV, article digest, profile, applications tracker, scan history, and states file.
 - 2026-04-17: Confirmed cached JD is usable and no frontmatter is present.
 
 ## Key Decisions

@@ -1,11 +1,11 @@
-# electron-builder config for the Career Ops desktop app.
+# electron-builder config for the Auto Job desktop app.
 #
 # Personal-use, macOS-only, unsigned. See docs/CLIENT_APP.md for context.
 # Distribution to other Macs would require an Apple Developer ID and
 # notarization — explicitly out of scope.
 
-appId: io.hongxi.career-ops
-productName: Career Ops
+appId: io.hongxi.auto-job
+productName: Auto Job
 copyright: Copyright (c) 2026 Hongxi Chen
 directories:
   output: release
@@ -13,7 +13,7 @@ directories:
 
 # Files included in app.asar.
 #
-# We bundle only the compiled dist/ trees of @career-ops/* (not the
+# We bundle only the compiled dist/ trees of @auto-job/* (not the
 # .ts source) because Node in the packaged Electron app can't load
 # TypeScript without tsx. The server itself is bundled at build time
 # (esbuild -> apps/server/dist/index.js) so its fastify + transitive
@@ -24,12 +24,12 @@ files:
   - "src/settings-window.html"
   - "icons/**/*"
   - "package.json"
-  - "!node_modules/@career-ops/*/src/**/*"
-  - "!node_modules/@career-ops/*/.bridge-token"
-  - "!node_modules/@career-ops/*/**/*.test.ts"
-  - "!node_modules/@career-ops/*/**/*.test.js"
-  - "!node_modules/@career-ops/*/tsconfig*.json"
-  - "!node_modules/@career-ops/*/vitest.config.ts"
+  - "!node_modules/@auto-job/*/src/**/*"
+  - "!node_modules/@auto-job/*/.bridge-token"
+  - "!node_modules/@auto-job/*/**/*.test.ts"
+  - "!node_modules/@auto-job/*/**/*.test.js"
+  - "!node_modules/@auto-job/*/tsconfig*.json"
+  - "!node_modules/@auto-job/*/vitest.config.ts"
 
 # Ship the dashboard handler .mjs modules from the workspace `web/`
 # alongside the bundled server. The server's resolveWebDir() looks

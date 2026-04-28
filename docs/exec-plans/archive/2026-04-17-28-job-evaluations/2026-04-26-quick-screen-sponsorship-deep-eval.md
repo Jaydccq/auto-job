@@ -103,14 +103,14 @@ should continue into `deep_eval`.
 - 2026-04-26: Investigated the apparent deep-eval latency for the second Dice
   posting and JPMorganChase. The reported durations were end-to-end queue
   latency, not pure execution time. At the time of the run, the bridge default
-  evaluation concurrency was 2 (`CAREER_OPS_BRIDGE_EVAL_CONCURRENCY`, default
+  evaluation concurrency was 2 (`AUTO_JOB_BRIDGE_EVAL_CONCURRENCY`, default
   2), so the fifth and sixth queued jobs waited for earlier worker slots. Dice 2
   queued at 06:05:08.809Z, started at 06:09:04.875Z, and completed at
   06:11:00.299Z; JPMorganChase queued at 06:05:10.925Z, started at
   06:09:30.841Z, and completed at 06:11:35.345Z.
 - 2026-04-26: User requested raising the default bridge evaluation concurrency
   to 3. Updated `DEFAULT_EVAL_CONCURRENCY` in
-  `bridge/src/runtime/config.ts`; `CAREER_OPS_BRIDGE_EVAL_CONCURRENCY` can still
+  `bridge/src/runtime/config.ts`; `AUTO_JOB_BRIDGE_EVAL_CONCURRENCY` can still
   override this default when explicitly set.
 - 2026-04-26: Verified the concurrency change with `npm --prefix bridge run
   typecheck`, `npm --prefix bridge run test --

@@ -8,7 +8,7 @@ const base = "http://127.0.0.1:47319";
 const token = readFileSync(`${repoRoot}/apps/server/.bridge-token`, "utf-8").trim();
 const headers = {
   "content-type": "application/json",
-  "x-career-ops-token": token,
+  "x-auto-job-token": token,
 };
 
 const requestedLimit = Number(process.argv[2] ?? 100);

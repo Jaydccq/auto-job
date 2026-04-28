@@ -1,8 +1,8 @@
 #!/bin/zsh
 set -euo pipefail
 
-repo_root="/Users/hongxichen/Desktop/career-ops"
-label="com.career-ops.hourly-scan"
+repo_root="/Users/hongxichen/Desktop/auto-job"
+label="com.auto-job.hourly-scan"
 plist="$HOME/Library/LaunchAgents/$label.plist"
 
 mkdir -p "$HOME/Library/LaunchAgents" "$repo_root/data/automation"
@@ -19,7 +19,7 @@ cat > "$plist" <<PLIST
   <array>
     <string>/bin/zsh</string>
     <string>-lc</string>
-    <string>cd "$repo_root" &amp;&amp; export PATH="/Users/hongxichen/.bun/bin:/Users/hongxichen/.npm-global/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:\$PATH" &amp;&amp; export CAREER_OPS_SCAN_START_BRIDGE="\${CAREER_OPS_SCAN_START_BRIDGE:-1}" CAREER_OPS_SCAN_REQUIRE_BRIDGE="\${CAREER_OPS_SCAN_REQUIRE_BRIDGE:-1}" CAREER_OPS_SCAN_BRIDGE_WAIT_MS="\${CAREER_OPS_SCAN_BRIDGE_WAIT_MS:-30000}" &amp;&amp; mkdir -p "$repo_root/data/automation" &amp;&amp; if command -v bb-browser &gt;/dev/null 2&gt;&amp;1; then if ! bb-browser tab list &gt;/dev/null 2&gt;&amp;1; then bb-browser daemon shutdown &gt;/dev/null 2&gt;&amp;1 || true; bb-browser tab list &gt;/dev/null 2&gt;&amp;1 || true; fi; fi; bun run auto:hourly-scan</string>
+    <string>cd "$repo_root" &amp;&amp; export PATH="/Users/hongxichen/.bun/bin:/Users/hongxichen/.npm-global/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:\$PATH" &amp;&amp; export AUTO_JOB_SCAN_START_BRIDGE="\${AUTO_JOB_SCAN_START_BRIDGE:-1}" AUTO_JOB_SCAN_REQUIRE_BRIDGE="\${AUTO_JOB_SCAN_REQUIRE_BRIDGE:-1}" AUTO_JOB_SCAN_BRIDGE_WAIT_MS="\${AUTO_JOB_SCAN_BRIDGE_WAIT_MS:-30000}" &amp;&amp; mkdir -p "$repo_root/data/automation" &amp;&amp; if command -v bb-browser &gt;/dev/null 2&gt;&amp;1; then if ! bb-browser tab list &gt;/dev/null 2&gt;&amp;1; then bb-browser daemon shutdown &gt;/dev/null 2&gt;&amp;1 || true; bb-browser tab list &gt;/dev/null 2&gt;&amp;1 || true; fi; fi; bun run auto:hourly-scan</string>
   </array>
   <key>WorkingDirectory</key>
   <string>$repo_root</string>

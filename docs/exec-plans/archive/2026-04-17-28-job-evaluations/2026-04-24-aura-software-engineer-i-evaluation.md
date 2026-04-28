@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run `b8J1YoTll2OStrzVINMPv` requests a full A-G evaluation for Association of Universities for Research in Astronomy's `Software Engineer I` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-b8J1YoTll2OStrzVINMPv.txt`.
+Bridge batch run `b8J1YoTll2OStrzVINMPv` requests a full A-G evaluation for Association of Universities for Research in Astronomy's `Software Engineer I` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-b8J1YoTll2OStrzVINMPv.txt`.
 
 ## Goal
 

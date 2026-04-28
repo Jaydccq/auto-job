@@ -4,7 +4,7 @@
 
 Bridge batch run `dJzgfIuWh_wfjTdevIjxf` requested a repository-backed evaluation for Salesforce's Software Engineering AMTS college graduate posting.
 
-Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-dJzgfIuWh_wfjTdevIjxf.txt`.
+Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-dJzgfIuWh_wfjTdevIjxf.txt`.
 
 ## Goal
 

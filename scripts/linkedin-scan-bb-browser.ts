@@ -203,7 +203,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 
 function usage(): string {
-  return `career-ops LinkedIn scan via bb-browser
+  return `auto-job LinkedIn scan via bb-browser
 
 Usage:
   bun run linkedin-scan -- --url "<LinkedIn Jobs search URL>" [options]
@@ -1367,7 +1367,7 @@ async function readLinkedInGuestJobDetail(url: string): Promise<ExternalAtsDetai
     const response = await fetch(guestUrl, {
       headers: {
         "accept": "text/html,application/xhtml+xml",
-        "user-agent": "Mozilla/5.0 career-ops-linkedin-scan",
+        "user-agent": "Mozilla/5.0 auto-job-linkedin-scan",
       },
     });
     const html = await response.text();
@@ -2106,7 +2106,7 @@ async function postEnvelope<T>(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-career-ops-token": token,
+      "x-auto-job-token": token,
     },
     body: JSON.stringify({
       protocol: PROTOCOL_VERSION,
@@ -2129,7 +2129,7 @@ async function getEnvelope<T>(
   path: string,
 ): Promise<T> {
   const res = await fetch(`${bridgeBase}${path}`, {
-    headers: { "x-career-ops-token": token },
+    headers: { "x-auto-job-token": token },
   });
   const body = await res.json() as BridgeResponse<T>;
   if (!body.ok) {

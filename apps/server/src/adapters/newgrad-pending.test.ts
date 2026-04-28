@@ -45,7 +45,7 @@ describe("readNewGradPendingEntries", () => {
     writeFileSync(
       join(repoRoot, "data/applications.md"),
       [
-        "# Career-Ops Applications Tracker",
+        "# Auto-Job Applications Tracker",
         "",
         "| # | Date | Company | Role | Score | Status | PDF | Report | Notes |",
         "|---|------|---------|------|-------|--------|-----|--------|-------|",
@@ -97,7 +97,7 @@ describe("readNewGradPendingEntries", () => {
     writeFileSync(
       join(repoRoot, "data/applications.md"),
       [
-        "# Career-Ops Applications Tracker",
+        "# Auto-Job Applications Tracker",
         "",
         "| # | Date | Company | Role | Score | Status | PDF | Report | Notes |",
         "|---|------|---------|------|-------|--------|-----|--------|-------|",
@@ -581,7 +581,7 @@ describe("readNewGradPendingEntries", () => {
 });
 
 function makeRepoRoot(): string {
-  const repoRoot = mkdtempSync(join(tmpdir(), "career-ops-newgrad-pending-"));
+  const repoRoot = mkdtempSync(join(tmpdir(), "auto-job-newgrad-pending-"));
   tempDirs.push(repoRoot);
   mkdirSync(join(repoRoot, "data"), { recursive: true });
   mkdirSync(join(repoRoot, "jds"), { recursive: true });

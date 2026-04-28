@@ -39,7 +39,7 @@ Create a real markdown evaluation report and tracker-addition TSV for the Remote
 
 ## Progress Log
 
-- 2026-04-17: Read `CLAUDE.md`, career-ops router, local JD cache, `cv.md`, `article-digest.md`, `config/profile.yml`, `data/applications.md`, `data/scan-history.tsv`, and `templates/states.yml`.
+- 2026-04-17: Read `CLAUDE.md`, auto-job router, local JD cache, `cv.md`, `article-digest.md`, `config/profile.yml`, `data/applications.md`, `data/scan-history.tsv`, and `templates/states.yml`.
 - 2026-04-17: Found prior RemoteHunter scan appearances, including this AI Systems Engineer title on 2026-04-16.
 - 2026-04-17: Calculated next tracker number as `175`.
 - 2026-04-17: Completed report and tracker addition; PDF intentionally skipped.

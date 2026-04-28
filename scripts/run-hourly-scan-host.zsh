@@ -1,13 +1,13 @@
 #!/bin/zsh
 set -euo pipefail
 
-repo_root="/Users/hongxichen/Desktop/career-ops"
+repo_root="/Users/hongxichen/Desktop/auto-job"
 cd "$repo_root"
 
 export PATH="/Users/hongxichen/.bun/bin:/Users/hongxichen/.npm-global/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
-export CAREER_OPS_SCAN_START_BRIDGE="${CAREER_OPS_SCAN_START_BRIDGE:-1}"
-export CAREER_OPS_SCAN_REQUIRE_BRIDGE="${CAREER_OPS_SCAN_REQUIRE_BRIDGE:-1}"
-export CAREER_OPS_SCAN_BRIDGE_WAIT_MS="${CAREER_OPS_SCAN_BRIDGE_WAIT_MS:-30000}"
+export AUTO_JOB_SCAN_START_BRIDGE="${AUTO_JOB_SCAN_START_BRIDGE:-1}"
+export AUTO_JOB_SCAN_REQUIRE_BRIDGE="${AUTO_JOB_SCAN_REQUIRE_BRIDGE:-1}"
+export AUTO_JOB_SCAN_BRIDGE_WAIT_MS="${AUTO_JOB_SCAN_BRIDGE_WAIT_MS:-30000}"
 
 mkdir -p "$repo_root/data/automation"
 

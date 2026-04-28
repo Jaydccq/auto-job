@@ -1,6 +1,6 @@
-# Career-Ops Client App
+# Auto-Job Client App
 
-The career-ops bridge + dashboard runs as a single local process. To make
+The auto-job bridge + dashboard runs as a single local process. To make
 it start automatically at login (so you never need to open a terminal),
 install the macOS LaunchAgent:
 
@@ -10,7 +10,7 @@ install the macOS LaunchAgent:
 bun run app:install
 ```
 
-This creates `~/Library/LaunchAgents/io.hongxi.career-ops.plist` and loads
+This creates `~/Library/LaunchAgents/io.hongxi.auto-job.plist` and loads
 it via `launchctl`. The server starts immediately and re-launches at login.
 
 ## Day-to-day commands
@@ -25,7 +25,7 @@ bun run app:uninstall    # Remove the LaunchAgent (stops it now + at next login)
 
 ## Where things live
 
-- LaunchAgent plist: `~/Library/LaunchAgents/io.hongxi.career-ops.plist`
+- LaunchAgent plist: `~/Library/LaunchAgents/io.hongxi.auto-job.plist`
 - Logs: `~/Library/Logs/CareerOps/server.out.log` (stdout), `server.err.log` (stderr)
 - Auth token: `apps/server/.bridge-token` (random per-machine)
 - Default port: `127.0.0.1:47319`
@@ -33,7 +33,7 @@ bun run app:uninstall    # Remove the LaunchAgent (stops it now + at next login)
 
 ## Default backend
 
-The LaunchAgent runs with `CAREER_OPS_BACKEND=real-codex` (Codex CLI).
+The LaunchAgent runs with `AUTO_JOB_BACKEND=real-codex` (Codex CLI).
 Switch to OpenRouter or Claude CLI by editing the plist's
 `EnvironmentVariables` block, then `bun run app:restart`.
 
@@ -67,8 +67,8 @@ bun run --cwd apps/desktop package
 ```
 
 This produces:
-- `apps/desktop/release/mac-arm64/Career Ops.app` (the bundle)
-- `apps/desktop/release/Career Ops-0.1.0-phase1-arm64.dmg` (drag installer)
+- `apps/desktop/release/mac-arm64/Auto Job.app` (the bundle)
+- `apps/desktop/release/Auto Job-1.3.0-arm64.dmg` (drag installer)
 
 For a faster iteration loop (skip DMG, just the .app):
 
@@ -76,10 +76,24 @@ For a faster iteration loop (skip DMG, just the .app):
 bun run --cwd apps/desktop package:dir
 ```
 
-Drag `Career Ops.app` to `/Applications/`. The bundle is unsigned, so
+Drag `Auto Job.app` to `/Applications/`. The bundle is unsigned, so
 macOS Gatekeeper will warn the first time — right-click the .app and
 choose **Open** to bypass. To run on other Macs, you'd need an Apple
 Developer ID and signing/notarization (out of scope here).
+
+Apply Next document save buttons write generated PDFs to `~/Desktop` by
+default. The generated originals remain under `output/`.
+
+### GitHub release
+
+Use the repo `VERSION` file as the release tag source. After rebuilding:
+
+```bash
+gh release create "v$(cat VERSION)" \
+  "apps/desktop/release/Auto Job-$(cat VERSION)-arm64.dmg" \
+  --title "Auto Job v$(cat VERSION)" \
+  --notes "Unsigned macOS arm64 desktop build. Generated application documents save to ~/Desktop by default."
+```
 
 ### Updating the bundled app
 
@@ -89,13 +103,13 @@ with the same command and replace the .app in `/Applications/`.
 
 ### Configuring the repo root
 
-The packaged app needs to know where your career-ops checkout lives so
+The packaged app needs to know where your auto-job checkout lives so
 the in-process server can read `cv.md`, `data/applications.md`, etc.
-The launcher first checks `CAREER_OPS_REPO_ROOT`, then falls back to
-`~/Desktop/career-ops`. If your checkout is elsewhere, launch with:
+The launcher first checks `AUTO_JOB_REPO_ROOT`, then falls back to
+`~/Desktop/auto-job`. If your checkout is elsewhere, launch with:
 
 ```bash
-CAREER_OPS_REPO_ROOT=$HOME/path/to/career-ops open "/Applications/Career Ops.app"
+AUTO_JOB_REPO_ROOT=$HOME/path/to/auto-job open "/Applications/Auto Job.app"
 ```
 
 You can also set this once at the user level via `launchctl setenv` so
@@ -104,7 +118,7 @@ double-clicking the .app from Finder picks it up.
 ### Logs
 
 The packaged app mirrors `console.log` / `console.error` to
-`~/Library/Logs/Career Ops/main.log`. The tray menu's "View Logs" item
+`~/Library/Logs/Auto Job/main.log`. The tray menu's "View Logs" item
 opens the same directory. Use this when debugging launch failures —
 Electron's stdout is otherwise captured by macOS's window-server and
 hard to read.

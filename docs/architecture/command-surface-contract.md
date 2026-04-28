@@ -4,7 +4,7 @@
 
 The auto-job runtime exposes exactly two command surfaces:
 
-1. **`.claude/skills/career-ops/SKILL.md`** — the in-process Claude Code skill that routes user intent to a mode file under `modes/`.
+1. **`skills/auto-job/SKILL.md`** — the agent-agnostic repository skill that routes user intent to a mode file under `modes/`. Runtime-specific mirrors such as `.claude/skills/auto-job/SKILL.md` must stay byte-for-byte synced.
 2. **Root `package.json` scripts** — Bun-runnable entry points that drive the local Fastify server, the Chrome extension build, the Electron desktop app, scanners, and the verification gate.
 
 Everything else is out of scope. The runtime no longer ships, advertises, or supports alternative command surfaces.
@@ -15,7 +15,7 @@ The following compatibility shims and legacy modes were removed during the fork-
 
 | Removed | Reason |
 |---------|--------|
-| `.opencode/commands/*` | OpenCode is not the active runtime; every command duplicated `.claude/skills/career-ops/SKILL.md` and drifted on every change. |
+| `.opencode/commands/*` | OpenCode is not the active runtime; every command duplicated the repository skill and drifted on every change. |
 | `.gemini/commands/*` and `GEMINI.md` | Same as above for Gemini CLI. |
 | `modes/{apply,batch,deep,interview-prep,latex,ofertas,patterns,pdf,pipeline,project,tracker,training}.md` | Either replaced by direct skill behavior or unused; see `docs/architecture/origin-and-ownership.md`. |
 | `gemini-eval.mjs`, `generate-latex.mjs`, `update-system.mjs` | Provider-specific or fork-update tooling that does not match the owned runtime. |
@@ -34,7 +34,7 @@ Active modes live under `modes/` and are limited to behaviors the local server a
 
 Adding a new mode requires:
 
-1. A skill route in `.claude/skills/career-ops/SKILL.md`.
+1. A skill route in `skills/auto-job/SKILL.md`, with runtime mirrors kept in sync by `bun run verify:skills`.
 2. A consumer in `apps/server/src/` (or a documented manual flow).
 3. An entry in this contract.
 
@@ -49,4 +49,5 @@ No command surface may submit an application, click Apply, click Next, or click 
 ```bash
 bun run --cwd apps/server vitest run src/adapters/command-surface-contract.test.ts
 bun run verify:repo-guard
+bun run verify:skills
 ```

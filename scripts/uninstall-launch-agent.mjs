@@ -4,7 +4,7 @@ import { existsSync, unlinkSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const LABEL = "io.hongxi.career-ops";
+const LABEL = "io.hongxi.auto-job";
 const TARGET = join(homedir(), "Library", "LaunchAgents", `${LABEL}.plist`);
 
 if (!existsSync(TARGET)) {

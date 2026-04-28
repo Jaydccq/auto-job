@@ -1,4 +1,4 @@
-import type { NewGradRow } from "@career-ops/shared";
+import type { NewGradRow } from "@auto-job/shared";
 
 type AdapterJob = Record<string, unknown>;
 

@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run `BW827sOOOrDmMVpSJwvL5` requests report `290` for Bayview Asset Management's Data Operations Analyst role. The primary JD cache is `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-BW827sOOOrDmMVpSJwvL5.txt`; the repository also contains a richer local JD cache at `jds/bayview-asset-management-llc-a3e0d769.txt`.
+Bridge batch run `BW827sOOOrDmMVpSJwvL5` requests report `290` for Bayview Asset Management's Data Operations Analyst role. The primary JD cache is `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-BW827sOOOrDmMVpSJwvL5.txt`; the repository also contains a richer local JD cache at `jds/bayview-asset-management-llc-a3e0d769.txt`.
 
 ## Goal
 

@@ -1,9 +1,13 @@
 ---
-name: career-ops
-description: Local-first AI job-search runtime — evaluate offers, generate CVs, scan portals, scan Gmail signals, track applications, draft outreach. Use whenever the user pastes a JD, a posting URL, or asks for tracker / scan / followup / cover-letter / interview-prep work.
+name: auto-job
+description: Agent-agnostic local Auto-Job routing skill for Codex, Claude Code, and compatible assistants — evaluate offers, generate CVs, scan portals, scan Gmail signals, track applications, draft outreach. Use whenever the user pastes a JD, a posting URL, or asks for tracker / scan / followup / cover-letter / interview-prep work.
 ---
 
-# career-ops skill
+# auto-job skill
+
+This is the repository-local, agent-agnostic skill source. Runtime-specific
+mirrors such as `.claude/skills/auto-job/SKILL.md` must stay byte-for-byte
+synced with this file; `bun run verify:skills` enforces that.
 
 Routes the user's intent into the right mode under `modes/`. Always read
 `modes/_shared.md` before doing anything substantive — it owns the rubric,

@@ -15,7 +15,7 @@ The extension-facing import is:
 
 - `apps/extension/src/contracts/bridge-wire.ts`
 
-`bridge-wire.ts` re-exports `@career-ops/shared`; it should not define a local
+`bridge-wire.ts` re-exports `@auto-job/shared`; it should not define a local
 copy of endpoint paths, auth headers, or response shapes. The compatibility
 test is `apps/extension/test/bridge-wire-contract.test.ts`. The background
 bridge client must derive HTTP paths from the shared `ENDPOINTS` registry.

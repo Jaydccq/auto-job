@@ -30,17 +30,17 @@ export function parseRefreshCommand(raw, { useDefault = true } = {}) {
     parsed = JSON.parse(raw);
   } catch {
     throw new Error(
-      'CAREER_OPS_GMAIL_REFRESH_COMMAND must be a JSON array, for example ["node","scripts/gmail-oauth-refresh.mjs"].'
+      'AUTO_JOB_GMAIL_REFRESH_COMMAND must be a JSON array, for example ["node","scripts/gmail-oauth-refresh.mjs"].'
     );
   }
 
   if (!Array.isArray(parsed) || parsed.length === 0) {
-    throw new Error('CAREER_OPS_GMAIL_REFRESH_COMMAND must contain at least one command item.');
+    throw new Error('AUTO_JOB_GMAIL_REFRESH_COMMAND must contain at least one command item.');
   }
 
   const command = parsed.map((item) => String(item).trim());
   if (command.some((item) => item.length === 0)) {
-    throw new Error('CAREER_OPS_GMAIL_REFRESH_COMMAND cannot contain empty command items.');
+    throw new Error('AUTO_JOB_GMAIL_REFRESH_COMMAND cannot contain empty command items.');
   }
   return command;
 }
@@ -109,7 +109,7 @@ export function runGmailRefresh({
   const signalSummary = summarizeGmailSignals(signalsPath);
   const base = { attemptedAt, trigger };
 
-  if (env.CAREER_OPS_GMAIL_REFRESH === '0' || env.CAREER_OPS_DASHBOARD_REFRESH_GMAIL === '0') {
+  if (env.AUTO_JOB_GMAIL_REFRESH === '0' || env.AUTO_JOB_DASHBOARD_REFRESH_GMAIL === '0') {
     const status = {
       ...base,
       status: 'skipped',
@@ -122,7 +122,7 @@ export function runGmailRefresh({
 
   let command;
   try {
-    command = parseRefreshCommand(env.CAREER_OPS_GMAIL_REFRESH_COMMAND);
+    command = parseRefreshCommand(env.AUTO_JOB_GMAIL_REFRESH_COMMAND);
   } catch (error) {
     const status = failedStatus(base, error.message, signalSummary);
     writeStatus(status, statusPath);
@@ -133,14 +133,14 @@ export function runGmailRefresh({
     const status = {
       ...base,
       status: 'skipped',
-      message: 'No standalone Gmail refresh command configured; run /career-ops gmail-scan inside Codex or configure CAREER_OPS_GMAIL_REFRESH_COMMAND.',
+      message: 'No standalone Gmail refresh command configured; run /auto-job gmail-scan inside Codex or configure AUTO_JOB_GMAIL_REFRESH_COMMAND.',
       signalSummary,
     };
     writeStatus(status, statusPath);
     return status;
   }
 
-  const timeoutMs = Number.parseInt(env.CAREER_OPS_GMAIL_REFRESH_TIMEOUT_MS || '', 10) || DEFAULT_TIMEOUT_MS;
+  const timeoutMs = Number.parseInt(env.AUTO_JOB_GMAIL_REFRESH_TIMEOUT_MS || '', 10) || DEFAULT_TIMEOUT_MS;
   const result = spawnSync(command[0], command.slice(1), {
     cwd,
     env,

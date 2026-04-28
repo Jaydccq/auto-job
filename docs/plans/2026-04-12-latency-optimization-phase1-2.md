@@ -32,10 +32,10 @@ Each reviewer issue is addressed by a specific task below.
 
 **Step 1:** Create worktree off `main` (NOT off `feat/cover-letter-generation` — this is independent infra work).
 
-Run: `git worktree add ../career-ops-latency -b feat/latency-phase1-2 main`
-Expected: new worktree at `../career-ops-latency`, on branch `feat/latency-phase1-2`.
+Run: `git worktree add ../auto-job-latency -b feat/latency-phase1-2 main`
+Expected: new worktree at `../auto-job-latency`, on branch `feat/latency-phase1-2`.
 
-**Step 2:** `cd ../career-ops-latency && bun install` (runs in root). Verify tests pass on clean baseline.
+**Step 2:** `cd ../auto-job-latency && bun install` (runs in root). Verify tests pass on clean baseline.
 
 Run: `bun test`
 Expected: all existing tests pass (green baseline).

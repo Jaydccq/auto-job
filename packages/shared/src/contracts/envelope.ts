@@ -1,5 +1,5 @@
 /**
- * envelope.ts — shared request/response envelope for the career-ops bridge.
+ * envelope.ts — shared request/response envelope for the auto-job bridge.
  *
  * CONTRACTS ONLY. No runtime code. Imported by:
  *   • apps/server/src/*    — the HTTP server

@@ -124,18 +124,18 @@ Boot the bridge in fake mode and test:
 
 ```bash
 # tracker (should return empty rows for fake adapter)
-curl -s -X POST -H "x-career-ops-token: $TOKEN" -H "Content-Type: application/json" \
+curl -s -X POST -H "x-auto-job-token: $TOKEN" -H "Content-Type: application/json" \
   -d '{"protocol":"1.0.0","requestId":"t1","clientTimestamp":"...","payload":{"limit":5}}' \
   http://127.0.0.1:47319/v1/tracker
 
 # report (should return 404 for fake adapter)
-curl -s -H "x-career-ops-token: $TOKEN" http://127.0.0.1:47319/v1/reports/1
+curl -s -H "x-auto-job-token: $TOKEN" http://127.0.0.1:47319/v1/reports/1
 
 # jobs list
-curl -s -H "x-career-ops-token: $TOKEN" http://127.0.0.1:47319/v1/jobs
+curl -s -H "x-auto-job-token: $TOKEN" http://127.0.0.1:47319/v1/jobs
 
 # merge (dry run)
-curl -s -X POST -H "x-career-ops-token: $TOKEN" -H "Content-Type: application/json" \
+curl -s -X POST -H "x-auto-job-token: $TOKEN" -H "Content-Type: application/json" \
   -d '{"protocol":"1.0.0","requestId":"m1","clientTimestamp":"...","payload":{"dryRun":true}}' \
   http://127.0.0.1:47319/v1/tracker/merge
 ```
@@ -483,7 +483,7 @@ git commit -m "feat(extension): add offline banner and evaluating-on-reopen stat
 **Step 1: Typecheck both projects**
 
 ```bash
-cd career-ops/bridge && bunx tsc --noEmit && echo "bridge OK"
+cd auto-job/bridge && bunx tsc --noEmit && echo "bridge OK"
 cd ../extension && bunx tsc --noEmit && echo "extension OK"
 ```
 
@@ -536,7 +536,7 @@ Manual steps:
 **Step 5: Document unproven items**
 
 Record what remains unproven:
-- Real adapter with `CAREER_OPS_BRIDGE_MODE=real` exercising `readReport` and `readTrackerTail` against actual `reports/` and `data/applications.md`
+- Real adapter with `AUTO_JOB_BRIDGE_MODE=real` exercising `readReport` and `readTrackerTail` against actual `reports/` and `data/applications.md`
 - Health polling lifecycle under Chrome MV3 service worker eviction
 - Recent jobs list with many rows (pagination not implemented — cap at 20)
 - Report content rendering in the popup (Phase 3 only returns markdown, not rendered HTML)
@@ -562,4 +562,4 @@ git commit -m "feat: complete Phase 3 — tracker, reports, merge, health pollin
 | 6 | Offline banner | — | dedicated UI state for bridge-not-reachable |
 | 7 | Reopen recovery | — | popup checks lastJobId on init, resubscribes or shows cached result |
 
-All Phase 2 functionality is preserved. No changes to contracts (the types were already declared in Phase 1). No changes to existing career-ops files.
+All Phase 2 functionality is preserved. No changes to contracts (the types were already declared in Phase 1). No changes to existing auto-job files.

@@ -7,6 +7,7 @@
     "doctor": "node doctor.mjs",
     "verify": "node verify-pipeline.mjs",
     "verify:repo-guard": "node scripts/verify-repo-guard.mjs",
+    "verify:skills": "node scripts/verify-skills-sync.mjs",
     "normalize": "node normalize-statuses.mjs",
     "dedup": "node dedup-tracker.mjs",
     "merge": "node merge-tracker.mjs",
@@ -22,7 +23,7 @@
     "linkedin-scan": "./apps/server/node_modules/.bin/tsx scripts/linkedin-scan-bb-browser.ts",
     "indeed-scan": "./apps/server/node_modules/.bin/tsx scripts/job-board-scan-bb-browser.ts --source indeed",
     "auto:hourly-scan": "node scripts/hourly-job-scan.mjs",
-    "auto:hourly-scan:dry": "CAREER_OPS_SCAN_DRY_RUN=1 node scripts/hourly-job-scan.mjs",
+    "auto:hourly-scan:dry": "AUTO_JOB_SCAN_DRY_RUN=1 node scripts/hourly-job-scan.mjs",
     "pending:warm-cache": "node scripts/warm-legacy-pending-cache.mjs",
     "gmail:auth": "node scripts/gmail-oauth-refresh.mjs auth",
     "gmail:scan": "node scripts/gmail-oauth-refresh.mjs scan",
@@ -38,7 +39,7 @@
     "app:status": "node scripts/app-status.mjs",
     "app:logs": "node scripts/app-logs.mjs",
     "app:logs:err": "node scripts/app-logs.mjs --err",
-    "app:restart": "launchctl kickstart -k gui/$(id -u)/io.hongxi.career-ops"
+    "app:restart": "launchctl kickstart -k gui/$(id -u)/io.hongxi.auto-job"
   },
   "keywords": [
     "job-search",

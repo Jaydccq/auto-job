@@ -192,7 +192,7 @@ const MARKETING_NOISE_PATTERNS = [
 ];
 
 function usage() {
-  return `career-ops Gmail OAuth scanner
+  return `auto-job Gmail OAuth scanner
 
 Usage:
   bun run gmail:auth
@@ -389,7 +389,7 @@ async function runAuth() {
         return;
       }
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      res.end('<p>Gmail authorization complete. You can close this tab and return to Career-Ops.</p>');
+      res.end('<p>Gmail authorization complete. You can close this tab and return to Auto-Job.</p>');
       resolveCode(callback.code);
     });
   }).finally(() => server.close());

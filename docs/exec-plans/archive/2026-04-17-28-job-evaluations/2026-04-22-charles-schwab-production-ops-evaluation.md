@@ -4,7 +4,7 @@
 
 Bridge batch run `LcLsEwskt7k6PkHk9Di_U` requested a repository-backed evaluation for Charles Schwab's Production Operations Developer posting.
 
-Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-LcLsEwskt7k6PkHk9Di_U.txt`.
+Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-LcLsEwskt7k6PkHk9Di_U.txt`.
 
 ## Goal
 

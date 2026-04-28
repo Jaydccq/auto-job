@@ -1,8 +1,8 @@
-# Career-Ops Architecture Independence Plan
+# Auto-Job Architecture Independence Plan
 
 ## Background
 
-This repository started as a fork of `santifer/career-ops`, but the current
+This repository started as a fork of `santifer/auto-job`, but the current
 working product is Hongxi's local job-search operating system. The retained
 workflow is now centered on:
 
@@ -16,7 +16,7 @@ The repo still carries upstream-oriented identity and update surfaces:
 
 - `package.json` still names the original author, homepage, and repository.
 - `update-system.mjs` still fetches system files from
-  `https://github.com/santifer/career-ops.git`.
+  `https://github.com/santifer/auto-job.git`.
 - `CLAUDE.md` still opens with upstream origin and onboarding material.
 - `DATA_CONTRACT.md` still frames `System Layer` files as safe upstream update
   targets.
@@ -110,7 +110,7 @@ Out of scope for this architecture migration:
 - Whether to keep the `upstream` git remote. Recommendation: keep it temporarily
   as a read-only reference during migration, then remove only after no scripts or
   docs depend on it.
-- Whether project renaming should remain `career-ops` or become a new product
+- Whether project renaming should remain `auto-job` or become a new product
   name. Recommendation: defer naming until the architecture boundary is stable;
   metadata can still move from upstream ownership to Hongxi ownership now.
 
@@ -325,7 +325,7 @@ Options:
   Completeness: 9/10. Human: about 0.5 day. Codex: about 30 minutes.
   Risk: low; clear independence.
 - 1B. Keep `update-system.mjs` but make it no-op unless
-  `CAREER_OPS_ALLOW_UPSTREAM_UPDATE=1`.
+  `AUTO_JOB_ALLOW_UPSTREAM_UPDATE=1`.
   Completeness: 7/10. Human: about 0.5 day. Codex: about 20 minutes.
   Risk: medium; upstream path remains in product.
 - 1C. Leave updater unchanged.
@@ -338,8 +338,9 @@ Chosen plan: 1A, with license/attribution retained separately.
 `.claude`, `.opencode`, `.gemini`, root scripts, bridge APIs, and extension code
 all advertise workflow behavior. That creates drift when scan/evaluate changes.
 
-Recommendation: make root `package.json` and `.claude/skills/career-ops/SKILL.md`
-the primary command map, then remove or clearly mark secondary frontends.
+Recommendation: make root `package.json` and `skills/auto-job/SKILL.md`
+the primary command map, then keep runtime-specific skill mirrors mechanically
+synced and remove or clearly mark secondary frontends.
 
 Chosen plan:
 
@@ -469,7 +470,7 @@ exceptions are reviewed rather than accidental.
 
 | Phase | Exit criteria | Required verification | Stop condition |
 |-------|---------------|-----------------------|----------------|
-| 1. Ownership/guards | live upstream updater removed or disabled, metadata owned by Hongxi, attribution preserved | `node --check` for changed scripts, upstream guard, `bun run verify` if guard is wired into verify | any default command can still fetch from `santifer/career-ops` |
+| 1. Ownership/guards | live upstream updater removed or disabled, metadata owned by Hongxi, attribution preserved | `node --check` for changed scripts, upstream guard, `bun run verify` if guard is wired into verify | any default command can still fetch from `santifer/auto-job` |
 | 2. Plan consolidation | active plans reduced to current workstreams, summaries preserve decisions and verification | plan inventory before/after, spot-check summaries, `git diff --check` | uncertain whether a completed plan contains unresolved work |
 | 3. Scanner boundary | lifecycle doc exists, provider fixtures cover NewGrad/JobRight/LinkedIn/Built In/Indeed identities | focused bridge adapter tests, score-only smoke for touched scanner when feasible | extraction changes alter default evaluate behavior without tests |
 | 4. Evaluation contract | input/report/tracker schemas documented and fixture-tested | bridge tests, malformed-output fixtures, fake bridge evaluation smoke | prompt/template edits happen before parser fixtures exist |
@@ -506,7 +507,7 @@ change scanner/evaluator behavior.
    - optional `config/owned-reference-allowlist.yml` if a plain inline allowlist
      would be too opaque
    - wire it into `verify-pipeline.mjs`
-   Verify: adding a fake live `santifer/career-ops` reference to a checked
+   Verify: adding a fake live `santifer/auto-job` reference to a checked
    runtime/doc path fails locally, then removing it passes.
 5. Update this plan's progress log and final outcome.
    Verify: `git diff --check`.
@@ -541,7 +542,7 @@ CODE PATH COVERAGE
 [+] Command routing
     |
     +-- [GAP] package scripts for retained workflow still exist
-    +-- [GAP] career-ops skill routes retained scan/eval/pdf/dashboard modes
+    +-- [GAP] auto-job skill routes retained scan/eval/pdf/dashboard modes
     +-- [GAP] removed/deferred frontends are not advertised as active
 
 [+] Scanner lifecycle
@@ -796,8 +797,8 @@ bun run indeed-scan -- --score-only --limit 10 --pages 1
 Targeted bridge checks when evaluation code changes:
 
 ```bash
-CAREER_OPS_BACKEND=fake bun run server
-curl -s -H "x-career-ops-token: $(cat bridge/.bridge-token)" \
+AUTO_JOB_BACKEND=fake bun run server
+curl -s -H "x-auto-job-token: $(cat bridge/.bridge-token)" \
   http://127.0.0.1:47319/v1/health
 ```
 
@@ -886,8 +887,8 @@ handled in this plan:
   existing prune audit, git remotes, and recent commit history.
 - 2026-04-27: Confirmed current branch is `main`; worktree has unrelated
   bridge/extension modifications and this plan does not touch them.
-- 2026-04-27: Confirmed `origin` points to `Jaydccq/career-ops` while
-  `upstream` still points to `santifer/career-ops`.
+- 2026-04-27: Confirmed `origin` points to `Jaydccq/auto-job` while
+  `upstream` still points to `santifer/auto-job`.
 - 2026-04-27: Confirmed no gstack design doc exists for this branch; proceeding
   with a repository-grounded standard architecture plan.
 - 2026-04-27: Expanded the plan with module boundaries, phase dependency graph,
@@ -915,7 +916,7 @@ handled in this plan:
   count is now 22, down from 129 before consolidation.
 - 2026-04-28: Hardened Phase 5 by expanding the shared bridge `ENDPOINTS`
   registry to cover every HTTP path used by the extension bridge client and by
-  changing the extension to derive those paths from `@career-ops/shared`.
+  changing the extension to derive those paths from `@auto-job/shared`.
 - 2026-04-28: Completed Phase 6 as a keep-and-constrain decision: retained
   `.gemini/`, `.opencode/`, legacy modes, and LaTeX export as compatibility or
   optional surfaces; added `docs/architecture/command-surface-contract.md` and
@@ -930,8 +931,8 @@ handled in this plan:
   5s timeout under the full parallel suite, then both passed when rerun directly
   in `src/server.test.ts` and `src/routes/dashboard.test.ts`.
 - 2026-04-28: Started Phase 1 ownership unlinking by changing the main Git
-  remote from `Jaydccq/career-ops` to `Jaydccq/jobseeker`, removing the
-  `santifer/career-ops` upstream remote, pushing `main` to the new origin, and
+  remote from `Jaydccq/auto-job` to `Jaydccq/jobseeker`, removing the
+  `santifer/auto-job` upstream remote, pushing `main` to the new origin, and
   updating root `package.json` repository metadata. The nested `bb-browser`
   fork remotes were intentionally left unchanged.
 - 2026-04-28: Audited current completion state. Phase 2-7 evidence is present
@@ -969,6 +970,11 @@ handled in this plan:
   generated/archive or nested `bb-browser` surfaces; `bun run ext:build`, the
   server dry-run, `bun run verify`, `bun run --cwd apps/desktop build:server`,
   `bun run verify:repo-guard`, syntax checks, and `git diff --check` passed.
+- 2026-04-28: Added repository-local portable skills under `skills/`, kept
+  `.claude/skills/` as a byte-for-byte runtime mirror, and wired
+  `bun run verify:skills` into the default verification pipeline. This closes
+  the remaining command-map coupling to Claude-specific paths while preserving
+  Claude Code compatibility.
 
 ## Current Audit Findings
 
@@ -979,7 +985,7 @@ The 2026-04-28 blockers below have been addressed in the current patch:
   `docs/architecture/origin-and-ownership.md` did not exist.
 - Phase 1 Step 3 was open: `package.json` still exposed `update:check`,
   `update`, and `rollback`; `update-system.mjs` still fetches from
-  `https://github.com/santifer/career-ops.git`; `CLAUDE.md`, `GEMINI.md`,
+  `https://github.com/santifer/auto-job.git`; `CLAUDE.md`, `GEMINI.md`,
   `DATA_CONTRACT.md`, and `docs/SCRIPTS.md` still documented upstream update
   behavior.
 - Phase 1 Step 4 was open: `verify-pipeline.mjs` had no upstream-reference

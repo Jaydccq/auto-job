@@ -4,7 +4,7 @@
 Address 4 reviewer issues (measurement rigor, fail-fast bias, fixture coverage, attribution) in the Phase 1+2 latency eng-review plan BEFORE implementation, then produce a revised plan that is safe to execute.
 
 ## Context
-- Source plan: `~/.gstack/projects/Jaydccq-career-ops/hongxichen-feat-cover-letter-generation-eng-review-test-plan-20260412-152343.md`
+- Source plan: `~/.gstack/projects/Jaydccq-auto-job/hongxichen-feat-cover-letter-generation-eng-review-test-plan-20260412-152343.md`
 - Deferred items: `TODOS.md`
 - Branch: `jd-extension-work` (sibling to `feat/cover-letter-generation`)
 - Scope: extension-side JD_MIN_CHARS gate + bridge reasoning/search env toggles + pre-bundled context file + eval harness

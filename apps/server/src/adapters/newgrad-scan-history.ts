@@ -7,7 +7,7 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 
-import type { NewGradRow } from "@career-ops/shared";
+import type { NewGradRow } from "@auto-job/shared";
 import { loadEvaluatedJobIdentities } from "./evaluated-report-urls.js";
 import { jobCompanyRoleKey, normalizeJobUrl } from "./job-identity.js";
 import { parsePostedAgo } from "./newgrad-scorer.js";

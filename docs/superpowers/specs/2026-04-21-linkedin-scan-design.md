@@ -2,7 +2,7 @@
 
 ## Background
 
-The user wants a `/career-ops linkedin-scan` mode that searches LinkedIn Jobs
+The user wants a `/auto-job linkedin-scan` mode that searches LinkedIn Jobs
 using the supplied 24-hour job-search URL:
 
 ```text
@@ -33,7 +33,7 @@ page exposes enough data for a first scanner:
 
 ## Goal
 
-Add a durable `/career-ops linkedin-scan` entry point that uses `bb-browser` to
+Add a durable `/auto-job linkedin-scan` entry point that uses `bb-browser` to
 read LinkedIn Jobs with the user's logged-in browser profile, normalizes results
 into the existing newgrad scanner contracts, and reuses the bridge scoring,
 dedupe, pipeline, and evaluation flow.
@@ -85,7 +85,7 @@ The first implementation should add a repo script, not a browser extension flow:
   those extractor functions in the LinkedIn tab, posts rows to the existing
   bridge endpoints, and handles batching, limits, and direct evaluation options.
 - `modes/linkedin-scan.md` documents the workflow and login recovery.
-- The router, docs, and package scripts expose `/career-ops linkedin-scan` without
+- The router, docs, and package scripts expose `/auto-job linkedin-scan` without
   creating a parallel scan system.
 
 ## Data Model
@@ -117,7 +117,7 @@ LinkedIn details should map into `NewGradDetail`:
 ## User Flow
 
 ```text
-User runs /career-ops linkedin-scan
+User runs /auto-job linkedin-scan
         |
         v
 Mode checks bridge and bb-browser availability

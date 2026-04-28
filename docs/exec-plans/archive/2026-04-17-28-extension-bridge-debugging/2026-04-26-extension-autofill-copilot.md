@@ -13,7 +13,7 @@ profile fallback when autofill is unsupported.
 
 ## Goal
 
-Add a local-first application form autofill feature to the existing career-ops
+Add a local-first application form autofill feature to the existing auto-job
 Chrome extension.
 
 The feature should read candidate information from repository-owned files,
@@ -313,7 +313,7 @@ visible form fields receive local profile values
   section text as weak evidence only.
 - Bridge launch rule: use `npm run ext:bridge` for the extension bridge. Do
   not use bare `cd bridge && npm run start` unless explicitly testing fake
-  mode, because missing `CAREER_OPS_BRIDGE_MODE` defaults to `fake`.
+  mode, because missing `AUTO_JOB_BRIDGE_MODE` defaults to `fake`.
 - Preferred Location rule: do not fill preferred/desired/target location fields
   from the home-address profile. Only current address/location fields should be
   filled.
@@ -594,7 +594,7 @@ Progress log:
   `npm --prefix extension run typecheck`; both passed. No extension DOM-level
   test currently exercises select/radio option-answer behavior.
 - 2026-04-27: Created GitHub issue
-  https://github.com/santifer/career-ops/issues/492.
+  https://github.com/santifer/auto-job/issues/492.
 
 Risks and blockers:
 - Without a DOM-level test harness, future fixes can keep passing typecheck
@@ -605,7 +605,7 @@ Risks and blockers:
 Final outcome:
 - Triage complete. The follow-up implementation was completed later in the
   option-question scoring and location-select matching sections above; issue
-  https://github.com/santifer/career-ops/issues/492 can be closed after review.
+  https://github.com/santifer/auto-job/issues/492 can be closed after review.
 
 ## GSTACK REVIEW REPORT
 

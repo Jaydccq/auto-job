@@ -69,7 +69,7 @@ verification so the check is deterministic and does not mutate user data.
 - 2026-04-24: Updated `scan.mjs` so legacy API company targets and Built In
   legacy search results skip active-clearance companies before pipeline writes.
 - 2026-04-24: Updated `modes/scan.md` to document the profile hard-filter
-  behavior for `/career-ops scan`.
+  behavior for `/auto-job scan`.
 - 2026-04-24: Verification passed:
   `node --check scan.mjs`,
   a no-network import probe for `loadActiveClearanceCompanySkips`,

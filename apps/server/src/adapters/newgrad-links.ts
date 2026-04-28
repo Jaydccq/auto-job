@@ -1,4 +1,4 @@
-import type { NewGradDetail, NewGradRow } from "@career-ops/shared";
+import type { NewGradDetail, NewGradRow } from "@auto-job/shared";
 import {
   canonicalLinkedInJobViewUrl,
   isLinkedInJobsUrl,

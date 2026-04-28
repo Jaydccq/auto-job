@@ -61,7 +61,7 @@ This rollup replaces the following completed summary files:
 - headless browser/DOM verification for the static dashboard layout and `Apply Next` view
 - `git diff --cached --stat`, `git status --short`, and `git log --oneline` for commit grouping
 - `python3 .claude/skills/exec-plan-consolidator/scripts/plan_inventory.py`
-- `PYTHONPATH=/tmp/career-ops-pyyaml python3 /Users/hongxichen/.agents/skills/skill-creator/scripts/package_skill.py .claude/skills/exec-plan-consolidator /tmp/skill-dist`
+- `PYTHONPATH=/tmp/auto-job-pyyaml python3 /Users/hongxichen/.agents/skills/skill-creator/scripts/package_skill.py .claude/skills/exec-plan-consolidator /tmp/skill-dist`
 
 ## Open Issues
 

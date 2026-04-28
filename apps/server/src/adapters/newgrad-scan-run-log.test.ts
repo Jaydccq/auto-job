@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { createScanRunRecorder } from "./newgrad-scan-run-log.js";
 
 test("scan run recorder writes JSONL events and summary counts", () => {
-  const repoRoot = `${tmpdir()}/career-ops-scan-run-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const repoRoot = `${tmpdir()}/auto-job-scan-run-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   try {
     const recorder = createScanRunRecorder({
       repoRoot,

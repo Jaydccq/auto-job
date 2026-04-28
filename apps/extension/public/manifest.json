@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "career-ops",
-  "short_name": "career-ops",
+  "name": "auto-job",
+  "short_name": "auto-job",
   "version": "0.2.0",
-  "description": "Local-first job posting evaluation. Bridges your browser to the career-ops pipeline running on your machine.",
+  "description": "Local-first job posting evaluation. Bridges your browser to the auto-job pipeline running on your machine.",
   "action": {
-    "default_title": "career-ops — toggle panel"
+    "default_title": "auto-job — toggle panel"
   },
   "background": {
     "service_worker": "background.js",
@@ -36,7 +36,7 @@
         "default": "Alt+Shift+C",
         "mac": "Alt+Shift+C"
       },
-      "description": "Toggle career-ops panel"
+      "description": "Toggle auto-job panel"
     }
   },
   "content_security_policy": {

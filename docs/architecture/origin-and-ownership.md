@@ -24,7 +24,7 @@ sync. The runtime is not a downstream product of any other project.
 Two layers are kept distinct (see `DATA_CONTRACT.md` for the full table):
 
 - **Owned-runtime layer** — `apps/*`, `packages/*`, modes, templates, root
-  CLI scripts, `.claude/skills/career-ops/SKILL.md`, docs. This is the layer
+  CLI scripts, `skills/**`, `.claude/skills/**`, docs. This is the layer
   that this document governs.
 - **User-data layer** — gitignored files the user owns and the runtime never
   overwrites.

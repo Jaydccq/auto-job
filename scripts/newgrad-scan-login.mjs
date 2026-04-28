@@ -9,7 +9,7 @@ const repoRoot = resolve(__dirname, "..");
 const DEFAULT_USER_DATA_DIR = join(repoRoot, "data", "browser-profiles", "newgrad-scan");
 
 function usage() {
-  return `career-ops newgrad scan login browser
+  return `auto-job newgrad scan login browser
 
 Usage:
   bun run newgrad-scan:login -- [options]

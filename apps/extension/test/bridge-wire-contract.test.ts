@@ -14,7 +14,7 @@ import {
   BRIDGE_DEFAULT_HOST as sharedBridgeDefaultHost,
   BRIDGE_DEFAULT_PORT as sharedBridgeDefaultPort,
   ENDPOINTS as sharedEndpoints,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 
 afterEach(() => {
   vi.unstubAllGlobals();

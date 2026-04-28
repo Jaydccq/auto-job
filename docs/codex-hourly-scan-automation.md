@@ -1,6 +1,6 @@
 # Codex hourly scan automation
 
-This automation runs Career-Ops job discovery every weekday hour from 08:00
+This automation runs Auto-Job job discovery every weekday hour from 08:00
 through 22:00 America/New_York. It uses the local checkout because this workflow
 writes user-layer artifacts under `data/`, `reports/`, `batch/`, and `web/`.
 
@@ -15,7 +15,7 @@ bun run auto:hourly-scan
 For a no-evaluation preview:
 
 ```bash
-CAREER_OPS_SCAN_IGNORE_WINDOW=1 bun run auto:hourly-scan:dry
+AUTO_JOB_SCAN_IGNORE_WINDOW=1 bun run auto:hourly-scan:dry
 ```
 
 The dry command still runs scanner read paths, but it skips bridge startup,
@@ -56,7 +56,7 @@ Use Codex Automation as a reporting layer after the host scheduler, not as the
 live scanner.
 
 1. Open Codex Automations.
-2. Create a new project-scoped automation for this `career-ops` project.
+2. Create a new project-scoped automation for this `auto-job` project.
 3. Choose the local project checkout as the run location. Do not use a worktree
    for this workflow because the scanners depend on local browser state and
    write normal project artifacts.
@@ -70,7 +70,7 @@ live scanner.
 5. Use this prompt:
 
    ```text
-   Check the latest Career-Ops hourly scan result in the local checkout. Do not run bun run auto:hourly-scan from this Codex cron context if the session has approval_policy=never or sandbox networking/IPC restrictions, because that environment cannot access the local bridge/browser reliably.
+   Check the latest Auto-Job hourly scan result in the local checkout. Do not run bun run auto:hourly-scan from this Codex cron context if the session has approval_policy=never or sandbox networking/IPC restrictions, because that environment cannot access the local bridge/browser reliably.
 
    Inspect data/automation/hourly-scan-*.md and report the newest summary:
    1. Which sources ran
@@ -101,16 +101,16 @@ live scanner.
   `r4000` keeps hourly automation focused on the newest roughly last-hour
   postings.
 - For Indeed automation runs, reads `config/profile.yml ->
-  indeed_scan.search_url` or `CAREER_OPS_INDEED_URL` as the full search URL, so
+  indeed_scan.search_url` or `AUTO_JOB_INDEED_URL` as the full search URL, so
   filters such as entry-level `sc=` are preserved.
 - Runs the broad `scan` source at most once per cadence window by default,
   using the newest successful hourly summary as the local signal. This avoids
   fetching hundreds of already-seen portal/Built In rows every hour while
   preserving hourly recent-source scans. Force it with
-  `CAREER_OPS_SCAN_FORCE_BROAD=1`, or set
-  `CAREER_OPS_SCAN_BROAD_INTERVAL_HOURS=0` to restore every-run behavior.
+  `AUTO_JOB_SCAN_FORCE_BROAD=1`, or set
+  `AUTO_JOB_SCAN_BROAD_INTERVAL_HOURS=0` to restore every-run behavior.
 - Uses `newgrad_quick` by default. Evaluation and enrichment are uncapped unless
-  `CAREER_OPS_SCAN_EVALUATE_LIMIT` or `CAREER_OPS_SCAN_ENRICH_LIMIT` is set.
+  `AUTO_JOB_SCAN_EVALUATE_LIMIT` or `AUTO_JOB_SCAN_ENRICH_LIMIT` is set.
 - Runs tracker/dashboard maintenance after successful live scans.
 - Writes `data/automation/hourly-scan-*.md` with source status, completed
   evaluation count, blocker recovery commands, high-fit roles, and output tails.
@@ -120,36 +120,36 @@ live scanner.
 Set these in the automation environment only when needed:
 
 ```bash
-CAREER_OPS_SCAN_SOURCES=newgrad,builtin,linkedin,indeed
-CAREER_OPS_SCAN_EVAL_MODE=newgrad_quick
-CAREER_OPS_SCAN_EVALUATE_LIMIT=3  # optional cap; unset means no cap
-CAREER_OPS_SCAN_ENRICH_LIMIT=10    # optional cap; unset means no cap
-CAREER_OPS_SCAN_STEP_TIMEOUT_MS=2700000
-CAREER_OPS_SCAN_IGNORE_WINDOW=1
-CAREER_OPS_SCAN_DRY_RUN=1
-CAREER_OPS_SCAN_START_BRIDGE=1
-CAREER_OPS_SCAN_REQUIRE_BRIDGE=1
-CAREER_OPS_SCAN_BRIDGE_WAIT_MS=15000
-CAREER_OPS_SCAN_BROAD_INTERVAL_HOURS=6
-CAREER_OPS_SCAN_FORCE_BROAD=1
-CAREER_OPS_LINKEDIN_POSTED_WITHIN=r4000
-CAREER_OPS_LINKEDIN_URL="https://www.linkedin.com/jobs/search-results/?keywords=software%20ai%20engineer%20new%20graduate&f_TPR=r4000"
-CAREER_OPS_INDEED_URL="https://www.indeed.com/jobs?q=software+engineer%2C+AI+engineer&l=&sc=0kf%3Aexplvl%28ENTRY_LEVEL%29%3B"
+AUTO_JOB_SCAN_SOURCES=newgrad,builtin,linkedin,indeed
+AUTO_JOB_SCAN_EVAL_MODE=newgrad_quick
+AUTO_JOB_SCAN_EVALUATE_LIMIT=3  # optional cap; unset means no cap
+AUTO_JOB_SCAN_ENRICH_LIMIT=10    # optional cap; unset means no cap
+AUTO_JOB_SCAN_STEP_TIMEOUT_MS=2700000
+AUTO_JOB_SCAN_IGNORE_WINDOW=1
+AUTO_JOB_SCAN_DRY_RUN=1
+AUTO_JOB_SCAN_START_BRIDGE=1
+AUTO_JOB_SCAN_REQUIRE_BRIDGE=1
+AUTO_JOB_SCAN_BRIDGE_WAIT_MS=15000
+AUTO_JOB_SCAN_BROAD_INTERVAL_HOURS=6
+AUTO_JOB_SCAN_FORCE_BROAD=1
+AUTO_JOB_LINKEDIN_POSTED_WITHIN=r4000
+AUTO_JOB_LINKEDIN_URL="https://www.linkedin.com/jobs/search-results/?keywords=software%20ai%20engineer%20new%20graduate&f_TPR=r4000"
+AUTO_JOB_INDEED_URL="https://www.indeed.com/jobs?q=software+engineer%2C+AI+engineer&l=&sc=0kf%3Aexplvl%28ENTRY_LEVEL%29%3B"
 ```
 
-`CAREER_OPS_SCAN_START_BRIDGE=1` restores automatic bridge startup. Use it only
+`AUTO_JOB_SCAN_START_BRIDGE=1` restores automatic bridge startup. Use it only
 from an environment that can listen on localhost; Codex Automation sandbox runs
 can return `listen EPERM` when they try to start a local server.
 
-`CAREER_OPS_SCAN_REQUIRE_BRIDGE=1` makes missing bridge a hard failure instead
+`AUTO_JOB_SCAN_REQUIRE_BRIDGE=1` makes missing bridge a hard failure instead
 of a read-only preview fallback.
 
 For an occasional deeper manual run:
 
 ```bash
-CAREER_OPS_SCAN_IGNORE_WINDOW=1 \
-CAREER_OPS_SCAN_EVAL_MODE=default \
-CAREER_OPS_SCAN_SOURCES=newgrad,builtin,linkedin,indeed \
+AUTO_JOB_SCAN_IGNORE_WINDOW=1 \
+AUTO_JOB_SCAN_EVAL_MODE=default \
+AUTO_JOB_SCAN_SOURCES=newgrad,builtin,linkedin,indeed \
 bun run auto:hourly-scan
 ```
 

@@ -1,6 +1,6 @@
 # Modo: cover-letter — Single-Page Cover Letter PDF
 
-When the user runs `/career-ops cover-letter` (or auto-pipeline triggers
+When the user runs `/auto-job cover-letter` (or auto-pipeline triggers
 this at score ≥ 4.5), produce a one-page cover letter PDF that mirrors
 the CV's visual identity and uses the "I'm choosing you" tone defined
 in `modes/auto-pipeline.md`.

@@ -45,7 +45,7 @@ export function openSettingsWindow(onSaved: (next: Settings) => Promise<void> | 
   win = new BrowserWindow({
     width: 520,
     height: 480,
-    title: "Career Ops — Settings",
+    title: "Auto Job — Settings",
     resizable: false,
     minimizable: false,
     maximizable: false,

@@ -56,7 +56,7 @@ hourly recent-source flow for `newgrad`, `linkedin`, `builtin`, and `indeed`.
   By default, `scan` is skipped when the newest non-dry-run hourly summary has a
   successful `scan` row less than 6 hours old.
 - 2026-04-28: Updated `docs/codex-hourly-scan-automation.md` with
-  `CAREER_OPS_SCAN_BROAD_INTERVAL_HOURS` and `CAREER_OPS_SCAN_FORCE_BROAD`.
+  `AUTO_JOB_SCAN_BROAD_INTERVAL_HOURS` and `AUTO_JOB_SCAN_FORCE_BROAD`.
 - 2026-04-28: Verified `node --check scripts/hourly-job-scan.mjs` and
   `git diff --check` for touched files. A read-only state check found
   `hourly-scan-2026-04-28T15-23-32-912Z.md` as the latest successful broad
@@ -84,5 +84,5 @@ hourly recent-source flow for `newgrad`, `linkedin`, `builtin`, and `indeed`.
 Implemented. Hourly automation now preserves frequent recent-source scanning
 while reducing repeated broad portal/Built In churn. The broad `scan` source
 runs at most once per 6-hour cadence window by default, can be forced with
-`CAREER_OPS_SCAN_FORCE_BROAD=1`, and can be restored to every-run behavior with
-`CAREER_OPS_SCAN_BROAD_INTERVAL_HOURS=0`.
+`AUTO_JOB_SCAN_FORCE_BROAD=1`, and can be restored to every-run behavior with
+`AUTO_JOB_SCAN_BROAD_INTERVAL_HOURS=0`.

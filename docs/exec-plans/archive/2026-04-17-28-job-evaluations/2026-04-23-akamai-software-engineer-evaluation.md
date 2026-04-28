@@ -3,7 +3,7 @@
 ## Background
 
 Bridge batch run `W7PkMzzNVx2eHeWM3Oyuz` requests report `318` for Akamai Technologies, Software Engineer.
-The local JD cache at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-W7PkMzzNVx2eHeWM3Oyuz.txt` is the primary source.
+The local JD cache at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-W7PkMzzNVx2eHeWM3Oyuz.txt` is the primary source.
 PDF generation is explicitly not confirmed, so this run must produce only a markdown report and tracker addition.
 
 ## Goal
