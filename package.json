@@ -5,6 +5,7 @@
   "description": "Local-first AI job-search runtime: scan, evaluate, track, document.",
   "scripts": {
     "doctor": "node doctor.mjs",
+    "test:gmail": "node --test scripts/gmail-oauth-refresh.test.mjs",
     "verify": "node verify-pipeline.mjs",
     "verify:repo-guard": "node scripts/verify-repo-guard.mjs",
     "verify:skills": "node scripts/verify-skills-sync.mjs",

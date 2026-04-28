@@ -523,6 +523,13 @@ function collectTextParts(part, out = []) {
   return out;
 }
 
+const ZERO_WIDTH_AND_INVISIBLE_RE = /[͏​‌‍⁠﻿]/g;
+
+export function sanitizeMessageText(value) {
+  if (typeof value !== 'string' || !value) return '';
+  return value.replace(ZERO_WIDTH_AND_INVISIBLE_RE, '');
+}
+
 function compactText(text = '', max = 420) {
   const clean = text.replace(/\s+/g, ' ').trim();
   return clean.length > max ? `${clean.slice(0, max - 1).trim()}...` : clean;
@@ -695,7 +702,7 @@ export function extractSignalFromMessage(message) {
   const headers = headersFor(message);
   const from = parseEmail(headers.from || '');
   const subject = headers.subject || '';
-  const bodyText = compactText(collectTextParts(message.payload).join('\n'), 4000);
+  const bodyText = compactText(sanitizeMessageText(collectTextParts(message.payload).join('\n')), 4000);
   const searchText = `${subject}\n${bodyText}`;
   const eventType = classifyEvent({ subject, text: bodyText, from });
   if (!eventType) return null;
@@ -749,8 +756,8 @@ export function extractSignalFromMessage(message) {
     recentContact,
     sender: headers.from || '',
     subject,
-    summary: compactText(message.snippet || bodyText, 220),
-    snippet: compactText(message.snippet || bodyText, 220),
+    summary: compactText(sanitizeMessageText(message.snippet || bodyText), 220),
+    snippet: compactText(sanitizeMessageText(message.snippet || bodyText), 220),
     messageId: message.id,
     threadId: message.threadId,
     confidence: company ? 0.78 : 0.52,
