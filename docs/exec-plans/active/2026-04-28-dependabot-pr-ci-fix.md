@@ -88,6 +88,13 @@ fixed.
   `/private/tmp/auto-job-ci-verify-7ddd264`, installed dependencies with
   `CI=true pnpm install --frozen-lockfile`, then ran
   `node test-all.mjs --quick`: 33 passed, 0 failed.
+- 2026-04-28: Merged CI fix PR #6 into `main`.
+- 2026-04-28: Updated Dependabot PR branches #1-#4 by merging latest `main`.
+  PR #5 had already been refreshed by Dependabot and was up to date with
+  latest `main`.
+- 2026-04-28: Rechecked #1-#5 after branch updates. All five PRs report
+  `mergeStateStatus: CLEAN`, with `test`, CodeQL analysis, and CodeQL all
+  successful.
 
 ## Key Decisions
 
@@ -103,6 +110,6 @@ fixed.
 
 ## Final Outcome
 
-Base CI fix is implemented and clean-worktree verified. The next required step
-is to merge the CI-fix PR, then re-run or update Dependabot PRs #1-#5 so their
-checks execute with Bun and pnpm workspace dependencies installed.
+Base CI fix is implemented, merged, and clean-worktree verified. Dependabot PRs
+#1-#5 have been refreshed against the fixed base and all required checks are
+green and mergeable.
