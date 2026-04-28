@@ -2694,9 +2694,9 @@ function renderDocumentActions(row) {
   const coverStatus = applyDocStatus[applyDocKey(row.key, 'cover-letter')];
   return `
     <button class="action-btn js-doc-generate" data-key="${escapeHtml(row.key)}" data-doc-type="cv" aria-label="Generate CV PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)}">Generate CV PDF</button>
-    ${cvDoc ? `<button class="action-btn done js-doc-download" data-key="${escapeHtml(row.key)}" data-doc-type="cv" aria-label="Save CV PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)} to Downloads">Download CV PDF</button>` : ''}
+    ${cvDoc ? `<button class="action-btn done js-doc-download" data-key="${escapeHtml(row.key)}" data-doc-type="cv" aria-label="Save CV PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)} to Desktop">Save CV to Desktop</button>` : ''}
     <button class="action-btn js-doc-generate" data-key="${escapeHtml(row.key)}" data-doc-type="cover-letter" aria-label="Generate cover letter PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)}">Generate Cover Letter PDF</button>
-    ${coverDoc ? `<button class="action-btn done js-doc-download" data-key="${escapeHtml(row.key)}" data-doc-type="cover-letter" aria-label="Save cover letter PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)} to Downloads">Download Cover Letter PDF</button>` : ''}
+    ${coverDoc ? `<button class="action-btn done js-doc-download" data-key="${escapeHtml(row.key)}" data-doc-type="cover-letter" aria-label="Save cover letter PDF for ${escapeHtml(row.company)} ${escapeHtml(row.role)} to Desktop">Save Cover Letter to Desktop</button>` : ''}
     ${cvStatus ? `<span class="doc-status" role="status" aria-live="polite">${escapeHtml(cvStatus)}</span>` : ''}
     ${coverStatus ? `<span class="doc-status" role="status" aria-live="polite">${escapeHtml(coverStatus)}</span>` : ''}
   `;
@@ -2827,7 +2827,7 @@ function renderApplyNext() {
       const row = lastApplyRowsByKey.get(button.dataset.key);
       if (!doc || !row) return;
       const label = docTypeLabel(button.dataset.docType);
-      setApplyDocStatus(row.key, button.dataset.docType, `Saving ${label} to Downloads...`);
+      setApplyDocStatus(row.key, button.dataset.docType, `Saving ${label} to Desktop...`);
       renderApplyNext();
       try {
         const result = await postDashboardApi('/api/apply-docs/download', { id: doc.id });
