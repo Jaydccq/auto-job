@@ -1,0 +1,33 @@
+{
+  "name": "@career-ops/desktop",
+  "private": true,
+  "version": "0.1.0-phase1",
+  "productName": "Career Ops",
+  "description": "Career-ops desktop client — bridge + dashboard in one app",
+  "author": "Hongxi Chen <smyhc1@gmail.com>",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build:server": "bun run --cwd ../../packages/shared build && bun run --cwd ../server build",
+    "build:main": "esbuild src/main.ts --bundle --platform=node --target=node20 --packages=external --outfile=dist/main.js --format=esm --sourcemap",
+    "build:preload": "esbuild src/settings-preload.ts --bundle --platform=node --target=node20 --external:electron --outfile=dist/settings-preload.js --format=cjs --sourcemap",
+    "build": "bun run build:server && bun run build:preload && bun run build:main",
+    "dev": "bun run build && electron dist/main.js",
+    "start": "bun run build && electron dist/main.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "package": "bun run build && electron-builder --mac --config electron-builder.yml",
+    "package:dir": "bun run build && electron-builder --mac --dir --config electron-builder.yml"
+  },
+  "dependencies": {
+    "@career-ops/server": "workspace:*",
+    "@career-ops/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^26.8.1",
+    "esbuild": "^0.24.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

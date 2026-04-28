@@ -1,0 +1,464 @@
+/**
+ * newgrad.ts — shared types for the newgrad-jobs.com scanner feature.
+ *
+ * Defines the data shapes flowing through the newgrad-scan pipeline:
+ *   1. Content script extracts listing rows    -> NewGradRow[]
+ *   2. Bridge scores + filters locally         -> ScoredRow[] + FilteredRow[]
+ *   3. Bridge enriches from detail pages        -> EnrichedRow[]
+ *   4. Promoted rows are written to pipeline.md -> PipelineEntry[]
+ *
+ * CONTRACTS ONLY. No runtime.
+ */
+
+/* -------------------------------------------------------------------------- */
+/*  Raw listing data                                                          */
+/* -------------------------------------------------------------------------- */
+
+/** Explicit sponsorship signal extracted from the source page when available. */
+export type SponsorshipStatus = "yes" | "no" | "unknown";
+
+/**
+ * One row from the newgrad-jobs.com listing table, as extracted by the
+ * content script. Field names mirror the site's column headers.
+ */
+export interface NewGradRow {
+  /** Source site identifier, e.g. "newgrad-jobs.com" or "builtin.com". */
+  source?: string;
+  /** Row position in the listing table (1-based). */
+  position: number;
+  /** Job title as displayed in the listing. */
+  title: string;
+  /** Relative time string, e.g. "2d ago", "1w ago". */
+  postedAgo: string;
+  /** Direct link to the external application page. */
+  applyUrl: string;
+  /** Link to the newgrad-jobs.com detail page for this listing. */
+  detailUrl: string;
+  /** Remote, hybrid, on-site, or as displayed on the site. */
+  workModel: string;
+  /** Location string, e.g. "San Francisco, CA" or "Remote". */
+  location: string;
+  /** Company name. */
+  company: string;
+  /** Salary or compensation range as displayed, if available. */
+  salary: string | null;
+  /** Company size bucket, e.g. "51-200", "1001-5000". */
+  companySize: string | null;
+  /** Industry label, e.g. "Software Development". */
+  industry: string | null;
+  /** Qualification summary text, if listed. */
+  qualifications: string | null;
+  /** Whether the listing indicates H-1B visa sponsorship. */
+  h1bSponsored: boolean;
+  /** Normalized sponsorship support signal from the listing. */
+  sponsorshipSupport: SponsorshipStatus;
+  /** Sponsorship support confirmed on the original employer posting. */
+  confirmedSponsorshipSupport: SponsorshipStatus;
+  /** Whether the listing already signals an active secret clearance requirement. */
+  requiresActiveSecurityClearance: boolean;
+  /** Whether the original employer posting confirms active secret clearance is required. */
+  confirmedRequiresActiveSecurityClearance: boolean;
+  /** Whether the listing is tagged as new-grad eligible. */
+  isNewGrad: boolean;
+}
+
+/**
+ * Enriched data from the detail or apply page. Contains structured
+ * fields that are only available after navigating to the listing's
+ * detail URL.
+ */
+export interface NewGradDetail {
+  /** Row position from the original listing, for correlation. */
+  position: number;
+  /** Job title from the detail page (may differ from listing). */
+  title: string;
+  /** Company name from the detail page. */
+  company: string;
+  /** Full location string from the detail page. */
+  location: string;
+  /** Employment type, e.g. "Full-time", "Contract", "Internship". */
+  employmentType: string | null;
+  /** Work model from the detail page, e.g. "Remote", "Hybrid". */
+  workModel: string | null;
+  /** Seniority level, e.g. "Entry level", "Associate". */
+  seniorityLevel: string | null;
+  /** Salary range as displayed on the detail page. */
+  salaryRange: string | null;
+  /** Site-computed match score, if displayed (0-100). */
+  matchScore: number | null;
+  /** Experience level match indicator from the detail page. */
+  expLevelMatch: number | null;
+  /** Skill match indicator from the detail page. */
+  skillMatch: number | null;
+  /** Industry experience match indicator. */
+  industryExpMatch: number | null;
+  /** Full job description text. */
+  description: string;
+  /** Industry or category tags associated with the role/company. */
+  industries: readonly string[];
+  /** Visible recommendation or fit tags shown by Jobright. */
+  recommendationTags: readonly string[];
+  /** Responsibilities extracted from the page or embedded data. */
+  responsibilities: readonly string[];
+  /** Requirements or qualifications extracted from the page or embedded data. */
+  requiredQualifications: readonly string[];
+  /** Skill tags visible in the ATS / qualification sections. */
+  skillTags: readonly string[];
+  /** Job taxonomy labels from Jobright metadata. */
+  taxonomy: readonly string[];
+  /** Company website when available. */
+  companyWebsite: string | null;
+  /** Company summary/description from the page. */
+  companyDescription: string | null;
+  /** Company size string from detail metadata. */
+  companySize: string | null;
+  /** Company headquarters/location string. */
+  companyLocation: string | null;
+  /** Company founding year if displayed. */
+  companyFoundedYear: string | null;
+  /** Company category labels. */
+  companyCategories: readonly string[];
+  /** Whether the detail page signals likely H1B sponsorship. */
+  h1bSponsorLikely: boolean | null;
+  /** Normalized sponsorship support signal from the detail page. */
+  sponsorshipSupport: SponsorshipStatus;
+  /** Historical H1B sponsorship counts by year. */
+  h1bSponsorshipHistory: readonly { year: string; count: number }[];
+  /** Whether the detail page requires an active secret security clearance. */
+  requiresActiveSecurityClearance: boolean;
+  /** Sponsorship support confirmed on the original employer posting. */
+  confirmedSponsorshipSupport: SponsorshipStatus;
+  /** Whether the original employer posting confirms active secret clearance is required. */
+  confirmedRequiresActiveSecurityClearance: boolean;
+  /** Count of visible insider connections on the page. */
+  insiderConnections: number | null;
+  /** URL of the original listing on the source site. */
+  originalPostUrl: string;
+  /** Direct "Apply Now" URL from the detail page. */
+  applyNowUrl: string;
+  /** URLs observed while probing the apply flow in a logged-in session. */
+  applyFlowUrls: readonly string[];
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Scoring                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Breakdown of how a row's score was computed. Each field corresponds
+ * to one scoring dimension.
+ */
+export interface ScoreBreakdown {
+  /** Points earned from role/title keyword matches. */
+  roleMatch: number;
+  /** Weighted skill score contributed by keyword matches. */
+  skillHits: number;
+  /** The actual skill keywords that were found. */
+  skillKeywordsMatched: readonly string[];
+  /** Points earned from posting recency (newer = higher). */
+  freshness: number;
+}
+
+/**
+ * A listing row after local scoring. Wraps the original row with
+ * its computed score and detailed breakdown.
+ */
+export interface ScoredRow {
+  /** The original listing row. */
+  row: NewGradRow;
+  /** Total computed score. */
+  score: number;
+  /** Maximum possible score given the current config. */
+  maxScore: number;
+  /** Per-dimension score breakdown. */
+  breakdown: ScoreBreakdown;
+}
+
+/**
+ * A row that was filtered out during scoring. Captures the reason
+ * so the user can understand why a listing was excluded.
+ */
+export interface FilteredRow {
+  /** The original listing row that was filtered. */
+  row: NewGradRow;
+  /** Machine-readable reason for filtering (e.g. "below_threshold", "title_mismatch"). */
+  reason: string;
+  /** Optional human-readable detail explaining the filter decision. */
+  detail?: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Scoring results                                                           */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Result of the scoring phase: rows that passed the threshold are
+ * promoted, rows that didn't are filtered with a reason.
+ */
+export interface NewGradScoreResult {
+  /** Rows that passed the score threshold, sorted by score descending. */
+  promoted: readonly ScoredRow[];
+  /** Rows that were excluded, with reasons. */
+  filtered: readonly FilteredRow[];
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Enrichment                                                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A listing row combined with its detail-page data after enrichment.
+ */
+export interface EnrichedRow {
+  /** The scored listing row. */
+  row: ScoredRow;
+  /** Detail data fetched from the listing's detail page. */
+  detail: NewGradDetail;
+}
+
+/**
+ * One entry written to `data/pipeline.md` as a result of the scan.
+ */
+export interface PipelineEntry {
+  /** The job URL added to the pipeline. */
+  url: string;
+  /** Company name. */
+  company: string;
+  /** Job title / role. */
+  role: string;
+  /** Score from the local scorer, for reference. */
+  score: number;
+  /** Detailed value score from structured detail-page elements, 0-10. */
+  valueScore?: number;
+  /** Compact local reasons that explain the value-score decision. */
+  valueReasons?: readonly string[];
+  /** Source identifier, e.g. "newgrad-jobs.com". */
+  source: string;
+}
+
+/**
+ * One enriched row that was inspected but not promoted to the pipeline.
+ * Optional in `NewGradEnrichResult` so older callers can ignore row-level
+ * tracing and keep using aggregate `skipBreakdown`.
+ */
+export interface NewGradEnrichSkip {
+  /** Best available URL for the skipped row. */
+  url: string;
+  /** Company name. */
+  company: string;
+  /** Job title / role. */
+  role: string;
+  /** Source identifier, e.g. "newgrad-jobs.com". */
+  source: string;
+  /** Machine-readable skip reason. */
+  reason: string;
+  /** Human-readable detail when available. */
+  detail?: string;
+  /** Local list/detail score when available. */
+  score?: number;
+  /** Detailed value score when available. */
+  valueScore?: number;
+  /** Threshold that the row failed when available. */
+  threshold?: number;
+}
+
+/**
+ * One unchecked newgrad-scan entry recovered from data/pipeline.md.
+ */
+export interface NewGradPendingEntry extends PipelineEntry {
+  /** 1-based line number in data/pipeline.md for user-facing diagnostics. */
+  lineNumber: number;
+  /** Optional local JD cache path, relative to repo root, when available. */
+  localJdPath?: string;
+  /** Optional pre-extracted JD text loaded from localJdPath. */
+  pageText?: string;
+}
+
+export interface NewGradPendingResult {
+  /** Pending newgrad-scan entries that are not already in the tracker. */
+  entries: readonly NewGradPendingEntry[];
+  /** Total count before any caller-side display limit. */
+  total: number;
+}
+
+/**
+ * One unchecked Built In entry recovered from data/pipeline.md.
+ *
+ * Built In CLI scans currently write legacy pipe rows:
+ *   - [ ] https://builtin.com/job/... | Company | Role
+ *
+ * Rich `builtin-scan` rows from the extension may include score/value metadata,
+ * so those fields remain optional here.
+ */
+export interface BuiltInPendingEntry {
+  /** The Built In job URL from data/pipeline.md. */
+  url: string;
+  /** Company name. */
+  company: string;
+  /** Job title / role. */
+  role: string;
+  /** Source identifier normalized for extension/bridge consumers. */
+  source: "builtin.com";
+  /** 1-based line number in data/pipeline.md for user-facing diagnostics. */
+  lineNumber: number;
+  /** Optional rich scanner score, present only on extension-promoted rows. */
+  score?: number;
+  /** Optional detail value score, present only on extension-promoted rows. */
+  valueScore?: number;
+  /** Optional compact local reasons that explain the value-score decision. */
+  valueReasons?: readonly string[];
+}
+
+export interface BuiltInPendingResult {
+  /** Pending Built In entries that are not already tracked/evaluated. */
+  entries: readonly BuiltInPendingEntry[];
+  /** Total count before any caller-side display limit. */
+  total: number;
+}
+
+export interface NewGradPendingCacheBackfillInput {
+  /** Original pipeline URL for the unchecked entry. */
+  url: string;
+  /** Company name recorded in the pipeline row. */
+  company: string;
+  /** Role title recorded in the pipeline row. */
+  role: string;
+  /** 1-based line number from data/pipeline.md at read time. */
+  lineNumber: number;
+  /** Rich local JD text captured from the browser. */
+  pageText: string;
+}
+
+export interface NewGradPendingCacheBackfillOutcome {
+  url: string;
+  company: string;
+  role: string;
+  lineNumber: number;
+  status: "updated" | "skipped";
+  /** Relative jds/ path when the cache was persisted successfully. */
+  localJdPath?: string;
+  /** Machine-readable reason when the backfill was skipped. */
+  reason?: string;
+}
+
+export interface NewGradPendingCacheBackfillResult {
+  updated: number;
+  skipped: number;
+  outcomes: readonly NewGradPendingCacheBackfillOutcome[];
+}
+
+/**
+ * One evaluation launched from a promoted newgrad-scan row.
+ */
+export interface NewGradEvaluationSummary {
+  /** Bridge job id for the direct evaluation. */
+  jobId: string;
+  /** Company name used for the evaluation. */
+  company: string;
+  /** Role title used for the evaluation. */
+  role: string;
+  /** Whether the direct evaluation was queued or failed to queue. */
+  status: "queued" | "failed";
+  /** Final score when the evaluation completed successfully. */
+  score?: number;
+  /** Report number when the evaluation completed successfully. */
+  reportNumber?: number;
+  /** Absolute report path when the evaluation completed successfully. */
+  reportPath?: string;
+  /** Error message when the evaluation failed. */
+  error?: string;
+}
+
+/**
+ * Result of the enrichment phase. The bridge still returns the promoted
+ * entries that qualified, and extension-side callers may also attach
+ * direct-evaluation summaries for those entries.
+ */
+export interface NewGradEnrichResult {
+  /** Number of entries successfully promoted by the bridge. */
+  added: number;
+  /** Number of entries skipped (e.g. duplicates already in pipeline). */
+  skipped: number;
+  /** Counts by machine-readable skip reason for rows not promoted after detail enrichment. */
+  skipBreakdown?: Readonly<Record<string, number>>;
+  /** Row-level skip traces for scanner run logs and debugging. */
+  skips?: readonly NewGradEnrichSkip[];
+  /**
+   * Rows that passed re-scoring + hard filters and are eligible for direct
+   * evaluation, even if they were not appended to pipeline.md due to dedupe.
+   */
+  candidates?: readonly PipelineEntry[];
+  /** The promoted entries returned by the bridge. */
+  entries: readonly PipelineEntry[];
+  /** Number of evaluation jobs queued directly by the extension. */
+  queued?: number;
+  /** Number of promoted entries evaluated directly by the extension. */
+  evaluated?: number;
+  /** Number of direct evaluations that failed after promotion. */
+  failed?: number;
+  /** Direct-evaluation summaries populated by the extension background worker. */
+  jobs?: readonly NewGradEvaluationSummary[];
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Configuration                                                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Scoring configuration for the newgrad scanner. Mirrors the structure
+ * expected in `config/profile.yml` under `newgrad_scan`.
+ */
+export interface NewGradScanConfig {
+  /** Title-match scoring configuration. */
+  role_keywords: {
+    positive: readonly string[];
+    weight: number;
+  };
+  /** Skill-match scoring configuration. */
+  skill_keywords: {
+    terms: readonly string[];
+    weight: number;
+    max_score: number;
+  };
+  /** Freshness buckets. */
+  freshness: {
+    within_24h: number;
+    within_3d: number;
+    older: number;
+  };
+  /** Minimum score to promote a list row to detail enrichment. */
+  list_threshold: number;
+  /** Minimum score required to append an enriched row to pipeline.md. */
+  pipeline_threshold: number;
+  /** Minimum detailed value score required after reading detail-page elements. */
+  detail_value_threshold: number;
+  /** Walk-away compensation floor parsed from the user profile. */
+  compensation_min_usd: number;
+  /** Profile-driven hard blockers that should skip roles before pipeline write. */
+  hard_filters: {
+    /** Always skip roles from these user-blacklisted companies. */
+    blocked_companies: readonly string[];
+    /** Skip roles that explicitly do not provide sponsorship support. */
+    exclude_no_sponsorship: boolean;
+    /** Skip roles that require an active secret security clearance. */
+    exclude_active_security_clearance: boolean;
+    /** Skip roles whose explicit minimum experience exceeds this many years. */
+    max_years_experience: number;
+    /** Lowercased phrases that indicate sponsorship is unavailable. */
+    no_sponsorship_keywords: readonly string[];
+    /** Phrases that indicate sponsorship is available. */
+    sponsorship_positive_keywords?: readonly string[];
+    /** Company names that should be skipped because they do not sponsor. */
+    no_sponsorship_companies: readonly string[];
+    /** Lowercased phrases that indicate active secret clearance is required. */
+    clearance_keywords: readonly string[];
+    /** Company names that should be skipped because they require active clearance. */
+    active_security_clearance_companies: readonly string[];
+  };
+  /** Max number of background tabs to open concurrently. */
+  detail_concurrent_tabs: number;
+  /** Minimum randomized delay between enrichment batches. */
+  detail_delay_min_ms: number;
+  /** Maximum randomized delay between enrichment batches. */
+  detail_delay_max_ms: number;
+}

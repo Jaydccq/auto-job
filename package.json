@@ -1,0 +1,61 @@
+{
+  "name": "auto-job",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local-first AI job-search runtime: scan, evaluate, track, document.",
+  "scripts": {
+    "doctor": "node doctor.mjs",
+    "verify": "node verify-pipeline.mjs",
+    "verify:repo-guard": "node scripts/verify-repo-guard.mjs",
+    "normalize": "node normalize-statuses.mjs",
+    "dedup": "node dedup-tracker.mjs",
+    "merge": "node merge-tracker.mjs",
+    "pdf": "node generate-pdf.mjs",
+    "cover-letter": "node generate-cover-letter.mjs",
+    "sync-check": "node cv-sync-check.mjs",
+    "liveness": "node check-liveness.mjs",
+    "scan": "node scan.mjs",
+    "builtin-scan": "./apps/server/node_modules/.bin/tsx scripts/job-board-scan-bb-browser.ts --source builtin",
+    "newgrad-scan": "./apps/server/node_modules/.bin/tsx scripts/newgrad-scan-autonomous.ts",
+    "newgrad-scan:login": "node scripts/newgrad-scan-login.mjs",
+    "newgrad-rerun-history": "./apps/server/node_modules/.bin/tsx scripts/rerun-newgrad-history.ts",
+    "linkedin-scan": "./apps/server/node_modules/.bin/tsx scripts/linkedin-scan-bb-browser.ts",
+    "indeed-scan": "./apps/server/node_modules/.bin/tsx scripts/job-board-scan-bb-browser.ts --source indeed",
+    "auto:hourly-scan": "node scripts/hourly-job-scan.mjs",
+    "auto:hourly-scan:dry": "CAREER_OPS_SCAN_DRY_RUN=1 node scripts/hourly-job-scan.mjs",
+    "pending:warm-cache": "node scripts/warm-legacy-pending-cache.mjs",
+    "gmail:auth": "node scripts/gmail-oauth-refresh.mjs auth",
+    "gmail:scan": "node scripts/gmail-oauth-refresh.mjs scan",
+    "gmail:update": "node scripts/refresh-gmail-signals.mjs",
+    "dashboard": "echo 'open http://127.0.0.1:47319/dashboard/'",
+    "dashboard:build": "node web/build-dashboard.mjs",
+    "ext:build": "bun run --cwd apps/extension build",
+    "ext:launcher": "node scripts/extension-launcher.mjs",
+    "server": "node scripts/bridge-start.mjs",
+    "server:dev": "bun run ext:build && bun run server",
+    "app:install": "node scripts/install-launch-agent.mjs",
+    "app:uninstall": "node scripts/uninstall-launch-agent.mjs",
+    "app:status": "node scripts/app-status.mjs",
+    "app:logs": "node scripts/app-logs.mjs",
+    "app:logs:err": "node scripts/app-logs.mjs --err",
+    "app:restart": "launchctl kickstart -k gui/$(id -u)/io.hongxi.career-ops"
+  },
+  "keywords": [
+    "job-search",
+    "claude-code",
+    "automation",
+    "local-first"
+  ],
+  "author": "Hongxi Chen",
+  "homepage": "https://github.com/Jaydccq/auto-job",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Jaydccq/auto-job.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "js-yaml": "^4.1.1",
+    "playwright": "^1.58.1"
+  }
+}

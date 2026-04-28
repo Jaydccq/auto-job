@@ -1,0 +1,47 @@
+{
+  "name": "@career-ops/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./contracts/envelope": {
+      "types": "./src/contracts/envelope.ts",
+      "development": "./src/contracts/envelope.ts",
+      "default": "./dist/contracts/envelope.js"
+    },
+    "./contracts/jobs": {
+      "types": "./src/contracts/jobs.ts",
+      "development": "./src/contracts/jobs.ts",
+      "default": "./dist/contracts/jobs.js"
+    },
+    "./contracts/api": {
+      "types": "./src/contracts/api.ts",
+      "development": "./src/contracts/api.ts",
+      "default": "./dist/contracts/api.js"
+    },
+    "./contracts/newgrad": {
+      "types": "./src/contracts/newgrad.ts",
+      "development": "./src/contracts/newgrad.ts",
+      "default": "./dist/contracts/newgrad.js"
+    },
+    "./contracts/autofill": {
+      "types": "./src/contracts/autofill.ts",
+      "development": "./src/contracts/autofill.ts",
+      "default": "./dist/contracts/autofill.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

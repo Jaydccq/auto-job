@@ -1,0 +1,41 @@
+{
+  "name": "@career-ops/server",
+  "version": "0.1.0-phase1",
+  "private": true,
+  "description": "Local HTTP companion that bridges the Chrome extension to the career-ops CLI pipeline. Phase 1 = contracts only.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "build:js": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js --sourcemap --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
+    "build": "bun run build:types && bun run build:js",
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "esbuild": "^0.24.2",
+    "happy-dom": "^20.9.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.4"
+  },
+  "dependencies": {
+    "@career-ops/shared": "workspace:*",
+    "fastify": "^5.8.4",
+    "js-yaml": "^4.1.1",
+    "nanoid": "^5.1.7",
+    "yaml": "^2.8.3",
+    "zod": "^3.25.76"
+  }
+}

@@ -1,0 +1,81 @@
+# Portal scanner example.
+# Copy to portals.yml in the repo root and customize for your search.
+# `portals.yml` is gitignored — it stays personal.
+#
+# Each company entry declares: ats (greenhouse|ashby|lever|workable|...),
+# the company slug used by that ATS, and an optional title_filter.
+
+scan:
+  # Hard requirements applied to every offer regardless of company.
+  global_filters:
+    require_locations:
+      - United States
+      - Remote
+      - Anywhere
+    skip_locations:
+      - China
+      - India
+    title_filter:
+      positive:
+        - software engineer
+        - backend engineer
+        - ai engineer
+        - applied scientist
+        - machine learning engineer
+      negative:
+        - sales
+        - manager
+        - director
+        - intern
+    skip_companies:
+      - ExampleNoSponsor Inc
+
+  # Concurrency knobs.
+  parallel:
+    list_concurrency: 4
+    detail_concurrency: 6
+
+# Companies to crawl. Add as many as you want. The scanner uses the public
+# careers API of the relevant ATS — no scraping, no token cost.
+companies:
+  - name: Stripe
+    ats: greenhouse
+    slug: stripe
+    title_filter:
+      positive: [engineer, scientist]
+
+  - name: Anthropic
+    ats: ashby
+    slug: anthropic
+
+  - name: Notion
+    ats: lever
+    slug: notion
+
+  - name: Linear
+    ats: ashby
+    slug: linear
+
+  - name: Vercel
+    ats: greenhouse
+    slug: vercel
+
+  - name: Sourcegraph
+    ats: greenhouse
+    slug: sourcegraph
+
+  - name: Replit
+    ats: ashby
+    slug: replit
+
+  - name: Discord
+    ats: greenhouse
+    slug: discord
+
+  - name: GitHub
+    ats: greenhouse
+    slug: github
+
+  - name: Figma
+    ats: ashby
+    slug: figma

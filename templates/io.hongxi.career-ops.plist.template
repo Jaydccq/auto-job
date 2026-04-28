@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key><string>io.hongxi.career-ops</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>{{NODE_PATH}}</string>
+        <string>{{REPO_PATH}}/scripts/bridge-start.mjs</string>
+    </array>
+    <key>WorkingDirectory</key><string>{{REPO_PATH}}</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key><string>{{USER_PATH}}</string>
+        <key>HOME</key><string>{{HOME_PATH}}</string>
+        <key>CAREER_OPS_BACKEND</key><string>real-codex</string>
+        <key>CAREER_OPS_BRIDGE_HOST</key><string>127.0.0.1</string>
+        <key>CAREER_OPS_BRIDGE_PORT</key><string>47319</string>
+    </dict>
+    <key>RunAtLoad</key><true/>
+    <key>KeepAlive</key>
+    <dict>
+        <key>Crashed</key><true/>
+        <key>SuccessfulExit</key><false/>
+    </dict>
+    <key>StandardOutPath</key><string>{{LOG_DIR}}/server.out.log</string>
+    <key>StandardErrorPath</key><string>{{LOG_DIR}}/server.err.log</string>
+    <key>ProcessType</key><string>Background</string>
+</dict>
+</plist>

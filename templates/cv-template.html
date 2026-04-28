@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>{{full_name}} — {{target_role}}</title>
+<style>
+  :root {
+    --ink: #111827;
+    --muted: #4b5563;
+    --hairline: #d1d5db;
+    --accent: #1d4ed8;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+    font-size: 10.25pt;
+    line-height: 1.42;
+    color: var(--ink);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    size: A4;
+    margin: 0.6in;
+  }
+
+  header {
+    border-bottom: 1px solid var(--hairline);
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 18pt;
+    letter-spacing: 0.5px;
+  }
+  header .role {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 11pt;
+  }
+  header .contacts {
+    margin-top: 6px;
+    font-size: 9.5pt;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+  }
+  header .contacts a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  section {
+    margin-top: 14px;
+    page-break-inside: auto;
+  }
+  section h2 {
+    margin: 0 0 6px;
+    font-size: 11pt;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--hairline);
+    padding-bottom: 2px;
+  }
+
+  .summary { margin: 0 0 4px; }
+
+  .item {
+    margin-bottom: 10px;
+    page-break-inside: avoid;
+  }
+  .item .heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .item .heading .left { font-weight: 600; }
+  .item .heading .right {
+    color: var(--muted);
+    font-size: 9.5pt;
+    white-space: nowrap;
+  }
+  .item .sub {
+    color: var(--muted);
+    font-size: 9.75pt;
+    margin-top: 1px;
+  }
+  .item ul {
+    list-style: disc;
+    margin: 4px 0 0;
+    padding-left: 18px;
+  }
+  .item li { margin: 1.5px 0; }
+
+  .skills {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 4px 12px;
+  }
+  .skills .label { font-weight: 600; }
+  .skills .value { }
+
+  .projects .item .stack {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 9.5pt;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>{{full_name}}</h1>
+  <div class="role">{{target_role}}</div>
+  <div class="contacts">
+    <span>{{location}}</span>
+    <span>·</span>
+    <a href="mailto:{{email}}">{{email}}</a>
+    <span>·</span>
+    <a href="{{linkedin}}">{{linkedin_label}}</a>
+    <span>·</span>
+    <a href="{{github}}">{{github_label}}</a>
+    <span>·</span>
+    <a href="{{portfolio}}">{{portfolio_label}}</a>
+  </div>
+</header>
+
+<section class="summary-section">
+  <h2>Summary</h2>
+  <p class="summary">{{summary}}</p>
+</section>
+
+<section class="experience">
+  <h2>Experience</h2>
+  <!-- Repeat .item per role -->
+  <div class="item">
+    <div class="heading">
+      <div class="left">{{role_title}} — {{company}}</div>
+      <div class="right">{{date_range}} · {{location}}</div>
+    </div>
+    <div class="sub">{{role_subtitle}}</div>
+    <ul>
+      <li>{{bullet_with_metric}}</li>
+    </ul>
+  </div>
+</section>
+
+<section class="projects">
+  <h2>Selected Projects</h2>
+  <div class="item">
+    <div class="heading">
+      <div class="left">{{project_name}}</div>
+      <div class="right">{{project_link}}</div>
+    </div>
+    <div class="stack">{{stack}}</div>
+    <ul>
+      <li>{{outcome_with_metric}}</li>
+    </ul>
+  </div>
+</section>
+
+<section class="education">
+  <h2>Education</h2>
+  <div class="item">
+    <div class="heading">
+      <div class="left">{{degree}} — {{school}}</div>
+      <div class="right">{{date_range}}</div>
+    </div>
+    <div class="sub">{{honors_or_focus}}</div>
+  </div>
+</section>
+
+<section class="skills-section">
+  <h2>Skills</h2>
+  <div class="skills">
+    <div class="label">Languages</div><div class="value">{{languages}}</div>
+    <div class="label">Frameworks</div><div class="value">{{frameworks}}</div>
+    <div class="label">Infrastructure</div><div class="value">{{infrastructure}}</div>
+    <div class="label">Tooling</div><div class="value">{{tooling}}</div>
+  </div>
+</section>
+
+</body>
+</html>

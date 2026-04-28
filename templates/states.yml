@@ -1,0 +1,58 @@
+# Canonical application states.
+#
+# The `status` column in data/applications.md must contain exactly one of the
+# `label` values below. The matcher is case-insensitive and accepts any value
+# in `aliases`. Anything else is rejected by `bun run normalize` and flagged by
+# `bun run verify`.
+#
+# Do not encode dates, scores, or notes in the status column — those have their
+# own columns.
+
+states:
+  - id: evaluated
+    label: Evaluated
+    aliases: []
+    description: Report produced; user has not yet decided whether to apply.
+    dashboard_group: evaluated
+
+  - id: applied
+    label: Applied
+    aliases: [sent, submitted]
+    description: Application submitted to the company.
+    dashboard_group: applied
+
+  - id: responded
+    label: Responded
+    aliases: [acknowledged]
+    description: Company replied (e.g., recruiter screen request) but no interview yet.
+    dashboard_group: responded
+
+  - id: interview
+    label: Interview
+    aliases: [phone-screen, onsite, technical, final-round]
+    description: Active interview process.
+    dashboard_group: interview
+
+  - id: offer
+    label: Offer
+    aliases: [verbal-offer, written-offer]
+    description: Offer received.
+    dashboard_group: offer
+
+  - id: rejected
+    label: Rejected
+    aliases: [declined-by-company]
+    description: Company rejected the application.
+    dashboard_group: rejected
+
+  - id: discarded
+    label: Discarded
+    aliases: [withdrawn, closed, expired]
+    description: Candidate withdrew or posting closed before applying.
+    dashboard_group: discarded
+
+  - id: skip
+    label: SKIP
+    aliases: [no-fit, monitor]
+    description: Evaluated and intentionally not applied.
+    dashboard_group: skip

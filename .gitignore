@@ -1,0 +1,102 @@
+# Personal data (user fills these)
+cv.md
+data/applications.md
+data/pipeline.md
+data/scan-history.tsv
+data/gmail-signals.jsonl
+data/gmail-refresh-status.json
+reports/*.md
+!reports/.gitkeep
+output/*
+!output/.gitkeep
+batch/logs/*
+!batch/logs/.gitkeep
+batch/batch-state.tsv
+batch/batch-input.tsv
+batch/tracker-additions/**/*.tsv
+!batch/tracker-additions/.gitkeep
+jds/*
+!jds/.gitkeep
+
+# User config and customization (never auto-updated)
+cv.md
+article-digest.md
+config/profile.yml
+config/gmail-oauth-credentials.json
+config/gmail-oauth-token.json
+portals.yml
+modes/_profile.md
+.update-dismissed
+.update-lock
+
+# Secrets (never commit — use .env.example as template)
+.env
+
+# Generated
+.resolved-prompt-*
+node_modules/
+bun.lock
+
+# OS
+.DS_Store
+*.mov
+*.mp4
+
+# Claude Code local
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/memory/
+.claude/projects/
+package-lock.json
+
+# Bridge / server (apps/server)
+apps/server/.bridge-token
+apps/server/node_modules/
+apps/server/dist/
+apps/server/package-lock.json
+
+# Extension
+apps/extension/node_modules/
+apps/extension/dist/
+apps/extension/package-lock.json
+
+# Desktop (Electron)
+apps/desktop/node_modules/
+apps/desktop/dist/
+apps/desktop/release/
+apps/desktop/package-lock.json
+
+# Shared package (built JS for production consumers)
+packages/shared/node_modules/
+packages/shared/dist/
+packages/shared/package-lock.json
+
+# Session artifacts
+.agents/
+**/CLAUDE.md
+!/CLAUDE.md
+batch/.bridge-prompt-*.md
+data/newgrad-skill-stats.json
+data/browser-profiles/
+data/automation/*
+!data/automation/.gitkeep
+data/scan-runs/*
+!data/scan-runs/.gitkeep
+
+batch/.report-number-reservations
+docs/exec-plans/*
+!docs/exec-plans/README.md
+!docs/exec-plans/tech-debt-tracker.md
+!docs/exec-plans/active/
+!docs/exec-plans/active/*.md
+!docs/exec-plans/archive/
+!docs/exec-plans/archive/*.md
+!docs/exec-plans/summaries/
+!docs/exec-plans/summaries/*.md
+docs/exec-plans/active/*-evaluation.md
+docs/exec-plans/active/*-eval.md
+docs/exec-plans/active/2026-*-evaluation.md
+
+# Git worktrees for parallel feature development
+.worktrees/
+bb-browser/
