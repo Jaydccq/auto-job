@@ -565,6 +565,33 @@ function isTrustedRecruitingSender(from = {}) {
   return /\b(recruiting|talent acquisition|candidate experience|careers)\b/i.test(`${from.name || ''} ${from.email || ''}`);
 }
 
+const ALL_EVENT_TYPES = new Set([
+  'applied',
+  'responded',
+  'online_assessment',
+  'interview',
+  'offer',
+  'rejected',
+  'action_required',
+]);
+
+const RESTRICTED_SENDER_DOMAINS = new Map([
+  ['linkedin.com', new Set(['applied', 'responded'])],
+]);
+
+export function senderClassificationPolicy(from = {}) {
+  const domain = emailDomain(from.email || '');
+  for (const [restrictedDomain, allowedEvents] of RESTRICTED_SENDER_DOMAINS) {
+    if (domain === restrictedDomain || domain.endsWith(`.${restrictedDomain}`)) {
+      return { allowedEvents: new Set(allowedEvents), isTrusted: false };
+    }
+  }
+  return {
+    allowedEvents: new Set(ALL_EVENT_TYPES),
+    isTrusted: isTrustedRecruitingSender(from),
+  };
+}
+
 function hasPersonalHiringContext(text = '') {
   return hasAnyPattern(PERSONAL_HIRING_CONTEXT_PATTERNS, text);
 }
@@ -660,6 +687,7 @@ function isGenericRole(value = '') {
 export function classifyEvent({ subject = '', text = '', from = {} }) {
   const haystack = `${subject}\n${text}`;
   const lower = haystack.toLowerCase();
+  const policy = senderClassificationPolicy(from);
   const trustedSender = isTrustedRecruitingSender(from);
   const personalHiringContext = hasPersonalHiringContext(haystack);
   const weakHiringContext = hasWeakHiringContext(haystack);
@@ -668,32 +696,43 @@ export function classifyEvent({ subject = '', text = '', from = {} }) {
   if (hasAnyPattern(NEWSLETTER_NOISE_PATTERNS, subject) && !hasDirectSignalContext(subject)) return '';
   if (!hiringContext || isLikelyMailboxNoise({ text: haystack, from })) return '';
 
+  const decide = (event) => (policy.allowedEvents.has(event) ? event : '');
+
   if (/\b(offer letter|job offer|employment offer|extend(?:ing)? (?:you )?an offer|offer for (?:the )?(?:position|role|job|opening))\b/.test(lower)) {
-    return 'offer';
+    const result = decide('offer');
+    if (result) return result;
   }
   if (/\b(unfortunately|not moving forward|will not be moving forward|not selected|decided not to proceed|filled the position|closed the role|position has been filled)\b/.test(lower)) {
-    return 'rejected';
+    const result = decide('rejected');
+    if (result) return result;
   }
   if (isApplicationReviewOnly(haystack)) {
-    return 'applied';
+    const result = decide('applied');
+    if (result) return result;
   }
   if (/\b(interview invitation|your interview|interview schedul(?:e|ing|ed)|interview is scheduled|meeting is scheduled|self-schedule|schedule (?:an? |your |the )?(?:interview|call|phone screen)|google meet|exploratory call|phone screen|onsite|technical screen)\b/.test(lower)) {
-    return 'interview';
+    const result = decide('interview');
+    if (result) return result;
   }
   if (/\b(online assessment|coding challenge|hackerrank|codesignal|oa\b|complete your test|assessment for (?:the )?(?:position|role|job))\b/.test(lower)) {
-    return 'online_assessment';
+    const result = decide('online_assessment');
+    if (result) return result;
   }
   if (/\b(action required|please complete|deadline|due by|requires your attention)\b/.test(lower)) {
-    return 'action_required';
+    const result = decide('action_required');
+    if (result) return result;
   }
   if (/\b(received your application|thank you for applying|application received|we received your application|submitted your application)\b/.test(lower)) {
-    return 'applied';
+    const result = decide('applied');
+    if (result) return result;
   }
   if (/\bapplication status\b/.test(lower)) {
-    return 'responded';
+    const result = decide('responded');
+    if (result) return result;
   }
   if (/\b(talent acquisition|next step|invite you|would like to speak|would like to schedule|would like to connect)\b/.test(lower)) {
-    return 'responded';
+    const result = decide('responded');
+    if (result) return result;
   }
   return '';
 }
