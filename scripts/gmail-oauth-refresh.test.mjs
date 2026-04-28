@@ -115,3 +115,41 @@ test('extractSignalFromMessage uses ATS sender name as company for ashbyhq.com',
   assert.equal(signal.company, 'Whatnot');
   assert.equal(signal.eventType, 'applied');
 });
+
+import { isGenericCompany } from './gmail-oauth-refresh.mjs';
+
+test('isGenericCompany rejects bare role nouns', () => {
+  assert.equal(isGenericCompany('Software Engineer'), true);
+  assert.equal(isGenericCompany('Data Scientist'), true);
+  assert.equal(isGenericCompany('Machine Learning Engineer'), true);
+});
+
+test('isGenericCompany rejects short prepositional fragments', () => {
+  assert.equal(isGenericCompany('this time'), true);
+  assert.equal(isGenericCompany('our Graduate 2026 Software Engineer I'), true);
+  assert.equal(isGenericCompany('an ideal fit'), true);
+});
+
+test('isGenericCompany rejects role-at-company smushed phrases', () => {
+  assert.equal(isGenericCompany('AI Engineer at PRI Global'), true);
+  assert.equal(isGenericCompany('Backend Engineer at Acme'), true);
+});
+
+test('isGenericCompany accepts real company names', () => {
+  assert.equal(isGenericCompany('Whatnot'), false);
+  assert.equal(isGenericCompany('Kinstead'), false);
+  assert.equal(isGenericCompany('LendingClub'), false);
+  assert.equal(isGenericCompany('Grant Street Group'), false);
+});
+
+test('isGenericCompany accepts capitalized "The X" company names', () => {
+  assert.equal(isGenericCompany('The Walt Disney Company'), false);
+  assert.equal(isGenericCompany('The Trade Desk'), false);
+  assert.equal(isGenericCompany('The Home Depot'), false);
+});
+
+test('isGenericCompany still rejects "the X" lowercase prose fragments', () => {
+  assert.equal(isGenericCompany('the next step'), true);
+  assert.equal(isGenericCompany('the ideal candidate'), true);
+  assert.equal(isGenericCompany('the role'), true);
+});

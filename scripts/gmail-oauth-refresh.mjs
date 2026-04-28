@@ -689,11 +689,23 @@ function firstPattern(patterns, text) {
   return '';
 }
 
-function isGenericCompany(value = '') {
-  return !value ||
-    /^(jobvite|ats|greenhouse|workday|myworkday|rippling|unknown company)$/i.test(value) ||
-    /^(?:an?\s+)?unattended mailbox\b/i.test(value) ||
-    /\b(position|role|job|opening)\s+at\b/i.test(value);
+const ROLE_NOUN_PATTERN = /^(?:senior\s+|staff\s+|principal\s+|junior\s+|lead\s+)?(?:software|data|machine learning|ml|ai|backend|frontend|full[- ]?stack|platform|systems?|security|devops|site reliability|infrastructure|product|research|applied)\s+(?:engineer|scientist|developer|manager|analyst|researcher|intern)s?$/i;
+// "The" alone is not a fragment — real companies start with "The" (Disney, Home Depot, Trade Desk).
+// Only treat "the X" as a fragment when X is lowercase prose or a known stopword.
+const PREPOSITION_FRAGMENT_PATTERN = /^(?:this|that|an?|our|your|their|his|her)\b/i;
+const THE_FRAGMENT_PATTERN = /^the\s+(?:[a-z]|ideal|next|right|best|perfect|first|last|new|same|only|role|position|opportunity|opening|candidate|team|company|hiring)\b/;
+const ROLE_AT_COMPANY_PATTERN = /\b(?:engineer|scientist|developer|manager|analyst|researcher|intern)\s+(?:at|with|for)\s+/i;
+
+export function isGenericCompany(value = '') {
+  if (!value) return true;
+  if (/^(jobvite|ats|greenhouse|workday|myworkday|rippling|unknown company)$/i.test(value)) return true;
+  if (/^(?:an?\s+)?unattended mailbox\b/i.test(value)) return true;
+  if (/\b(position|role|job|opening)\s+at\b/i.test(value)) return true;
+  if (ROLE_NOUN_PATTERN.test(value.trim())) return true;
+  if (PREPOSITION_FRAGMENT_PATTERN.test(value.trim())) return true;
+  if (THE_FRAGMENT_PATTERN.test(value.trim())) return true;
+  if (ROLE_AT_COMPANY_PATTERN.test(value)) return true;
+  return false;
 }
 
 function isGenericRole(value = '') {
