@@ -656,6 +656,24 @@ function cleanCompany(value = '') {
     .trim();
 }
 
+const ATS_SENDER_NAME_SUFFIX_RE = /\s+(?:hiring team|recruiting team|recruiting|talent acquisition|talent team|talent|careers|candidate experience|people team|hr team|human resources)\s*$/i;
+
+export function companyFromAtsSenderName(from = {}) {
+  const domain = emailDomain(from.email || '');
+  const isAts = TRUSTED_RECRUITING_DOMAINS.some(
+    (trusted) => domain === trusted || domain.endsWith(`.${trusted}`)
+  );
+  if (!isAts) return '';
+  const rawName = (from.name || '').trim();
+  if (!rawName) return '';
+  if (GENERIC_SENDER_NAMES.has(rawName.toLowerCase())) return '';
+  const stripped = rawName.replace(ATS_SENDER_NAME_SUFFIX_RE, '').trim();
+  if (!stripped) return '';
+  if (GENERIC_SENDER_NAMES.has(stripped.toLowerCase())) return '';
+  if (isGenericCompany(stripped)) return '';
+  return cleanCompany(stripped);
+}
+
 function cleanRole(value = '') {
   return value
     .replace(/\s+(position|role|job|opening)$/i, '')
@@ -747,6 +765,7 @@ export function extractSignalFromMessage(message) {
   if (!eventType) return null;
 
   const companyCandidates = [
+    companyFromAtsSenderName(from),
     cleanCompany(firstPattern([
       /application for\s+.+?\s+at\s+([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\n|\s{2,}|$)/i,
       /(?:thank you|thanks) for applying to\s+([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\||\n|\s{2,}|$)/i,
@@ -762,7 +781,7 @@ export function extractSignalFromMessage(message) {
     ], searchText)),
     domainCompany(from.email),
     senderNameCompany(from.name),
-  ].filter((candidate) => !isGenericCompany(candidate));
+  ].filter((candidate) => candidate && !isGenericCompany(candidate));
   const company = companyCandidates[0] || '';
 
   const roleCandidates = [

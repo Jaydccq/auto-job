@@ -4,6 +4,8 @@ import {
   sanitizeMessageText,
   classifyEvent,
   senderClassificationPolicy,
+  companyFromAtsSenderName,
+  extractSignalFromMessage,
 } from './gmail-oauth-refresh.mjs';
 
 test('sanitizeMessageText strips combining grapheme joiner U+034F', () => {
@@ -71,4 +73,45 @@ test('classifyEvent: real Kinstead rejection from ATS still classifies as reject
     from: { name: 'Kinstead Hiring Team', email: 'no-reply@ashbyhq.com' },
   });
   assert.equal(event, 'rejected');
+});
+
+test('companyFromAtsSenderName strips Hiring Team / Recruiting / Talent Acquisition / Careers suffixes', () => {
+  assert.equal(companyFromAtsSenderName({ name: 'Whatnot Hiring Team', email: 'no-reply@ashbyhq.com' }), 'Whatnot');
+  assert.equal(companyFromAtsSenderName({ name: 'Kinstead Hiring Team', email: 'no-reply@ashbyhq.com' }), 'Kinstead');
+  assert.equal(companyFromAtsSenderName({ name: 'Stripe Recruiting', email: 'noreply@greenhouse-mail.io' }), 'Stripe');
+  assert.equal(companyFromAtsSenderName({ name: 'Datadog Talent Acquisition', email: 'donotreply@hire.lever.co' }), 'Datadog');
+  assert.equal(companyFromAtsSenderName({ name: 'Acme Careers', email: 'careers@myworkday.com' }), 'Acme');
+});
+
+test('companyFromAtsSenderName returns empty for non-ATS senders', () => {
+  assert.equal(companyFromAtsSenderName({ name: 'Whatnot Hiring Team', email: 'recruiter@example.com' }), '');
+});
+
+test('companyFromAtsSenderName returns empty for generic-only names', () => {
+  assert.equal(companyFromAtsSenderName({ name: 'Recruiting', email: 'noreply@greenhouse-mail.io' }), '');
+  assert.equal(companyFromAtsSenderName({ name: 'no-reply', email: 'noreply@ashbyhq.com' }), '');
+});
+
+function fakeAtsMessage({ id = 'mid-1', threadId = 'tid-1', from = '"Whatnot Hiring Team" <no-reply@ashbyhq.com>', subject = 'Thank you for applying to Whatnot!', body = 'Hongxi, Thanks so much for applying for the Software Engineer, Fraud role at Whatnot!', date = 'Mon, 27 Apr 2026 06:40:05 +0000', internalDate = '1745822405000' } = {}) {
+  return {
+    id,
+    threadId,
+    snippet: body.slice(0, 120),
+    internalDate,
+    payload: {
+      headers: [
+        { name: 'From', value: from },
+        { name: 'Subject', value: subject },
+        { name: 'Date', value: date },
+      ],
+      mimeType: 'text/plain',
+      body: { data: Buffer.from(body, 'utf8').toString('base64url') },
+    },
+  };
+}
+
+test('extractSignalFromMessage uses ATS sender name as company for ashbyhq.com', () => {
+  const signal = extractSignalFromMessage(fakeAtsMessage());
+  assert.equal(signal.company, 'Whatnot');
+  assert.equal(signal.eventType, 'applied');
 });
