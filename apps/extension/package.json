@@ -11,7 +11,7 @@
   "devDependencies": {
     "@types/chrome": "^0.0.280",
     "esbuild": "^0.24.2",
-    "typescript": "^5.6.3"
+    "typescript": "^6.0.3"
   },
   "dependencies": {
     "@auto-job/shared": "workspace:*"
