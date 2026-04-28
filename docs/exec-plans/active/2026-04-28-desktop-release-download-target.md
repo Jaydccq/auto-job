@@ -47,6 +47,7 @@ Make the desktop app package current, route generated application document saves
 - 2026-04-28: Ran `pnpm --dir apps/server test src/routes/dashboard.test.ts`; 21 tests passed, including the new Desktop default assertion.
 - 2026-04-28: Ran `pnpm --dir apps/desktop typecheck`; passed.
 - 2026-04-28: Removed stale `apps/desktop/release/` output and rebuilt with `pnpm --dir apps/desktop package`. The first sandboxed run failed on `~/Library/Caches/electron-builder`; the escalated rerun succeeded and produced `apps/desktop/release/Auto Job-1.3.0-arm64.dmg`.
+- 2026-04-28: Pushed commit `ddc0533` to `origin/main`, created GitHub release `v1.3.0`, and uploaded the macOS DMG asset. Verified release URL: `https://github.com/Jaydccq/auto-job/releases/tag/v1.3.0`.
 
 ## Key Decisions
 
@@ -60,4 +61,4 @@ Make the desktop app package current, route generated application document saves
 
 ## Final Outcome
 
-Pending GitHub release publication.
+Completed. The desktop app saves generated application PDFs to `~/Desktop` by default, stale local package output was replaced, the current macOS arm64 DMG was rebuilt, and GitHub release `v1.3.0` was published with the DMG asset.
