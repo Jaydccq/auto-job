@@ -1,7 +1,7 @@
 {
   "name": "@auto-job/desktop",
   "private": true,
-  "version": "0.1.0-phase1",
+  "version": "1.3.0",
   "productName": "Auto Job",
   "description": "Career-ops desktop client — bridge + dashboard in one app",
   "author": "Hongxi Chen <smyhc1@gmail.com>",

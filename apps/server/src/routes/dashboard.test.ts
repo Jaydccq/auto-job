@@ -1,5 +1,5 @@
 import { mkdirSync, mkdtempSync, writeFileSync, rmSync, existsSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -293,6 +293,27 @@ describe("dashboard routes", () => {
         await fastify.close();
       }
     });
+
+    it("reports Desktop as the default document save directory", async () => {
+      const { fastify } = buildServer({
+        config: makeConfig(tmpRepoRoot),
+        adapter: makeAdapter(),
+      });
+      try {
+        const res = await fastify.inject({
+          method: "GET",
+          url: "/dashboard/api/health",
+          headers: { "x-auto-job-token": TOKEN },
+        });
+        expect(res.statusCode).toBe(200);
+        expect(res.json()).toEqual({
+          ok: true,
+          downloadsDir: join(homedir(), "Desktop"),
+        });
+      } finally {
+        await fastify.close();
+      }
+    });
   });
 
   describe("POST /dashboard/api/apply-docs/generate", () => {
@@ -395,7 +416,7 @@ describe("dashboard routes", () => {
         type: "cv",
         filename: "cv.pdf",
         outputPath: "/tmp/x/cv.pdf",
-        savedPath: "/Users/test/Downloads/cv.pdf",
+        savedPath: "/Users/test/Desktop/cv.pdf",
       };
       const { fastify } = buildServer({
         config: makeConfig(tmpRepoRoot),

@@ -68,7 +68,7 @@ bun run --cwd apps/desktop package
 
 This produces:
 - `apps/desktop/release/mac-arm64/Auto Job.app` (the bundle)
-- `apps/desktop/release/Auto Job-0.1.0-phase1-arm64.dmg` (drag installer)
+- `apps/desktop/release/Auto Job-1.3.0-arm64.dmg` (drag installer)
 
 For a faster iteration loop (skip DMG, just the .app):
 
@@ -80,6 +80,20 @@ Drag `Auto Job.app` to `/Applications/`. The bundle is unsigned, so
 macOS Gatekeeper will warn the first time — right-click the .app and
 choose **Open** to bypass. To run on other Macs, you'd need an Apple
 Developer ID and signing/notarization (out of scope here).
+
+Apply Next document save buttons write generated PDFs to `~/Desktop` by
+default. The generated originals remain under `output/`.
+
+### GitHub release
+
+Use the repo `VERSION` file as the release tag source. After rebuilding:
+
+```bash
+gh release create "v$(cat VERSION)" \
+  "apps/desktop/release/Auto Job-$(cat VERSION)-arm64.dmg" \
+  --title "Auto Job v$(cat VERSION)" \
+  --notes "Unsigned macOS arm64 desktop build. Generated application documents save to ~/Desktop by default."
+```
 
 ### Updating the bundled app
 
