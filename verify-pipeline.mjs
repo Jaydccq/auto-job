@@ -114,6 +114,7 @@ checkTracker();
 
 console.log("\nChecking workspaces.\n");
 runBunStep("repo ownership guard", repoRoot, ["run", "verify:repo-guard"]);
+runBunStep("skill mirrors", repoRoot, ["run", "verify:skills"]);
 if (existsSync(join(repoRoot, "apps/server/package.json"))) {
   runBunStep("server tests", join(repoRoot, "apps/server"), ["run", "test"]);
   runBunStep("server typecheck", join(repoRoot, "apps/server"), ["run", "typecheck"]);

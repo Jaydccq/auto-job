@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Restructure career-ops into a desktop application — single Electron app, single port, three evaluation backends (Codex CLI default, Claude CLI, OpenRouter API), no terminal commands required for daily use.
+**Goal:** Restructure auto-job into a desktop application — single Electron app, single port, three evaluation backends (Codex CLI default, Claude CLI, OpenRouter API), no terminal commands required for daily use.
 
 **Architecture:** Six-stage migration. (0) Reorganize `bridge/` + `web/` into one `server/` directory. (1) Drop the SDK adapter, keep CLI + fake adapters. (2) Add an OpenRouter API adapter. (3) Merge bridge and dashboard into one Fastify process on port 47319. (4) Optional one-day LaunchAgent quick win so the bridge auto-starts during the desktop-app build. (5) Build an Electron desktop app that embeds the server, exposes a menu-bar icon, and opens the dashboard as a native window. (6) Retire the LaunchAgent once the desktop app handles auto-launch.
 
 **Tech Stack:** TypeScript (existing), Fastify (existing), Chrome MV3 extension (unchanged), Bun-first workspace packages for the apps/ + packages/ split, Electron 33+ with electron-builder, OpenRouter API for the new adapter, Node 20+.
 
-**Relationship to existing plans:** Complementary to `docs/exec-plans/active/2026-04-27-career-ops-architecture-independence.md`, which owns rebrand / fork severing / module boundaries. This plan owns runtime delivery format. The two share `package.json` edits — coordinate via separate commits but no semantic conflicts.
+**Relationship to existing plans:** Complementary to `docs/exec-plans/active/2026-04-27-auto-job-architecture-independence.md`, which owns rebrand / fork severing / module boundaries. This plan owns runtime delivery format. The two share `package.json` edits — coordinate via separate commits but no semantic conflicts.
 
 ---
 
@@ -36,7 +36,7 @@ Plus the codebase has fork-inherited cruft: 4 evaluation adapters where 2 are un
 **Done = all of the following:**
 
 - After Stage 3: `bun run server` starts one Node process; `http://127.0.0.1:47319/dashboard/` works; extension popup connects to the same port.
-- After Stage 5: Double-clicking `Career Ops.app` (built via `electron-builder`) launches the desktop app. Menu-bar icon shows status. "Open Dashboard" opens the embedded dashboard. The app auto-launches at login. Quitting stops the embedded server cleanly.
+- After Stage 5: Double-clicking `Auto Job.app` (built via `electron-builder`) launches the desktop app. Menu-bar icon shows status. "Open Dashboard" opens the embedded dashboard. The app auto-launches at login. Quitting stops the embedded server cleanly.
 - All existing scan / evaluate / batch / extension / Gmail / dashboard flows still work. `verify-pipeline.mjs`, server tests, extension build all pass.
 - Default evaluation runner is Codex CLI (`real-codex`). Claude CLI and OpenRouter are switchable via menu-bar setting or env var.
 
@@ -68,7 +68,7 @@ Plus the codebase has fork-inherited cruft: 4 evaluation adapters where 2 are un
 1. **macOS-only verification**, Darwin 25.2+. Electron supports Win/Linux but we don't sign / test those here.
 2. **Bun-first package commands** — use Bun for documented installs and script execution while keeping the Node-compatible toolchain required by `bb-browser`, Playwright, Fastify, Electron, and TypeScript.
 3. **Codex CLI is the default backend.** It needs to be on `$PATH` and authenticated. The desktop app surfaces backend errors clearly (e.g. "codex not on PATH") rather than silently falling back.
-4. **OpenRouter API key** lives in `~/.config/career-ops/openrouter.key` (mode 0600) or `OPENROUTER_API_KEY` env var. Desktop app's settings panel lets the user paste it once.
+4. **OpenRouter API key** lives in `~/.config/auto-job/openrouter.key` (mode 0600) or `OPENROUTER_API_KEY` env var. Desktop app's settings panel lets the user paste it once.
 5. **Server-as-module in Electron** — the Electron main process imports `server/index.ts`'s `createServer()` and runs it in-process. No child process. Means: server crash = app crash (visible to user, easy to restart). Acceptable.
 6. **Existing token model preserved** — `bridge/.bridge-token` stays; extension still authenticates with it; dashboard reads it from a server-rendered meta tag.
 7. **Stage ordering matters.** Don't start Stage 5 (Electron) before Stages 0-3. Stage 4 (LaunchAgent) is independently shippable and can run in parallel with Stage 5 development.
@@ -81,14 +81,14 @@ Plus the codebase has fork-inherited cruft: 4 evaluation adapters where 2 are un
 | OD1 | **Electron vs Tauri 2 for the desktop app?** | **Electron** — TypeScript-only, simpler integration with existing Fastify server, no Rust learning curve, no sidecar codesign hassle. Pick Tauri only if distribution matters more than dev velocity. |
 | OD2 | Pursue Stage 4 (LaunchAgent transitional) or skip directly to Stage 5? | Pursue Stage 4 — 1 day of work delivers immediate "no more terminal" wins while Stage 5 takes ~5-7 days |
 | OD3 | OpenRouter default model (when user hasn't picked one)? | `anthropic/claude-3.5-sonnet` — closest to native Claude CLI behavior |
-| OD4 | Where does the OpenRouter API key live? | `~/.config/career-ops/openrouter.key` (chmod 600). Env var `OPENROUTER_API_KEY` overrides. |
+| OD4 | Where does the OpenRouter API key live? | `~/.config/auto-job/openrouter.key` (chmod 600). Env var `OPENROUTER_API_KEY` overrides. |
 | OD5 | Does the desktop app start auto-launching by default after install, or via an explicit "Start at login" toggle? | **Explicit toggle** in settings, default OFF. User opts in. Less surprising. |
 
 ## Architecture Target
 
 ```
 +------------------------------------------------------------------+
-|  Career Ops.app (Electron — Stage 5)                             |
+|  Auto Job.app (Electron — Stage 5)                             |
 |                                                                  |
 |   +--------------------+      +-----------------------------+    |
 |   | Tray icon          | ---> | BrowserWindow (dashboard)   |    |
@@ -127,7 +127,7 @@ Plus the codebase has fork-inherited cruft: 4 evaluation adapters where 2 are un
 |                                                                  |
 +------------------------------------------------------------------+
                             ^
-                            | HTTP loopback, X-Career-Ops-Token
+                            | HTTP loopback, X-Auto-Job-Token
                             |
 +---------------------------+--------------------------------------+
 | Chrome browser                                                   |
@@ -139,7 +139,7 @@ Plus the codebase has fork-inherited cruft: 4 evaluation adapters where 2 are un
 ## File Structure (Target)
 
 ```
-career-ops/
+auto-job/
 ├── apps/
 │   ├── desktop/                    [NEW — Stage 5]
 │   │   ├── src/
@@ -221,7 +221,7 @@ In `package.json`, add `"private": true` (top-level — workspaces require this)
 
 ```json
 {
-  "name": "career-ops",
+  "name": "auto-job",
   "private": true,
   "version": "1.0.0",
   ...
@@ -264,7 +264,7 @@ Edit `apps/server/package.json`:
 
 ```json
 {
-  "name": "@career-ops/server",
+  "name": "@auto-job/server",
   "version": "0.1.0",
   ...
 }
@@ -275,7 +275,7 @@ Edit `apps/server/package.json`:
 Run: `grep -rn "bridge/" --include="*.ts" --include="*.mjs" --include="*.json" --include="*.md" .`
 For each match outside `archive/` or `.git/`:
 - code/ts: replace `bridge/src/...` with `apps/server/src/...` if absolute, or update relative imports
-- package scripts: replace `--prefix bridge` with `--filter @career-ops/server`
+- package scripts: replace `--prefix bridge` with `--filter @auto-job/server`
 
 Key root-script changes:
 
@@ -336,7 +336,7 @@ Edit `apps/extension/package.json`:
 
 ```json
 {
-  "name": "@career-ops/extension",
+  "name": "@auto-job/extension",
   ...
 }
 ```
@@ -419,7 +419,7 @@ mkdir -p packages/shared/src
 
 ```json
 {
-  "name": "@career-ops/shared",
+  "name": "@auto-job/shared",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -467,14 +467,14 @@ In `apps/server/package.json` and `apps/extension/package.json`, add:
 
 ```json
 "dependencies": {
-  "@career-ops/shared": "workspace:*",
+  "@auto-job/shared": "workspace:*",
   ...
 }
 ```
 
 - [ ] **Step 4: Update imports**
 
-In server and extension code, change `from "./contracts"` to `from "@career-ops/shared"` for the moved types.
+In server and extension code, change `from "./contracts"` to `from "@auto-job/shared"` for the moved types.
 
 - [ ] **Step 5: Reinstall + typecheck both apps**
 
@@ -489,7 +489,7 @@ Expected: green.
 
 ```bash
 git add -A
-git commit -m "refactor(workspace): extract @career-ops/shared for cross-app types"
+git commit -m "refactor(workspace): extract @auto-job/shared for cross-app types"
 ```
 
 **Stage 0 exit criteria:** `bun run --cwd packages/shared typecheck && bun run --cwd apps/server typecheck && bun run --cwd apps/extension typecheck && bun run --cwd apps/desktop typecheck` green; extension builds; server tests pass; `bun run linkedin-scan` (and other scanners) still resolve `tsx` correctly.
@@ -596,7 +596,7 @@ The remaining scripts are `legacy bridge script`, `legacy-bridge:claude`, `legac
 -"legacy start script":          "bun run ext:build && node scripts/bridge-start.mjs real-codex",
 -"legacy-start:claude":   "bun run ext:build && node scripts/bridge-start.mjs real-claude",
 -"legacy-start:fake":     "bun run ext:build && node scripts/bridge-start.mjs fake",
-+"server":             "node scripts/bridge-start.mjs ${CAREER_OPS_BACKEND:-real-codex}",
++"server":             "node scripts/bridge-start.mjs ${AUTO_JOB_BACKEND:-real-codex}",
 +"ext:build":          "bun run --cwd apps/extension build"
 ```
 
@@ -604,7 +604,7 @@ Run the extension build separately with `bun run ext:build` when the unpacked ex
 
 - [ ] **Step 2: Update `bridge-start.mjs` to read the env var**
 
-Change the arg parsing to fall back to `process.env.CAREER_OPS_BACKEND` if no positional arg.
+Change the arg parsing to fall back to `process.env.AUTO_JOB_BACKEND` if no positional arg.
 
 - [ ] **Step 3: Search and update callers**
 
@@ -612,14 +612,14 @@ Change the arg parsing to fall back to `process.env.CAREER_OPS_BACKEND` if no po
 grep -rn "bun run server" --include="*.md" --include="*.mjs" --include="*.ts" .
 ```
 
-For each match, update to `bun run server` or `CAREER_OPS_BACKEND=fake bun run server`.
+For each match, update to `bun run server` or `AUTO_JOB_BACKEND=fake bun run server`.
 
 - [ ] **Step 4: Sanity smoke**
 
 ```bash
-CAREER_OPS_BACKEND=fake bun run server &
+AUTO_JOB_BACKEND=fake bun run server &
 sleep 3
-curl -s -H "X-Career-Ops-Token: $(cat apps/server/.bridge-token)" http://127.0.0.1:47319/health
+curl -s -H "X-Auto-Job-Token: $(cat apps/server/.bridge-token)" http://127.0.0.1:47319/health
 kill %1
 ```
 
@@ -812,8 +812,8 @@ export class OpenRouterPipeline implements PipelineAdapter {
                 headers: {
                     "Authorization": `Bearer ${this.cfg.apiKey}`,
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "https://career-ops.local",
-                    "X-Title": "Career Ops"
+                    "HTTP-Referer": "https://auto-job.local",
+                    "X-Title": "Auto Job"
                 },
                 body: JSON.stringify({
                     model: this.cfg.model,
@@ -895,7 +895,7 @@ case "real-openrouter": return new OpenRouterPipeline({
 });
 ```
 
-`readKeyFile()` reads `~/.config/career-ops/openrouter.key` (mode-checked).
+`readKeyFile()` reads `~/.config/auto-job/openrouter.key` (mode-checked).
 
 - [ ] **Step 5: Update `scripts/bridge-start.mjs`**
 
@@ -932,9 +932,9 @@ Anthropic, OpenAI, Google, and other model providers. Use this adapter when:
 2. Save the key:
 
 ```bash
-mkdir -p ~/.config/career-ops
-echo "sk-or-..." > ~/.config/career-ops/openrouter.key
-chmod 600 ~/.config/career-ops/openrouter.key
+mkdir -p ~/.config/auto-job
+echo "sk-or-..." > ~/.config/auto-job/openrouter.key
+chmod 600 ~/.config/auto-job/openrouter.key
 ```
 
 Or set `OPENROUTER_API_KEY` in your environment.
@@ -942,7 +942,7 @@ Or set `OPENROUTER_API_KEY` in your environment.
 3. Run the server with the OpenRouter backend:
 
 ```bash
-CAREER_OPS_BACKEND=real-openrouter bun run server
+AUTO_JOB_BACKEND=real-openrouter bun run server
 ```
 
 Or pick it from the desktop app's menu-bar settings.
@@ -976,7 +976,7 @@ git add docs/adapters/openrouter.md docs/BROWSER_EXTENSION.md
 git commit -m "docs(adapters): document OpenRouter setup and model selection"
 ```
 
-**Stage 2 exit criteria:** `OpenRouterPipeline` class exists, has unit tests, is in the adapter registry. Setting `CAREER_OPS_BACKEND=real-openrouter` + a valid key allows evaluations end-to-end. Smoke test: paste a JD URL in the extension; report is generated through OpenRouter.
+**Stage 2 exit criteria:** `OpenRouterPipeline` class exists, has unit tests, is in the adapter registry. Setting `AUTO_JOB_BACKEND=real-openrouter` + a valid key allows evaluations end-to-end. Smoke test: paste a JD URL in the extension; report is generated through OpenRouter.
 
 ---
 
@@ -1033,7 +1033,7 @@ describe("dashboard route", () => {
         expect(res.status).toBe(200);
         expect(res.headers.get("content-type")).toMatch(/text\/html/);
         const html = await res.text();
-        expect(html).toContain('meta name="career-ops-token"');
+        expect(html).toContain('meta name="auto-job-token"');
         expect(html).toContain(server.token);
     });
 
@@ -1083,7 +1083,7 @@ export async function registerDashboard(app: FastifyInstance, opts: { token: str
         const html = await readFile(join(PUBLIC_DIR, "dashboard.html"), "utf8");
         const injected = html.replace(
             "</head>",
-            `<meta name="career-ops-token" content="${escapeHtml(opts.token)}"></head>`
+            `<meta name="auto-job-token" content="${escapeHtml(opts.token)}"></head>`
         );
         reply.type("text/html; charset=utf-8").send(injected);
     });
@@ -1144,7 +1144,7 @@ Expected: every test fails with 404.
 
 - [ ] **Step 4: Implement endpoints one at a time**
 
-For each, copy the handler body from `web/dashboard-server.mjs`, rewrite from Express to Fastify (`req.params`, `req.query`, `reply.send`), wire into the auth middleware (require `X-Career-Ops-Token`).
+For each, copy the handler body from `web/dashboard-server.mjs`, rewrite from Express to Fastify (`req.params`, `req.query`, `reply.send`), wire into the auth middleware (require `X-Auto-Job-Token`).
 
 - [ ] **Step 5: Run tests after each port**
 
@@ -1171,12 +1171,12 @@ git commit -m "feat(server): port dashboard API endpoints from web/dashboard-ser
 Find every `fetch("http://127.0.0.1:47329/api/...")` (or relative `/api/...`) in the dashboard's inline JS. Replace with a token-aware helper:
 
 ```javascript
-const TOKEN = document.querySelector('meta[name="career-ops-token"]').content;
+const TOKEN = document.querySelector('meta[name="auto-job-token"]').content;
 async function api(path, opts = {}) {
     const res = await fetch(`/dashboard/api${path}`, {
         ...opts,
         headers: {
-            "X-Career-Ops-Token": TOKEN,
+            "X-Auto-Job-Token": TOKEN,
             ...(opts.headers ?? {}),
             ...(opts.body ? { "Content-Type": "application/json" } : {})
         }
@@ -1282,7 +1282,7 @@ Skip this stage if you want to go straight to Stage 5. Otherwise it gives you "e
 ### Task 4.1: Create plist template + installer
 
 **Files:**
-- Create: `templates/io.hongxi.career-ops.plist.template`
+- Create: `templates/io.hongxi.auto-job.plist.template`
 - Create: `scripts/install-launch-agent.mjs`
 - Create: `scripts/uninstall-launch-agent.mjs`
 - Create: `scripts/app-status.mjs`, `scripts/app-logs.mjs`
@@ -1296,7 +1296,7 @@ Skip this stage if you want to go straight to Stage 5. Otherwise it gives you "e
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>Label</key><string>io.hongxi.career-ops</string>
+    <key>Label</key><string>io.hongxi.auto-job</string>
     <key>ProgramArguments</key>
     <array>
         <string>{{NODE_PATH}}</string>
@@ -1307,9 +1307,9 @@ Skip this stage if you want to go straight to Stage 5. Otherwise it gives you "e
     <dict>
         <key>PATH</key><string>{{USER_PATH}}</string>
         <key>HOME</key><string>{{HOME_PATH}}</string>
-        <key>CAREER_OPS_BACKEND</key><string>real-codex</string>
-        <key>CAREER_OPS_BRIDGE_HOST</key><string>127.0.0.1</string>
-        <key>CAREER_OPS_BRIDGE_PORT</key><string>47319</string>
+        <key>AUTO_JOB_BACKEND</key><string>real-codex</string>
+        <key>AUTO_JOB_BRIDGE_HOST</key><string>127.0.0.1</string>
+        <key>AUTO_JOB_BRIDGE_PORT</key><string>47319</string>
     </dict>
     <key>RunAtLoad</key><true/>
     <key>KeepAlive</key>
@@ -1337,7 +1337,7 @@ import { fileURLToPath } from "node:url";
 
 const REPO_PATH = resolve(fileURLToPath(import.meta.url), "../..");
 const HOME = homedir();
-const LABEL = "io.hongxi.career-ops";
+const LABEL = "io.hongxi.auto-job";
 const TEMPLATE = join(REPO_PATH, "templates", `${LABEL}.plist.template`);
 const TARGET = join(HOME, "Library", "LaunchAgents", `${LABEL}.plist`);
 const LOG_DIR = join(HOME, "Library", "Logs", "CareerOps");
@@ -1369,7 +1369,7 @@ console.log(`Installed: ${TARGET}\nLogs:      ${LOG_DIR}/server.{out,err}.log`);
 "app:uninstall": "node scripts/uninstall-launch-agent.mjs",
 "app:status":    "node scripts/app-status.mjs",
 "app:logs":      "node scripts/app-logs.mjs",
-"app:restart":   "launchctl kickstart -k gui/$(id -u)/io.hongxi.career-ops"
+"app:restart":   "launchctl kickstart -k gui/$(id -u)/io.hongxi.auto-job"
 ```
 
 - [ ] **Step 5: Install + reboot test**
@@ -1414,7 +1414,7 @@ bun init
 
 ```json
 {
-  "name": "@career-ops/desktop",
+  "name": "@auto-job/desktop",
   "private": true,
   "version": "0.1.0",
   "main": "dist/main.js",
@@ -1424,8 +1424,8 @@ bun init
     "package": "bun run build && electron-builder --mac"
   },
   "dependencies": {
-    "@career-ops/server": "workspace:*",
-    "@career-ops/shared": "workspace:*"
+    "@auto-job/server": "workspace:*",
+    "@auto-job/shared": "workspace:*"
   },
   "devDependencies": {
     "electron": "^33.0.0",
@@ -1500,7 +1500,7 @@ export async function createServer(opts: { backend?: AdapterMode } = {}) {
 
 // keep the existing CLI entry
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    const server = await createServer({ backend: process.env.CAREER_OPS_BACKEND as AdapterMode });
+    const server = await createServer({ backend: process.env.AUTO_JOB_BACKEND as AdapterMode });
     await server.start();
 }
 ```
@@ -1518,7 +1518,7 @@ kill %1
 ```typescript
 // apps/desktop/src/main.ts
 import { app, BrowserWindow } from "electron";
-import { createServer } from "@career-ops/server";
+import { createServer } from "@auto-job/server";
 
 let server: Awaited<ReturnType<typeof createServer>>;
 
@@ -1572,7 +1572,7 @@ export function createTray(window: BrowserWindow, opts: {
     backend: () => string;
 }): Tray {
     const tray = new Tray(join(__dirname, "..", "icons", "running.png"));
-    tray.setToolTip("Career Ops");
+    tray.setToolTip("Auto Job");
 
     function rebuildMenu() {
         const menu = Menu.buildFromTemplate([
@@ -1597,7 +1597,7 @@ export function createTray(window: BrowserWindow, opts: {
 import { createTray } from "./tray";
 // after window is created:
 const tray = createTray(win, {
-    backend: () => process.env.CAREER_OPS_BACKEND ?? "real-codex",
+    backend: () => process.env.AUTO_JOB_BACKEND ?? "real-codex",
     onRestart: async () => { await server.stop(); server = await createServer(); await server.start(); }
 });
 ```
@@ -1630,11 +1630,11 @@ A minimal HTML form: dropdown for backend (`fake | real-claude | real-codex | re
 
 - [ ] **Step 2: Wire menu item "Settings…"**
 
-Opens the settings window. On save, writes to `~/.config/career-ops/settings.json`, restarts the embedded server with the new backend.
+Opens the settings window. On save, writes to `~/.config/auto-job/settings.json`, restarts the embedded server with the new backend.
 
 - [ ] **Step 3: OpenRouter key handling**
 
-If user pastes a key, write it to `~/.config/career-ops/openrouter.key` (chmod 600). The OpenRouter adapter already reads this path (Stage 2).
+If user pastes a key, write it to `~/.config/auto-job/openrouter.key` (chmod 600). The OpenRouter adapter already reads this path (Stage 2).
 
 - [ ] **Step 4: Auto-launch toggle**
 
@@ -1667,8 +1667,8 @@ git commit -m "feat(desktop): settings window for backend, OpenRouter key, auto-
 - [ ] **Step 1: Configure electron-builder**
 
 ```yaml
-appId: io.hongxi.career-ops
-productName: Career Ops
+appId: io.hongxi.auto-job
+productName: Auto Job
 mac:
   category: public.app-category.productivity
   target: dmg
@@ -1687,11 +1687,11 @@ extraResources:
 bun run --cwd apps/desktop package
 ```
 
-Expected: `apps/desktop/dist/Career Ops-0.1.0.dmg` created.
+Expected: `apps/desktop/dist/Auto Job-0.1.0.dmg` created.
 
 - [ ] **Step 3: Drag to /Applications, test**
 
-Open `Career Ops.app` from /Applications.
+Open `Auto Job.app` from /Applications.
 Expected: app launches, tray icon visible, dashboard window opens.
 
 - [ ] **Step 4: Test reboot + login**
@@ -1706,7 +1706,7 @@ git commit -m "feat(desktop): electron-builder packaging config"
 git tag desktop-v0.1.0
 ```
 
-**Stage 5 exit criteria:** `Career Ops.app` runs from /Applications. Menu bar works. Settings persist. Embedded server runs on 47319, extension and dashboard both functional. Reboot test passes if auto-launch is on.
+**Stage 5 exit criteria:** `Auto Job.app` runs from /Applications. Menu bar works. Settings persist. Embedded server runs on 47319, extension and dashboard both functional. Reboot test passes if auto-launch is on.
 
 ---
 
@@ -1727,7 +1727,7 @@ bun run app:uninstall
 ```bash
 git rm scripts/install-launch-agent.mjs scripts/uninstall-launch-agent.mjs
 git rm scripts/app-status.mjs scripts/app-logs.mjs
-git rm templates/io.hongxi.career-ops.plist.template
+git rm templates/io.hongxi.auto-job.plist.template
 ```
 
 - [ ] **Step 3: Remove `app:*` scripts from `package.json`**
@@ -1770,7 +1770,7 @@ git add -A
 git commit -m "refactor: clean up references to retired bridge/ and web/ paths"
 ```
 
-**Stage 6 exit criteria:** Repo has no LaunchAgent install scripts, no `bridge/`, no `web/dashboard-server.mjs`. Single way to use the system: open `Career Ops.app`. Extension still works (dashboard URL unchanged at 47319).
+**Stage 6 exit criteria:** Repo has no LaunchAgent install scripts, no `bridge/`, no `web/dashboard-server.mjs`. Single way to use the system: open `Auto Job.app`. Extension still works (dashboard URL unchanged at 47319).
 
 ---
 
@@ -1790,11 +1790,11 @@ bun run verify
 | Stage | Smoke |
 |-------|-------|
 | 0 | `bun pm ls` shows workspace packages; existing scanners run |
-| 1 | `CAREER_OPS_BACKEND=fake bun run server` starts; `/health` returns ok |
-| 2 | `OPENROUTER_API_KEY=... CAREER_OPS_BACKEND=real-openrouter bun run server` evaluates a real JD |
+| 1 | `AUTO_JOB_BACKEND=fake bun run server` starts; `/health` returns ok |
+| 2 | `OPENROUTER_API_KEY=... AUTO_JOB_BACKEND=real-openrouter bun run server` evaluates a real JD |
 | 3 | `http://127.0.0.1:47319/dashboard/` loads tracker + reports tabs |
 | 4 | Reboot → `bun run app:status` shows RUNNING |
-| 5 | Open `Career Ops.app` → tray icon → "Open Dashboard" → window with embedded dashboard |
+| 5 | Open `Auto Job.app` → tray icon → "Open Dashboard" → window with embedded dashboard |
 | 6 | No `bridge/` or `web/dashboard-server.mjs` referenced anywhere live |
 
 ## Risks and Blockers
@@ -1832,13 +1832,13 @@ bun run verify
   - Removed Tauri stage (became OD1 — recommended Electron, deferred Tauri unless distribution matters)
 - 2026-04-27 (Stage 0 Tasks 0.1-0.4 implemented on `feat/client-app-restructure`):
   - Task 0.1 commit `4ffde92`: workspace manifest + apps/.gitkeep + packages/.gitkeep + `"private": true`.
-  - Task 0.2 commit `becfa28`: `git mv bridge apps/server`, package renamed to `@career-ops/server`, root scripts updated to workspace package commands, server tests 244/244 green.
-  - Task 0.3 commit `4204a22`: `git mv extension apps/extension`, package renamed to `@career-ops/extension`, ext:build switched to the Bun-documented command, typecheck + build green.
+  - Task 0.2 commit `becfa28`: `git mv bridge apps/server`, package renamed to `@auto-job/server`, root scripts updated to workspace package commands, server tests 244/244 green.
+  - Task 0.3 commit `4204a22`: `git mv extension apps/extension`, package renamed to `@auto-job/extension`, ext:build switched to the Bun-documented command, typecheck + build green.
   - Task 0.4 commit `b1e811c`: web/ inventory recorded (this entry — Stage 3 will absorb dashboard-server.mjs).
 - Stage 0 Task 0.4 — `web/dashboard-server.mjs` route inventory (for Stage 3 reference):
-  - Port 47329 loopback (env override `CAREER_OPS_PDF_PORT`, host `CAREER_OPS_PDF_HOST` default `127.0.0.1`).
-  - Auth via `assertApiToken(req)` checking `x-career-ops-pdf-token` against `CAREER_OPS_PDF_TOKEN` env (random UUID fallback). Token injected into dashboard HTML at `GET /` via inline script.
-  - CORS: single OPTIONS handler returns `*` / `GET,POST,OPTIONS` / `content-type,x-career-ops-pdf-token`.
+  - Port 47329 loopback (env override `AUTO_JOB_PDF_PORT`, host `AUTO_JOB_PDF_HOST` default `127.0.0.1`).
+  - Auth via `assertApiToken(req)` checking `x-auto-job-pdf-token` against `AUTO_JOB_PDF_TOKEN` env (random UUID fallback). Token injected into dashboard HTML at `GET /` via inline script.
+  - CORS: single OPTIONS handler returns `*` / `GET,POST,OPTIONS` / `content-type,x-auto-job-pdf-token`.
   - Static: none — dashboard rendered in-process by `renderDashboardHtml()`. Reports served from `<repo>/reports/` with traversal guard.
   - Body parser: inline `readJsonBody` with 256 KiB cap.
   - Startup: kicks off `runGmailRefresh` non-blocking; lazy-reads bridge token at request time.
@@ -1871,7 +1871,7 @@ bun run verify
 
 - 2026-04-27 (Stage 4 complete): macOS LaunchAgent infrastructure landed
   on `feat/client-app-restructure`. Commits 711843f + 5335aea added
-  `templates/io.hongxi.career-ops.plist.template`, install/uninstall/
+  `templates/io.hongxi.auto-job.plist.template`, install/uninstall/
   status/logs scripts, and `bun run app:*` targets. Not actually loaded
   yet — user runs `bun run app:install` when ready.
 
@@ -1885,10 +1885,10 @@ bun run verify
     no longer quits the app — tray is the persistent UI.
   - 5.4 (commit 6a8e5a7): settings window (backend dropdown,
     OpenRouter API key, Start at login). Settings persist to
-    `~/.config/career-ops/settings.json`. IPC via contextBridge preload.
+    `~/.config/auto-job/settings.json`. IPC via contextBridge preload.
   - 5.5 (commits 290ab6b + b691a3f): electron-builder packaging.
     Initial commit produced a non-launching .app due to TypeScript
-    source in @career-ops/server's main field; b691a3f fixed by
+    source in @auto-job/server's main field; b691a3f fixed by
     adding tsc/esbuild build outputs to dist/ and using `exports`
     with a `development` condition so dev/test tools still resolve
     src/ while the packaged app reads dist/. Bundled .app launches,
@@ -1929,7 +1929,7 @@ desktop path is the packaged Electron app:
 
 ```bash
 bun run --cwd apps/desktop package:dir
-open "apps/desktop/release/mac-arm64/Career Ops.app"
+open "apps/desktop/release/mac-arm64/Auto Job.app"
 ```
 
 The desktop dev loop is now repaired by compiling before launch:

@@ -4,7 +4,7 @@
 
 Batch worker run `bLh4238-hln8_MwCgdwEE` evaluates Amazon's Applied Scientist I, Amazon Payments Team role for Hongxi Chen.
 
-Primary local JD cache: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-bLh4238-hln8_MwCgdwEE.txt`.
+Primary local JD cache: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-bLh4238-hln8_MwCgdwEE.txt`.
 
 The cache contained structured role metadata, local enrichment, requirements, responsibilities, skill tags, and sponsorship signals. The Amazon official posting was opened once after the cache proved compact, to fill the full team description and official salary range.
 

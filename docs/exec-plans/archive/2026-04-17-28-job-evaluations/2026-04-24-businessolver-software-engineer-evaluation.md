@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run `3JXp-Nv2cbzLHheURnwbI` requests a full A-G evaluation for Businessolver's `Software Engineer (Remote)` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-3JXp-Nv2cbzLHheURnwbI.txt`.
+Bridge batch run `3JXp-Nv2cbzLHheURnwbI` requests a full A-G evaluation for Businessolver's `Software Engineer (Remote)` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-3JXp-Nv2cbzLHheURnwbI.txt`.
 
 ## Goal
 

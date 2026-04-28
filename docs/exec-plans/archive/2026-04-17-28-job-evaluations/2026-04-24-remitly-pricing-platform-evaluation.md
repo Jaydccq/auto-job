@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run `hhU3N37ppyVTeOffuViLT` requests a full A-G evaluation for Remitly's `Software Development Engineer 1, Pricing Platform` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-hhU3N37ppyVTeOffuViLT.txt`.
+Bridge batch run `hhU3N37ppyVTeOffuViLT` requests a full A-G evaluation for Remitly's `Software Development Engineer 1, Pricing Platform` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-hhU3N37ppyVTeOffuViLT.txt`.
 
 ## Goal
 

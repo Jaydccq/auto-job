@@ -36,7 +36,7 @@ import type {
   NewGradRow,
   NewGradScoreResult,
   TrackerRow,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 
 import type {
   DoctorReport,
@@ -53,10 +53,10 @@ import { __internal as claudeInternal } from "./claude-pipeline.js";
 const DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
 const DEFAULT_MODEL = "anthropic/claude-3.5-sonnet";
 const DEFAULT_TIMEOUT_MS = 600_000;
-const DEFAULT_HTTP_REFERER = "https://career-ops.local";
-const DEFAULT_X_TITLE = "Career Ops";
+const DEFAULT_HTTP_REFERER = "https://auto-job.local";
+const DEFAULT_X_TITLE = "Auto Job";
 const ERROR_BODY_TAIL_CHARS = 200;
-const KEY_FILE_RELATIVE = ".config/career-ops/openrouter.key";
+const KEY_FILE_RELATIVE = ".config/auto-job/openrouter.key";
 
 /* -------------------------------------------------------------------------- */
 /*  Configuration                                                             */
@@ -110,7 +110,7 @@ export function resolveOpenRouterApiKey(): string {
 
   throw new Error(
     "OPENROUTER_API_KEY is not set. Either export OPENROUTER_API_KEY in the " +
-      "environment or write your key (chmod 600) to ~/.config/career-ops/openrouter.key. " +
+      "environment or write your key (chmod 600) to ~/.config/auto-job/openrouter.key. " +
       "Get a key at https://openrouter.ai/keys."
   );
 }
@@ -422,7 +422,7 @@ function buildOpenRouterMessages(
     // template so the request shape is still valid.
     systemPrompt =
       "# Career-ops batch prompt\n" +
-      "You are evaluating a job offer for the career-ops pipeline.\n";
+      "You are evaluating a job offer for the auto-job pipeline.\n";
   }
   const renderedSystem = systemPrompt
     .replaceAll("{{URL}}", input.url)

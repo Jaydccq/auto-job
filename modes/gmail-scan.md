@@ -4,7 +4,7 @@ Scans Gmail through either the Codex Gmail connector or the standalone Gmail
 OAuth CLI, extracts derived hiring facts, updates the local Gmail signal
 artifact, and refreshes the dashboard pipeline.
 
-This is the repeatable Career-Ops skill entry point for Gmail scanning,
+This is the repeatable Auto-Job skill entry point for Gmail scanning,
 analogous to `newgrad-scan`.
 
 ## Prerequisites

@@ -4,7 +4,7 @@
 
 Bridge batch run `i2OJ39Y03_tYRlJSWYKIR` requested a repository-backed evaluation for Axle's Jr. Data Science Engineer posting from LinkedIn.
 
-Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-i2OJ39Y03_tYRlJSWYKIR.txt`.
+Primary JD source: `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-i2OJ39Y03_tYRlJSWYKIR.txt`.
 
 ## Goal
 

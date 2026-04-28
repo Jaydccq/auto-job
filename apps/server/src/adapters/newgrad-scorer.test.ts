@@ -7,7 +7,7 @@ import {
   scoreAndFilter,
 } from "./newgrad-scorer.js";
 
-import type { NewGradRow, NewGradScanConfig } from "@career-ops/shared";
+import type { NewGradRow, NewGradScanConfig } from "@auto-job/shared";
 
 type ConfigOverrides = Omit<
   Partial<NewGradScanConfig>,

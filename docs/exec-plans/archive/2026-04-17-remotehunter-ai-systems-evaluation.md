@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch worker request for report `257` using cached JD file `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-VbO2UYvRhHMYW5UONaSlL.txt`.
+Bridge batch worker request for report `257` using cached JD file `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-VbO2UYvRhHMYW5UONaSlL.txt`.
 
 ## Goal
 

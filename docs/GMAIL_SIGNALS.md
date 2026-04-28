@@ -57,7 +57,7 @@ mailbox-derived facts.
 Run the connector-assisted scan inside Codex with:
 
 ```text
-/career-ops gmail-scan
+/auto-job gmail-scan
 ```
 
 For a standalone OAuth scanner, create a Google Cloud OAuth client with
@@ -95,11 +95,11 @@ starts. That hook now defaults to `scripts/gmail-oauth-refresh.mjs`, so after
 To override the startup scanner command, set:
 
 ```bash
-CAREER_OPS_GMAIL_REFRESH_COMMAND='["node","scripts/gmail-oauth-refresh.mjs"]' bun run dashboard
+AUTO_JOB_GMAIL_REFRESH_COMMAND='["node","scripts/gmail-oauth-refresh.mjs"]' bun run dashboard
 ```
 
 The command must be a JSON array so it can run without a shell. Set
-`CAREER_OPS_DASHBOARD_REFRESH_GMAIL=0` to skip the startup refresh hook.
+`AUTO_JOB_DASHBOARD_REFRESH_GMAIL=0` to skip the startup refresh hook.
 
 `data/gmail-refresh-status.json` records the latest attempt status and is also
 gitignored.

@@ -1,5 +1,5 @@
 /**
- * @career-ops/shared — types shared across the bridge server, the
+ * @auto-job/shared — types shared across the bridge server, the
  * Chrome extension, and (future) desktop client.
  *
  * CONTRACTS ONLY. No runtime code. Anything imported here must compile

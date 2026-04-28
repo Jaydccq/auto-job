@@ -11,38 +11,38 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const bunCmd = process.platform === "win32" ? "bun.cmd" : "bun";
 const nodeCmd = process.execPath;
 
-const host = process.env.CAREER_OPS_BRIDGE_HOST ?? "127.0.0.1";
-const port = process.env.CAREER_OPS_BRIDGE_PORT ?? "47319";
+const host = process.env.AUTO_JOB_BRIDGE_HOST ?? "127.0.0.1";
+const port = process.env.AUTO_JOB_BRIDGE_PORT ?? "47319";
 const bridgeBase = `http://${host}:${port}`;
 
-const timeZone = process.env.CAREER_OPS_SCAN_TIMEZONE ?? "America/New_York";
-const ignoreWindow = process.env.CAREER_OPS_SCAN_IGNORE_WINDOW === "1";
-const dryRun = process.env.CAREER_OPS_SCAN_DRY_RUN === "1";
-const startBridge = process.env.CAREER_OPS_SCAN_START_BRIDGE === "1";
-const requireBridge = process.env.CAREER_OPS_SCAN_REQUIRE_BRIDGE === "1";
+const timeZone = process.env.AUTO_JOB_SCAN_TIMEZONE ?? "America/New_York";
+const ignoreWindow = process.env.AUTO_JOB_SCAN_IGNORE_WINDOW === "1";
+const dryRun = process.env.AUTO_JOB_SCAN_DRY_RUN === "1";
+const startBridge = process.env.AUTO_JOB_SCAN_START_BRIDGE === "1";
+const requireBridge = process.env.AUTO_JOB_SCAN_REQUIRE_BRIDGE === "1";
 
 const automationDir = join(repoRoot, "data", "automation");
 const lockPath = join(automationDir, "hourly-scan.lock");
-const lockTtlMs = Number(process.env.CAREER_OPS_SCAN_LOCK_TTL_MS ?? 75 * 60 * 1000);
-const stepTimeoutMs = Number(process.env.CAREER_OPS_SCAN_STEP_TIMEOUT_MS ?? 45 * 60 * 1000);
-const bridgeWaitMs = Number(process.env.CAREER_OPS_SCAN_BRIDGE_WAIT_MS ?? 15_000);
+const lockTtlMs = Number(process.env.AUTO_JOB_SCAN_LOCK_TTL_MS ?? 75 * 60 * 1000);
+const stepTimeoutMs = Number(process.env.AUTO_JOB_SCAN_STEP_TIMEOUT_MS ?? 45 * 60 * 1000);
+const bridgeWaitMs = Number(process.env.AUTO_JOB_SCAN_BRIDGE_WAIT_MS ?? 15_000);
 
-const sources = (process.env.CAREER_OPS_SCAN_SOURCES ?? "scan,newgrad,builtin,linkedin,indeed")
+const sources = (process.env.AUTO_JOB_SCAN_SOURCES ?? "scan,newgrad,builtin,linkedin,indeed")
   .split(",")
   .map((source) => source.trim())
   .filter(Boolean);
 
-const broadScanIntervalHours = nonNegativeNumberEnv(process.env.CAREER_OPS_SCAN_BROAD_INTERVAL_HOURS, 6);
+const broadScanIntervalHours = nonNegativeNumberEnv(process.env.AUTO_JOB_SCAN_BROAD_INTERVAL_HOURS, 6);
 const broadScanIntervalMs = broadScanIntervalHours * 60 * 60 * 1000;
-const forceBroadScan = process.env.CAREER_OPS_SCAN_FORCE_BROAD === "1";
-const evalMode = process.env.CAREER_OPS_SCAN_EVAL_MODE ?? "newgrad_quick";
-const evalLimit = optionalEnvValue(process.env.CAREER_OPS_SCAN_EVALUATE_LIMIT);
-const enrichLimit = optionalEnvValue(process.env.CAREER_OPS_SCAN_ENRICH_LIMIT);
-const waitTimeout = process.env.CAREER_OPS_SCAN_EVAL_WAIT_MS ?? "900000";
+const forceBroadScan = process.env.AUTO_JOB_SCAN_FORCE_BROAD === "1";
+const evalMode = process.env.AUTO_JOB_SCAN_EVAL_MODE ?? "newgrad_quick";
+const evalLimit = optionalEnvValue(process.env.AUTO_JOB_SCAN_EVALUATE_LIMIT);
+const enrichLimit = optionalEnvValue(process.env.AUTO_JOB_SCAN_ENRICH_LIMIT);
+const waitTimeout = process.env.AUTO_JOB_SCAN_EVAL_WAIT_MS ?? "900000";
 
-const indeedQuery = process.env.CAREER_OPS_INDEED_QUERY ?? "software engineer, AI engineer";
-const indeedLocation = process.env.CAREER_OPS_INDEED_LOCATION ?? "";
-const linkedinPostedWithin = process.env.CAREER_OPS_LINKEDIN_POSTED_WITHIN ?? "r4000";
+const indeedQuery = process.env.AUTO_JOB_INDEED_QUERY ?? "software engineer, AI engineer";
+const indeedLocation = process.env.AUTO_JOB_INDEED_LOCATION ?? "";
+const linkedinPostedWithin = process.env.AUTO_JOB_LINKEDIN_POSTED_WITHIN ?? "r4000";
 
 let bridgeChild = null;
 let releaseLock = null;
@@ -122,7 +122,7 @@ async function bridgeHealth() {
 
   try {
     const response = await fetch(`${bridgeBase}/v1/health`, {
-      headers: { "x-career-ops-token": token },
+      headers: { "x-auto-job-token": token },
       signal: controller.signal,
     });
     if (!response.ok) return null;
@@ -151,7 +151,7 @@ async function prepareBridge() {
 
   const existing = await waitForBridge();
   if (isCodexRealBridge(existing)) {
-    console.log("Using existing career-ops bridge in real/codex mode.");
+    console.log("Using existing auto-job bridge in real/codex mode.");
     return {
       writesEnabled: true,
       status: "existing_real_codex",
@@ -185,15 +185,15 @@ async function prepareBridge() {
     };
   }
 
-  console.log("Starting career-ops bridge in real/codex mode.");
+  console.log("Starting auto-job bridge in real/codex mode.");
   bridgeChild = spawn(nodeCmd, ["scripts/bridge-start.mjs", "real-codex"], {
     cwd: repoRoot,
     env: {
       ...process.env,
-      CAREER_OPS_BRIDGE_HOST: host,
-      CAREER_OPS_BRIDGE_PORT: port,
-      CAREER_OPS_BRIDGE_MODE: "real",
-      CAREER_OPS_REAL_EXECUTOR: "codex",
+      AUTO_JOB_BRIDGE_HOST: host,
+      AUTO_JOB_BRIDGE_PORT: port,
+      AUTO_JOB_BRIDGE_MODE: "real",
+      AUTO_JOB_REAL_EXECUTOR: "codex",
     },
     detached: process.platform !== "win32",
     stdio: ["ignore", "pipe", "pipe"],
@@ -272,7 +272,7 @@ function nonNegativeNumberEnv(value, fallback) {
 }
 
 async function linkedinAutomationUrl() {
-  const explicitUrl = process.env.CAREER_OPS_LINKEDIN_URL;
+  const explicitUrl = process.env.AUTO_JOB_LINKEDIN_URL;
   const baseUrl = explicitUrl?.trim() || (await readLinkedinProfileUrl());
   if (!baseUrl) return null;
 
@@ -282,7 +282,7 @@ async function linkedinAutomationUrl() {
 }
 
 async function indeedAutomationUrl() {
-  const explicitUrl = process.env.CAREER_OPS_INDEED_URL;
+  const explicitUrl = process.env.AUTO_JOB_INDEED_URL;
   const baseUrl = explicitUrl?.trim() || (await readIndeedProfileUrl());
   return baseUrl || null;
 }
@@ -412,7 +412,7 @@ async function broadScanSkipMessage() {
   return [
     `Skipped broad portal scan: last successful scan source completed ${ageMinutes} minutes ago in ${latest.file}.`,
     `Cadence window: ${formatHours(broadScanIntervalHours)} hours.`,
-    "Set CAREER_OPS_SCAN_FORCE_BROAD=1 to force this source, or CAREER_OPS_SCAN_BROAD_INTERVAL_HOURS=0 to run it every hourly cycle.",
+    "Set AUTO_JOB_SCAN_FORCE_BROAD=1 to force this source, or AUTO_JOB_SCAN_BROAD_INTERVAL_HOURS=0 to run it every hourly cycle.",
   ].join("\n");
 }
 
@@ -586,7 +586,7 @@ async function writeSummary(results, bridgeState) {
     .filter((item) => item.reason || item.recovery);
 
   const lines = [
-    "# Career-Ops hourly scan",
+    "# Auto-Job hourly scan",
     "",
     `Started at: ${new Date().toISOString()}`,
     `Timezone guard: ${timeZone}`,

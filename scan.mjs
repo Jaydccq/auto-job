@@ -997,14 +997,14 @@ async function main() {
 
   if (evaluateScan && !dryRun) {
     if (newOffers.length > 0 || builtInOnly) {
-      console.log(`\n→ Direct evaluation enabled; run /career-ops pipeline only for any remaining pending offers.`);
+      console.log(`\n→ Direct evaluation enabled; run /auto-job pipeline only for any remaining pending offers.`);
     } else {
       console.log(`\n→ Direct evaluation enabled; no current-run offers were eligible to queue.`);
     }
   } else if (dryRun) {
     console.log(`\n→ Dry run only; no offers were written or evaluated.`);
   } else {
-    console.log(`\n→ Run /career-ops pipeline to evaluate new offers, or rerun without --no-evaluate for direct evaluation.`);
+    console.log(`\n→ Run /auto-job pipeline to evaluate new offers, or rerun without --no-evaluate for direct evaluation.`);
   }
   console.log('→ Share results and get help: https://discord.gg/8pRpHETxa4');
 }
@@ -1257,7 +1257,7 @@ async function postEnvelope(bridgeBase, token, path, payload) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-career-ops-token': token,
+      'x-auto-job-token': token,
     },
     body: JSON.stringify({
       protocol: PROTOCOL_VERSION,
@@ -1275,7 +1275,7 @@ async function postEnvelope(bridgeBase, token, path, payload) {
 
 async function getEnvelope(bridgeBase, token, path) {
   const res = await fetch(`${bridgeBase}${path}`, {
-    headers: { 'x-career-ops-token': token },
+    headers: { 'x-auto-job-token': token },
   });
   const body = await res.json();
   if (!body.ok) {

@@ -1579,7 +1579,7 @@
 <div class="shell">
 
 <header class="masthead">
-  <div class="brand">Career-Ops <em>Console</em></div>
+  <div class="brand">Auto-Job <em>Console</em></div>
   <div class="meta">
     <strong>FIELD BRIEF // 04.2026</strong>
     <span id="generated">—</span>
@@ -2163,7 +2163,7 @@
 </section>
 
 <footer class="sig">
-  <span>Career-Ops · Console v1</span>
+  <span>Auto-Job · Console v1</span>
   <span class="mark">Hongxi Chen</span>
   <span>Signal · <strong style="color:var(--signal);">◉</strong> live</span>
 </footer>
@@ -2230,12 +2230,12 @@ const reportByPath = new Map(D.reports.map(r => [`reports/${r.filename}`, r]));
 const gmailSignals = D.gmailSignals?.rows || [];
 const gmailSignalErrors = D.gmailSignals?.errors || [];
 const gmailRefresh = D.gmailRefresh || null;
-const APPLY_DONE_KEY = 'career_ops_apply_done_v1';
+const APPLY_DONE_KEY = 'auto_job_apply_done_v1';
 const generatedApplyDocs = {};
 const applyDocStatus = {};
 const applyMarkStatus = {};
 const fullEvalStatus = {};
-const DASHBOARD_TOKEN = document.querySelector('meta[name="career-ops-token"]')?.content || '';
+const DASHBOARD_TOKEN = document.querySelector('meta[name="auto-job-token"]')?.content || '';
 let lastApplyRowsByKey = new Map();
 function loadApplyDone() {
   try {
@@ -2664,7 +2664,7 @@ async function postDashboardApi(path, payload) {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
-      'X-Career-Ops-Token': DASHBOARD_TOKEN,
+      'X-Auto-Job-Token': DASHBOARD_TOKEN,
     },
     body: JSON.stringify(payload),
   });

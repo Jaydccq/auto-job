@@ -130,5 +130,5 @@ enrich scorer and summarize how many still pass.
 - Dashboard check: `data/applications.md` currently has 7 Apply Now tracker rows
   and 13 Selective Apply tracker rows before local browser marks. The dashboard
   shows `Marked applied = 20` because those same 20 tracker rows are marked in
-  the browser under localStorage key `career_ops_apply_done_v1`, so they are
+  the browser under localStorage key `auto_job_apply_done_v1`, so they are
   hidden from Apply Now and Selective Apply.

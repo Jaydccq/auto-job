@@ -182,7 +182,7 @@ Users should be able to click Apply Next buttons for each recommended role:
   and Apply Next generated/saved both PDFs to Downloads.
 - 2026-04-24: User reported that roles previously clicked with `Mark applied`
   still appear in Apply Now. Confirmed the existing button only writes
-  `career_ops_apply_done_v1` to browser localStorage, so the state is not a
+  `auto_job_apply_done_v1` to browser localStorage, so the state is not a
   repository-backed tracker update.
 - 2026-04-24: Added authenticated `/api/apply-status` to the dynamic dashboard
   server and updated Apply Next so `Mark applied` writes the existing tracker
@@ -214,7 +214,7 @@ Users should be able to click Apply Next buttons for each recommended role:
 - Opening `web/index.html` directly from `file://` remains a static snapshot and
   cannot run Node PDF generation or persist tracker status changes.
 - Generated PDFs are deterministic dashboard PDFs, not a replacement for the
-  richer agent-driven `/career-ops pdf` and `/career-ops cover-letter`
+  richer agent-driven `/auto-job pdf` and `/auto-job cover-letter`
   workflows when deep manual tailoring is required.
 
 ## Final Outcome

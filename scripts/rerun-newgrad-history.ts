@@ -68,7 +68,7 @@ type Result = {
 };
 
 function usage(): string {
-  return `career-ops rerun historical newgrad enrich
+  return `auto-job rerun historical newgrad enrich
 
 Usage:
   bun run newgrad-rerun-history -- [options]

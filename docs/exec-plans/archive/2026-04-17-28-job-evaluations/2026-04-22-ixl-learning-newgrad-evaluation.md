@@ -10,7 +10,7 @@ Produce a repository-backed job evaluation for report `314` and a mergeable trac
 
 ## Scope
 
-- Read the cached JD from `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-RiUFU8RjZb15qb_4sOnVF.txt`.
+- Read the cached JD from `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-RiUFU8RjZb15qb_4sOnVF.txt`.
 - Read `cv.md`, `article-digest.md`, `llms.txt` if present, `config/profile.yml`, `data/applications.md`, and `data/scan-history.tsv`.
 - Write `reports/314-ixl-learning-2026-04-22.md`.
 - Write `batch/tracker-additions/RiUFU8RjZb15qb_4sOnVF.tsv`.

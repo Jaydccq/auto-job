@@ -5,7 +5,7 @@
  * place that is allowed to decide HTTP status codes.
  */
 
-import type { BridgeError, ErrorCode } from "@career-ops/shared";
+import type { BridgeError, ErrorCode } from "@auto-job/shared";
 
 export function bridgeError(
   code: ErrorCode,

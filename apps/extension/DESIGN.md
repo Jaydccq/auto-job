@@ -1,4 +1,4 @@
-# career-ops Extension — Design System
+# auto-job Extension — Design System
 
 ## Aesthetic Direction
 

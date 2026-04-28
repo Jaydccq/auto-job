@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { AUTH_HEADER } from "@career-ops/shared";
-import { PROTOCOL_VERSION, type Response } from "@career-ops/shared";
+import { AUTH_HEADER } from "@auto-job/shared";
+import { PROTOCOL_VERSION, type Response } from "@auto-job/shared";
 import type {
   EvaluationInput,
   EvaluationResult,
   JobId,
   JobSnapshot,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 import type {
   LivenessCheck,
   MergeReport,
@@ -21,8 +21,8 @@ const TOKEN = "test-token";
 
 function makeConfig(): BridgeConfig {
   return {
-    repoRoot: "/tmp/career-ops-test",
-    bridgeDir: "/tmp/career-ops-test/bridge",
+    repoRoot: "/tmp/auto-job-test",
+    bridgeDir: "/tmp/auto-job-test/bridge",
     host: "127.0.0.1",
     port: 47319,
     token: TOKEN,
@@ -51,7 +51,7 @@ function makeAdapter(
       return {
         ok: true,
         repo: {
-          rootPath: "/tmp/career-ops-test",
+          rootPath: "/tmp/auto-job-test",
           careerOpsVersion: "test",
           trackerOk: true,
           cvOk: true,

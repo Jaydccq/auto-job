@@ -1,4 +1,4 @@
-import type { NewGradRow } from "@career-ops/shared";
+import type { NewGradRow } from "@auto-job/shared";
 
 const DEFAULT_SCAN_SOURCE = "newgrad-jobs.com";
 const BUILTIN_SCAN_SOURCE = "builtin.com";

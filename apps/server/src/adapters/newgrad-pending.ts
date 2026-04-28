@@ -14,7 +14,7 @@ import type {
   NewGradPendingEntry,
   NewGradPendingResult,
   NewGradScanConfig,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 import { detectActiveSecurityClearanceRequirement } from "../lib/security-clearance.js";
 import { writeJdFile } from "../lib/write-jd-file.js";
 import { loadEvaluatedJobIdentities } from "./evaluated-report-urls.js";

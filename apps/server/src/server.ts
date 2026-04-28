@@ -1,5 +1,5 @@
 /**
- * server.ts — Fastify HTTP server for the career-ops bridge.
+ * server.ts — Fastify HTTP server for the auto-job bridge.
  *
  * Responsibilities:
  *   • Bind loopback only.
@@ -21,20 +21,20 @@ import { z } from "zod";
 import {
   AUTH_HEADER,
   type HealthResult,
-} from "@career-ops/shared";
-import type { NewGradRow, EnrichedRow } from "@career-ops/shared";
+} from "@auto-job/shared";
+import type { NewGradRow, EnrichedRow } from "@auto-job/shared";
 import {
   PROTOCOL_VERSION,
   type BridgeError,
   type RequestEnvelope,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 import {
   type EvaluationResult,
   type EvaluationInput,
   type JobEvent,
   type JobId,
   type JobSnapshot,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 import type { PipelineAdapter } from "./contracts/pipeline.js";
 
 import { type BridgeConfig, inspectClaude, inspectCodex } from "./runtime/config.js";
@@ -166,7 +166,7 @@ export function buildServer(args: BuildServerArgs) {
 
   const fastify = Fastify({
     logger: {
-      level: process.env.CAREER_OPS_BRIDGE_LOG_LEVEL ?? "info",
+      level: process.env.AUTO_JOB_BRIDGE_LOG_LEVEL ?? "info",
     },
     // Don't leak request bodies into logs — may contain pageText.
     disableRequestLogging: true,

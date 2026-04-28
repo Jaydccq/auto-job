@@ -104,12 +104,12 @@ Implemented.
 Verification:
 - `npm --prefix extension run typecheck`: passed.
 - `npm --prefix extension run build`: passed.
-- `node /tmp/career-ops-extension-smoke.mjs`: passed after running with
+- `node /tmp/auto-job-extension-smoke.mjs`: passed after running with
   localhost permission; generated screenshots:
-  - `/tmp/career-ops-extension-popup-signal.png`
-  - `/tmp/career-ops-extension-permission-signal.png`
-  - `/tmp/career-ops-extension-unsupported-signal.png`
-  - `/tmp/career-ops-extension-panel-signal.png`
+  - `/tmp/auto-job-extension-popup-signal.png`
+  - `/tmp/auto-job-extension-permission-signal.png`
+  - `/tmp/auto-job-extension-unsupported-signal.png`
+  - `/tmp/auto-job-extension-panel-signal.png`
 - `git diff --check`: passed.
 - Follow-up bridge simplification was rechecked with the same typecheck, build,
   smoke, and diff whitespace checks.

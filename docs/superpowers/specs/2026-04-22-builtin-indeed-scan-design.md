@@ -22,16 +22,16 @@ Built In has partial support today:
 - A new read-only `bb-browser site builtin/jobs` adapter returns structured Built
   In list rows.
 
-Indeed has no Career-Ops scan mode yet, but a new read-only
+Indeed has no Auto-Job scan mode yet, but a new read-only
 `bb-browser site indeed/jobs` adapter returns structured Indeed rows.
 
-The user approved a complete LinkedIn-style loop for both `/career-ops
-builtin-scan` and `/career-ops indeed-scan`, not a preview-only path.
+The user approved a complete LinkedIn-style loop for both `/auto-job
+builtin-scan` and `/auto-job indeed-scan`, not a preview-only path.
 
 ## Goal
 
 Make Built In and Indeed scans use the new read-only `bb-browser site` adapters
-as browser-backed collection sources, normalize rows into existing Career-Ops
+as browser-backed collection sources, normalize rows into existing Auto-Job
 scanner contracts, and reuse bridge scoring, enrichment, direct evaluation,
 reports, tracker, and Apply Next.
 
@@ -53,8 +53,8 @@ Use one shared runner for browser-backed job-board scans and keep each site
 specific part small:
 
 ```text
-/career-ops builtin-scan
-/career-ops indeed-scan
+/auto-job builtin-scan
+/auto-job indeed-scan
         |
         v
 package script and mode docs
@@ -132,7 +132,7 @@ bun run indeed-scan -- --url "https://www.indeed.com/jobs?q=software%20engineer%
 bun run indeed-scan -- --url "https://www.indeed.com/jobs?q=software%20engineer%2C%20AI%20engineer&l=&fromage=7&sc=0kf%3Aattr%28CF3CP%29explvl%28ENTRY_LEVEL%29%3B&from=searchOnDesktopSerp" --evaluate-limit 3
 ```
 
-Mode docs should route `/career-ops builtin-scan` and `/career-ops indeed-scan`
+Mode docs should route `/auto-job builtin-scan` and `/auto-job indeed-scan`
 to the same pattern:
 
 1. Start bridge if needed.

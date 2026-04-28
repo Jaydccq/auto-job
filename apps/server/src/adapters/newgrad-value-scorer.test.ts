@@ -8,7 +8,7 @@ import type {
   NewGradRow,
   NewGradScanConfig,
   ScoredRow,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 
 describe("newgrad value scorer", () => {
   test("scores a high-value detail page from structured webpage elements", () => {

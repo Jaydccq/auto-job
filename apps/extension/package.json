@@ -1,8 +1,8 @@
 {
-  "name": "@career-ops/extension",
+  "name": "@auto-job/extension",
   "version": "0.1.0-phase1",
   "private": true,
-  "description": "Chrome Manifest V3 extension popup for career-ops. Phase 1 = contracts only.",
+  "description": "Chrome Manifest V3 extension popup for auto-job. Phase 1 = contracts only.",
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -14,6 +14,6 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@career-ops/shared": "workspace:*"
+    "@auto-job/shared": "workspace:*"
   }
 }

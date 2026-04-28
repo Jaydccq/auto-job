@@ -4,7 +4,7 @@
  * Task 5.4 of the client-app-delivery plan: read/write the user's
  * backend choice, start-at-login flag, and OpenRouter API key on disk.
  *
- * Files (all under ~/.config/career-ops/):
+ * Files (all under ~/.config/auto-job/):
  *   - settings.json    -- {backend, startAtLogin}, mode 0600
  *   - openrouter.key   -- raw key + trailing newline, mode 0600
  *
@@ -17,7 +17,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync, chmodSync } from "n
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const CONFIG_DIR = join(homedir(), ".config", "career-ops");
+const CONFIG_DIR = join(homedir(), ".config", "auto-job");
 const SETTINGS_PATH = join(CONFIG_DIR, "settings.json");
 const KEY_PATH = join(CONFIG_DIR, "openrouter.key");
 

@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add `/career-ops builtin-scan` as a durable, source-specific entry point for Built In job discovery.
+**Goal:** Add `/auto-job builtin-scan` as a durable, source-specific entry point for Built In job discovery.
 
 **Architecture:** Reuse the existing Built In support already present in `scan.mjs`, `extension/src/content/extract-builtin.ts`, and the newgrad scan bridge contracts. Add only a mode file, router entries, an OpenCode command, and a thin npm alias so Built In scanning has first-class instructions without creating parallel scan logic.
 
-**Tech Stack:** Node.js ESM, Playwright-backed site inspection, Markdown mode files, YAML portal configuration, existing career-ops router.
+**Tech Stack:** Node.js ESM, Playwright-backed site inspection, Markdown mode files, YAML portal configuration, existing auto-job router.
 
 ---
 
@@ -16,7 +16,7 @@ The repository already includes Built In support:
 - `scan.mjs` fetches configured `builtin_searches` and supports `--builtin-only`.
 - `extension/src/content/extract-builtin.ts` extracts Built In list and detail pages.
 - `bridge/src/adapters/newgrad-source.ts` maps Built In rows to `builtin-scan`.
-- `modes/newgrad-scan.md` documents the browser-extension scanner, but there is no dedicated `/career-ops builtin-scan` mode.
+- `modes/newgrad-scan.md` documents the browser-extension scanner, but there is no dedicated `/auto-job builtin-scan` mode.
 
 The user supplied this live page for research:
 
@@ -36,7 +36,7 @@ Observed page model on 2026-04-21:
 
 ## Goal
 
-Make `/career-ops builtin-scan` route to source-specific instructions for:
+Make `/auto-job builtin-scan` route to source-specific instructions for:
 - CLI discovery: `npm run builtin-scan -- --dry-run` and `npm run builtin-scan`.
 - Manual page scanning through the extension on Built In result pages.
 - Built In-specific warnings around `allLocations=true`, collapsed detail descriptions, auth prompts, sponsored/resume widgets, and apply safety.
@@ -45,8 +45,8 @@ Make `/career-ops builtin-scan` route to source-specific instructions for:
 
 In scope:
 - Add `modes/builtin-scan.md`.
-- Add router entries in `.claude/skills/career-ops/SKILL.md`.
-- Add an OpenCode command for `/career-ops-builtin-scan`.
+- Add router entries in `.claude/skills/auto-job/SKILL.md`.
+- Add an OpenCode command for `/auto-job-builtin-scan`.
 - Add an npm script alias to `scan.mjs --builtin-only`.
 - Update `CLAUDE.md` and `docs/CODEX.md` routing maps so the command is discoverable.
 - Verify parsing and routing with targeted commands.
@@ -95,9 +95,9 @@ Use the existing generic scanner as the execution engine and make `builtin-scan`
 1. [x] Create `modes/builtin-scan.md`.
    Verify: file documents CLI and extension workflows, Built In selectors, URL semantics, safety rules, and expected output.
 2. [x] Add `builtin-scan` routing.
-   Verify: `.claude/skills/career-ops/SKILL.md` maps `builtin-scan` / `builtin` and includes the mode in shared-context loading.
+   Verify: `.claude/skills/auto-job/SKILL.md` maps `builtin-scan` / `builtin` and includes the mode in shared-context loading.
 3. [x] Add command/script aliases.
-   Verify: `package.json` has `builtin-scan`; `.opencode/commands/career-ops-builtin-scan.md` loads the career-ops skill.
+   Verify: `package.json` has `builtin-scan`; `.opencode/commands/auto-job-builtin-scan.md` loads the auto-job skill.
 4. [x] Update navigation docs.
    Verify: `CLAUDE.md` and `docs/CODEX.md` mention the new mode without large prose expansion.
 5. [x] Run targeted verification.
@@ -111,7 +111,7 @@ Use the existing generic scanner as the execution engine and make `builtin-scan`
 ```
 USER FLOW COVERAGE
 ==================
-/career-ops builtin-scan
+/auto-job builtin-scan
   |
   +-- Router resolves builtin-scan
   |   +-- [TESTED] rg verified router, docs, mode, command, and package references
@@ -173,8 +173,8 @@ modes/builtin-scan.md
 - 2026-04-21: Ran `npm run verify`: passed with 0 errors and 2 pre-existing duplicate warnings in `applications.md`.
 - 2026-04-21: Tested Built In city URLs for Seattle, San Francisco, Denver, and New York with Playwright. Each returned 25 visible job cards. `allLocations=true` and city-params-only URLs produced comparable first-page results, with exact-city, nearby-city, and multi-location rows mixed together.
 - 2026-04-21: Tested the same city URLs through HTTP fetch and scan-style HTML parsing. Each returned HTTP 200 and parsed 25 job cards. Recorded the behavior in `modes/builtin-scan.md`.
-- 2026-04-21: Estimated city-page effectiveness with current `portals.yml -> title_filter` and existing dedupe state. Seattle produced 3 would-enter-pipeline candidates, San Francisco 9, Denver 8, and New York 2 from first-page results. The CLI path would auto-enter 0 into evaluate because `builtin-scan` only discovers/writes pipeline; evaluation requires `/career-ops pipeline` or the extension enrich/evaluate flow.
-- 2026-04-21: Ran the real `/career-ops builtin-scan` path via `npm run builtin-scan` at user request. It fetched 6 Built In keyword searches, found 150 jobs, removed 72 by title filter, skipped 16 duplicates, and wrote 62 new Built In URLs to `data/pipeline.md` plus 62 `builtin-scan` rows to `data/scan-history.tsv`. No Built In rows entered formal evaluate yet; that requires `/career-ops pipeline`.
+- 2026-04-21: Estimated city-page effectiveness with current `portals.yml -> title_filter` and existing dedupe state. Seattle produced 3 would-enter-pipeline candidates, San Francisco 9, Denver 8, and New York 2 from first-page results. The CLI path would auto-enter 0 into evaluate because `builtin-scan` only discovers/writes pipeline; evaluation requires `/auto-job pipeline` or the extension enrich/evaluate flow.
+- 2026-04-21: Ran the real `/auto-job builtin-scan` path via `npm run builtin-scan` at user request. It fetched 6 Built In keyword searches, found 150 jobs, removed 72 by title filter, skipped 16 duplicates, and wrote 62 new Built In URLs to `data/pipeline.md` plus 62 `builtin-scan` rows to `data/scan-history.tsv`. No Built In rows entered formal evaluate yet; that requires `/auto-job pipeline`.
 - 2026-04-21: Began `/v1/builtin-scan/pending` bridge endpoint work at user request. Goal: expose the generic Built In pipeline rows written by `scan.mjs` through the same pending-read path shape as `/v1/newgrad-scan/pending`. Success criteria: parser reads unchecked `https://builtin.com/job/... | Company | Role` rows, skips tracker/report duplicates, honors `limit`, route returns a protocol envelope, and targeted bridge tests/typecheck pass. Assumption: this endpoint is read-only and should not submit applications or mutate `data/pipeline.md`. Uncertainty: whether the extension UI will consume this exact endpoint immediately; simplest viable path is to expose a stable bridge method first and leave UI wiring out of scope unless requested.
 - 2026-04-21: Added `readBuiltInPendingEntries`, `POST /v1/builtin-scan/pending`, adapter contract wiring for real/sdk/fake bridge adapters, API descriptor metadata, focused adapter tests, and server injection coverage.
 - 2026-04-21: Verified `npm --prefix bridge run test -- src/adapters/builtin-pending.test.ts src/server.test.ts`: passed, 2 files / 6 tests.
@@ -182,11 +182,11 @@ modes/builtin-scan.md
 - 2026-04-21: Ran the Built In pending parser against the live repo data. It returned 60 pending Built In rows; 2 of the 62 scan rows are skipped because interrupted batch workers produced local reports for Flourish and General Medicine before being stopped.
 - 2026-04-21: Verified `npm run verify`: passed with 0 errors and 3 warnings. Two duplicate tracker warnings were pre-existing; one warning is from the two unmerged tracker-addition TSVs produced by the interrupted batch attempt.
 - 2026-04-21: Ran a real HTTP bridge case for `POST /v1/builtin-scan/pending` in real/codex mode against the current repository. `/v1/health` confirmed mode `real` and executor `codex`. `limit: 3` returned 3 rows with `total: 60`; `limit: 200` returned all 60 pending Built In rows. Hashes for `data/pipeline.md`, `data/applications.md`, and `data/scan-history.tsv` were unchanged after the calls, confirming the endpoint is read-only. The temporary bridge process was stopped after testing.
-- 2026-04-22: User requested reworking `/career-ops builtin-scan` using the
+- 2026-04-22: User requested reworking `/auto-job builtin-scan` using the
   same approach proven on `linkedin-scan`. New goal: make the Built In CLI path
   support larger paginated result sets, visible duplicate accounting, and an
   optional direct-evaluation path so Built In candidates can enter
-  report/tracker/Apply Next without a separate manual `/career-ops pipeline`
+  report/tracker/Apply Next without a separate manual `/auto-job pipeline`
   step. Success criteria: `npm run builtin-scan -- --dry-run --pages N`
   fetches multiple Built In pages per configured keyword; scan output reports
   raw Built In jobs and unique-added candidates; duplicate filtering uses URL
@@ -283,7 +283,7 @@ Implemented.
 
 Verification:
 - `node --check scan.mjs`: passed.
-- `rg -n "builtin-scan|Built In scan|career-ops-builtin-scan|modes/builtin-scan" ...`: passed, all expected references present.
+- `rg -n "builtin-scan|Built In scan|auto-job-builtin-scan|modes/builtin-scan" ...`: passed, all expected references present.
 - `npm run builtin-scan -- --dry-run`: passed; no files written.
 - `npm run verify`: passed with 0 errors and 2 pre-existing duplicate warnings.
 - Multi-city Built In testing:
@@ -330,4 +330,4 @@ Verification:
 | Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | clean | 0 issues, 0 critical gaps |
 | Design Review | `/plan-design-review` | UI/UX gaps | 0 | - | - |
 
-**VERDICT:** ENG CLEARED - ready to use `/career-ops builtin-scan`.
+**VERDICT:** ENG CLEARED - ready to use `/auto-job builtin-scan`.

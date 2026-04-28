@@ -3,7 +3,7 @@
 ## Background
 
 The bb-browser site system turns website functionality into CLI commands by
-running adapter JavaScript in the user's browser context. Career-Ops already has
+running adapter JavaScript in the user's browser context. Auto-Job already has
 a JobRight/newgrad scan path, but `bb-browser site search jobright` did not find
 an adapter.
 
@@ -19,7 +19,7 @@ listing data from the JobRight newgrad minisite.
   payload instead of relying on fragile visual table classes.
 - Install the adapter into bb-browser's private adapter directory for local CLI
   use.
-- Do not change the existing Career-Ops scan, scoring, pipeline, tracker, or
+- Do not change the existing Auto-Job scan, scoring, pipeline, tracker, or
   application submission behavior.
 
 ## Assumptions
@@ -27,9 +27,9 @@ listing data from the JobRight newgrad minisite.
 - The user's request means "make jobright.ai available through bb-browser's
   `site` CLI adapter system."
 - The current newgrad SWE minisite, `newgrad/us/swe`, is the useful default
-  because it is the existing Career-Ops JobRight source.
+  because it is the existing Auto-Job JobRight source.
 - A read-only list adapter is the simplest viable path; detail enrichment and
-  Career-Ops scoring remain owned by the existing scanner.
+  Auto-Job scoring remain owned by the existing scanner.
 
 ## Implementation Steps
 
@@ -117,5 +117,5 @@ listing data from the JobRight newgrad minisite.
 `jobright/newgrad` is available as a local bb-browser site adapter. It now uses
 JobRight's paginated `/swan/mini-sites/list` API first and falls back to
 `props.pageProps.initialJobs` only when the API cannot be used. The adapter is
-read-only and does not mutate Career-Ops tracker, pipeline, scan history, or
+read-only and does not mutate Auto-Job tracker, pipeline, scan history, or
 application state.

@@ -95,7 +95,7 @@ describe("evaluated-report-urls", () => {
 });
 
 function makeRepoRoot(): string {
-  const repoRoot = mkdtempSync(join(tmpdir(), "career-ops-report-urls-"));
+  const repoRoot = mkdtempSync(join(tmpdir(), "auto-job-report-urls-"));
   tempDirs.push(repoRoot);
   mkdirSync(join(repoRoot, "reports"), { recursive: true });
   return repoRoot;

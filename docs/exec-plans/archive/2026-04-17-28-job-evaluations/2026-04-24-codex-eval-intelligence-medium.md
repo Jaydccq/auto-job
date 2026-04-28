@@ -35,11 +35,11 @@ evaluation paths.
 
 ## Implementation Steps
 
-1. Add bridge config for `CAREER_OPS_CODEX_REASONING_EFFORT`.
+1. Add bridge config for `AUTO_JOB_CODEX_REASONING_EFFORT`.
    Verify: typecheck catches all config consumers.
 2. Pass `-c model_reasoning_effort="medium"` to Codex quick and full evals.
    Verify: focused unit tests inspect command args.
-3. Default `CAREER_OPS_CODEX_MODEL` to `gpt-5.4-mini`.
+3. Default `AUTO_JOB_CODEX_MODEL` to `gpt-5.4-mini`.
    Verify: focused unit tests inspect command args and docs mention the model.
 4. Document the default.
    Verify: docs mention the env var and default.
@@ -56,7 +56,7 @@ evaluation paths.
   evaluations. Located the current source of `xhigh` as user-level Codex config
   inherited by bridge subprocesses.
 - 2026-04-24: Added `codexReasoningEffort` to bridge config, defaulting to
-  `medium` with `CAREER_OPS_CODEX_REASONING_EFFORT` as the override. Full and
+  `medium` with `AUTO_JOB_CODEX_REASONING_EFFORT` as the override. Full and
   quick Codex evaluation plans now pass `-c model_reasoning_effort="medium"`.
 - 2026-04-24: Added a focused unit test that inspects both Codex command
   shapes. Documented the default in `docs/BROWSER_EXTENSION.md`.
@@ -66,8 +66,8 @@ evaluation paths.
   `EvaluationInput` only and all model/reasoning selection comes from the bridge
   Codex adapter.
 - 2026-04-25: Changed the bridge default Codex model from `gpt-5.4` to
-  `gpt-5.4-mini`; kept `CAREER_OPS_CODEX_MODEL` as the override and kept
-  `CAREER_OPS_CODEX_REASONING_EFFORT=medium` as the default intelligence.
+  `gpt-5.4-mini`; kept `AUTO_JOB_CODEX_MODEL` as the override and kept
+  `AUTO_JOB_CODEX_REASONING_EFFORT=medium` as the default intelligence.
   Updated focused tests to assert both full and quick Codex evaluation plans
   include `-m gpt-5.4-mini` and `model_reasoning_effort="medium"`.
 - 2026-04-25: Verification passed:
@@ -78,7 +78,7 @@ evaluation paths.
 ## Key Decisions
 
 - Use bridge-level CLI config rather than editing global Codex config, so the
-  change is repository-local and applies only to career-ops evaluations.
+  change is repository-local and applies only to auto-job evaluations.
 
 ## Risks and Blockers
 

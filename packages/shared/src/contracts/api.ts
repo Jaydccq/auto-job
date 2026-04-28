@@ -1,6 +1,6 @@
 /**
  * api.ts — HTTP API contract between the Chrome extension and the
- * career-ops local bridge.
+ * auto-job local bridge.
  *
  * One file, one source of truth. Every endpoint has:
  *   • path + method
@@ -60,7 +60,7 @@ export const BRIDGE_DEFAULT_PORT = 47319 as const;
  * The extension stores the same value in chrome.storage.local and sends it
  * on every request. No secret in request bodies, no secret in URLs.
  */
-export const AUTH_HEADER = "x-career-ops-token" as const;
+export const AUTH_HEADER = "x-auto-job-token" as const;
 
 /* -------------------------------------------------------------------------- */
 /*  Endpoint catalog                                                          */
@@ -105,7 +105,7 @@ export interface EndpointDescriptor<TReq, TRes> {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  /health — bridge is up and the career-ops repo is usable                  */
+/*  /health — bridge is up and the auto-job repo is usable                  */
 /* -------------------------------------------------------------------------- */
 
 export interface HealthResult {
@@ -120,7 +120,7 @@ export interface HealthResult {
     realExecutor: "claude" | "codex" | "openrouter" | null;
   };
   repo: {
-    /** Absolute path to the career-ops repo root the bridge is serving. */
+    /** Absolute path to the auto-job repo root the bridge is serving. */
     rootPath: string;
     /** Contents of VERSION file. */
     careerOpsVersion: string;

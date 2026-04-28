@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { success, failure, assertProtocol } from "../envelope.js";
-import { PROTOCOL_VERSION } from "@career-ops/shared";
-import type { BridgeError } from "@career-ops/shared";
+import { PROTOCOL_VERSION } from "@auto-job/shared";
+import type { BridgeError } from "@auto-job/shared";
 
 describe("envelope helpers", () => {
   it("success wraps result with protocol and ok:true", () => {

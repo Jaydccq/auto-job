@@ -1,8 +1,8 @@
 {
-  "name": "@career-ops/desktop",
+  "name": "@auto-job/desktop",
   "private": true,
   "version": "0.1.0-phase1",
-  "productName": "Career Ops",
+  "productName": "Auto Job",
   "description": "Career-ops desktop client — bridge + dashboard in one app",
   "author": "Hongxi Chen <smyhc1@gmail.com>",
   "type": "module",
@@ -19,8 +19,8 @@
     "package:dir": "bun run build && electron-builder --mac --dir --config electron-builder.yml"
   },
   "dependencies": {
-    "@career-ops/server": "workspace:*",
-    "@career-ops/shared": "workspace:*"
+    "@auto-job/server": "workspace:*",
+    "@auto-job/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.19.0",

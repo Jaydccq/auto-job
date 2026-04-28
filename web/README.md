@@ -1,4 +1,4 @@
-# Career-Ops Dashboard
+# Auto-Job Dashboard
 
 A local dashboard for browsing reports, tracker, pipeline, and scan history.
 It is served by the bridge from this repository so Apply Next actions can
@@ -52,7 +52,7 @@ this URL — there is no separate dashboard server process anymore.
    manually when you want fresh signals; the script writes
    `data/gmail-refresh-status.json` and `data/gmail-signals.jsonl`.
 
-For a connector-assisted mailbox scan, run `/career-ops gmail-scan` inside
+For a connector-assisted mailbox scan, run `/auto-job gmail-scan` inside
 Codex.
 
 For automatic local Gmail API refreshes, create a Google Cloud OAuth client

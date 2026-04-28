@@ -1,5 +1,5 @@
 /**
- * tray.ts — Menu-bar tray icon for the Career Ops desktop app.
+ * tray.ts — Menu-bar tray icon for the Auto Job desktop app.
  *
  * Task 5.3 of the client-app-delivery plan: surface server status,
  * current backend, and a small action menu (open dashboard, restart,
@@ -55,7 +55,7 @@ function loadTrayIcon(): Electron.NativeImage {
 export function createTray(hooks: TrayHooks): TrayController {
   const icon = loadTrayIcon();
   const tray = new Tray(icon);
-  tray.setToolTip("Career Ops");
+  tray.setToolTip("Auto Job");
 
   function rebuild(): void {
     const status = hooks.getStatus();

@@ -21,7 +21,7 @@ In scope:
 - Extract BuiltIn detail pages into the existing `NewGradDetail` contract.
 - Preserve source identity through scan history, JD frontmatter, pipeline rows, pending reads, and direct evaluation signals.
 - Show the existing scanner UI on BuiltIn pages with source-neutral copy.
-- Add BuiltIn all-location keyword searches to `/career-ops scan`.
+- Add BuiltIn all-location keyword searches to `/auto-job scan`.
 
 Out of scope:
 - Crawling all BuiltIn pages or pagination automatically.
@@ -64,7 +64,7 @@ Out of scope:
 - 2026-04-19: Ran targeted tests and repository verification.
 - 2026-04-19: User requested keyword-based BuiltIn search without fixed city/state constraints because relocation is acceptable.
 - 2026-04-19: Added BuiltIn keyword search controls with all-location national engineering URLs and common engineering keyword shortcuts.
-- 2026-04-19: User requested adding the BuiltIn keyword search behavior to `/career-ops scan`.
+- 2026-04-19: User requested adding the BuiltIn keyword search behavior to `/auto-job scan`.
 - 2026-04-19: Added `builtin_searches` to local `portals.yml`, versioned `templates/portals.example.yml`, and a BuiltIn HTML scanner branch to `scan.mjs`.
 
 ## Key Decisions
@@ -74,7 +74,7 @@ Out of scope:
 - Do not automate apply submissions.
 - Keep scanning scoped to the visible BuiltIn result page so user-selected BuiltIn filters remain the source of truth.
 - BuiltIn keyword search links should use all-location search URLs and omit fixed `city`, `state`, and `country` query parameters.
-- `/career-ops scan` should run BuiltIn keyword searches by default; `--no-builtin` skips them and `--builtin-only` supports targeted verification.
+- `/auto-job scan` should run BuiltIn keyword searches by default; `--no-builtin` skips them and `--builtin-only` supports targeted verification.
 
 ## Risks And Blockers
 
@@ -96,7 +96,7 @@ Verification:
   - `npm --prefix extension run typecheck`: passed.
   - `npm --prefix extension run build`: passed.
   - `npm run verify`: passed with 0 errors and the same 3 pre-existing duplicate warnings in `applications.md`.
-- Follow-up `/career-ops scan` update verification:
+- Follow-up `/auto-job scan` update verification:
   - `node scan.mjs --dry-run --builtin-only`: passed; 6 BuiltIn searches fetched, 150 jobs found, 75 dry-run new offers after title filters and dedupe, no files written.
   - `node --check scan.mjs`: passed.
   - `npm run verify`: passed with 0 errors and the same 3 pre-existing duplicate warnings in `applications.md`.

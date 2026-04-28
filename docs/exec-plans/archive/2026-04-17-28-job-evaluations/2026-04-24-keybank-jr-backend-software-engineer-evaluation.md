@@ -2,7 +2,7 @@
 
 ## Background
 
-Bridge batch run `OZDWdrpbkpg-ObnqjQtNH` requests a full A-G evaluation for KeyBank's `Jr BackEnd Software Engineer` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/career-ops-bridge-jd-OZDWdrpbkpg-ObnqjQtNH.txt`.
+Bridge batch run `OZDWdrpbkpg-ObnqjQtNH` requests a full A-G evaluation for KeyBank's `Jr BackEnd Software Engineer` role using the cached JD file at `/var/folders/ly/sdg_pj9x6xb8b89q5yytyhdw0000gn/T/auto-job-bridge-jd-OZDWdrpbkpg-ObnqjQtNH.txt`.
 
 ## Goal
 

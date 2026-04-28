@@ -48,7 +48,7 @@ Merge `jd-extension-work` into local `main`, replace the upstream-style README w
 
 - 2026-04-19: Confirmed `main` tracks `origin/main` and `jd-extension-work` is the tested feature branch.
 - 2026-04-19: Saved local untracked/runtime artifacts in `stash@{0}` with message `pre-main-merge-untracked-runtime-artifacts`.
-- 2026-04-19: Merged `jd-extension-work` into `main` with conflicts in `.claude/skills/career-ops/SKILL.md`, `README.md`, `modes/auto-pipeline.md`, and `package.json`.
+- 2026-04-19: Merged `jd-extension-work` into `main` with conflicts in `.claude/skills/auto-job/SKILL.md`, `README.md`, `modes/auto-pipeline.md`, and `package.json`.
 - 2026-04-19: Resolved non-README conflicts by keeping the tested feature-branch behavior, including explicit cover-letter confirmation and extension/bridge scripts.
 - 2026-04-19: Rewrote `README.md` as a concise personal fork map.
 - 2026-04-19: Ran `git diff --check`, `bun run verify`, `bun run ext:build`, and `bun run dashboard`.

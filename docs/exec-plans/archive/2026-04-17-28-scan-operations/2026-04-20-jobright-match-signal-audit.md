@@ -11,7 +11,7 @@ live page or well-calibrated against the local keyword-based skill scoring.
 ## Goal
 
 Extract the live Jobright match signals directly from webpage elements, compare
-them against the local skill-based scoring used by `career-ops`, and determine
+them against the local skill-based scoring used by `auto-job`, and determine
 whether the current scoring design is misweighted or structurally flawed.
 
 ## Scope

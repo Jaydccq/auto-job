@@ -397,7 +397,7 @@ async function onEvaluateClick(): Promise<void> {
 
 function subscribeToJob(jobId: JobId): void {
   activePort?.disconnect();
-  const port = chrome.runtime.connect({ name: "career-ops.job" });
+  const port = chrome.runtime.connect({ name: "auto-job.job" });
   activePort = port;
   port.postMessage({ jobId });
   port.onMessage.addListener((raw: unknown) => {

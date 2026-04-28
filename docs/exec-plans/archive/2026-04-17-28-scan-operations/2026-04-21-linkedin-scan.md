@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add `/career-ops linkedin-scan` for LinkedIn Jobs discovery through `bb-browser`, reusing the existing newgrad scanner bridge, scoring, pipeline, and evaluation flow.
+**Goal:** Add `/auto-job linkedin-scan` for LinkedIn Jobs discovery through `bb-browser`, reusing the existing newgrad scanner bridge, scoring, pipeline, and evaluation flow.
 
 **Architecture:** Keep durable scanner logic in this repository. Use `bb-browser` only as the logged-in browser transport for LinkedIn, then normalize LinkedIn list/detail data into the existing `NewGradRow` and `NewGradDetail` contracts.
 
@@ -40,7 +40,7 @@ Live `bb-browser` inspection on 2026-04-21 confirmed:
 
 ## Goal
 
-Implement a source-specific `/career-ops linkedin-scan` mode that:
+Implement a source-specific `/auto-job linkedin-scan` mode that:
 
 1. Opens or reads a LinkedIn Jobs search URL through `bb-browser`.
 2. Extracts visible job rows without clicking mutating LinkedIn controls.
@@ -61,7 +61,7 @@ In scope:
 - Add `linkedin-scan` source tag support to existing bridge adapters.
 - Add targeted unit tests for source mapping, URL selection, pending parsing, and
   LinkedIn text normalization.
-- Add `/career-ops linkedin-scan` router and mode documentation.
+- Add `/auto-job linkedin-scan` router and mode documentation.
 - Add concise discoverability docs and npm script alias.
 - Add read-only external Apply probing behind an explicit flag, excluding Easy
   Apply and mutating controls.
@@ -201,7 +201,7 @@ better default for LinkedIn.
    exits cleanly before writes in `--score-only`.
 
 6. [x] Add npm and mode routing.
-   Verify: `package.json` has `linkedin-scan`; `.claude/skills/career-ops/SKILL.md`
+   Verify: `package.json` has `linkedin-scan`; `.claude/skills/auto-job/SKILL.md`
    routes `linkedin-scan` / `linkedin`; discovery lists the command; shared
    context loading includes the mode.
 
@@ -265,7 +265,7 @@ CODE PATH COVERAGE
 ```text
 USER FLOW COVERAGE
 ==================
-/career-ops linkedin-scan
+/auto-job linkedin-scan
     |
     +-- [GAP] bridge offline -> tell user to start bridge
     +-- [GAP] LinkedIn not logged in -> tell user to run bb-browser open login URL
@@ -359,7 +359,7 @@ error path.
 - 2026-04-21: Verified shared source/link/pending/history coverage with
   `npm --prefix bridge run test -- src/adapters/newgrad-source.test.ts src/adapters/newgrad-links.test.ts src/adapters/newgrad-pending.test.ts src/adapters/newgrad-scan-history.test.ts src/adapters/linkedin-scan-normalizer.test.ts`.
 - 2026-04-21: Added `scripts/linkedin-scan-bb-browser.ts`, `npm run
-  linkedin-scan`, `/career-ops linkedin-scan` routing, mode docs, Codex docs,
+  linkedin-scan`, `/auto-job linkedin-scan` routing, mode docs, Codex docs,
   and OpenCode command discoverability.
 - 2026-04-21: Verified `npm run linkedin-scan -- --help` after rerunning outside
   the sandbox because `tsx` needed a local IPC pipe.
@@ -511,7 +511,7 @@ error path.
   src/adapters/linkedin-scan-normalizer.test.ts
   src/adapters/claude-pipeline.test.ts
   src/adapters/newgrad-value-scorer.test.ts` passed with 27 tests.
-- 2026-04-22: User requested `/career-ops linkedin-scan`. Goal: run the existing
+- 2026-04-22: User requested `/auto-job linkedin-scan`. Goal: run the existing
   LinkedIn Jobs scanner against the documented 24-hour search path and report
   concrete extraction, scoring, enrichment, write, evaluation, and dashboard
   results. Success criteria: bridge health is verified; `bb-browser` is
@@ -527,9 +527,9 @@ error path.
   available, but the managed browser initially had no page targets, causing
   `bb-browser open` to fail with `No page target found`. Created a blank managed
   tab with `bb-browser tab new --json`, then reran the scanner. The first bridge
-  instance was started without `CAREER_OPS_BRIDGE_MODE=real`, so its enrich
+  instance was started without `AUTO_JOB_BRIDGE_MODE=real`, so its enrich
   summary was fake/non-durable; restarted the bridge as
-  `CAREER_OPS_BRIDGE_MODE=real npm --prefix bridge run start` and reran the
+  `AUTO_JOB_BRIDGE_MODE=real npm --prefix bridge run start` and reran the
   documented preview/write sequence before relying on results.
 - 2026-04-22: Real-mode no-write preview passed. Command:
   `npm run linkedin-scan -- --url "https://www.linkedin.com/jobs/search-results/?currentJobId=4347121472&keywords=software%20ai%20engineer%20new%20graduate%20job%20posted%20in%20the%20past%2024%20hours&origin=JOB_SEARCH_PAGE_JOB_FILTER&f_TPR=r86400" --score-only --limit 20`.
@@ -639,7 +639,7 @@ error path.
   after capturing a non-Easy-Apply external ATS URL, open that external page,
   read its job-description text, merge that text into `NewGradDetail`, and use
   the merged detail for bridge enrich and Codex evaluation. Also make
-  `CAREER_OPS_BRIDGE_MODE=real` default to `CAREER_OPS_REAL_EXECUTOR=codex`
+  `AUTO_JOB_BRIDGE_MODE=real` default to `AUTO_JOB_REAL_EXECUTOR=codex`
   when the executor env var is omitted, and update newgrad/linkedin mode docs to
   start `npm run ext:bridge`. Success criteria: external ATS detail character
   counts appear in live scan logs, evaluation page text contains external ATS
@@ -651,9 +651,9 @@ error path.
   location, salary, work model, requirements, responsibilities, and skill tags
   where visible, then merges the external ATS text ahead of the LinkedIn detail
   excerpt before bridge enrich/evaluation. Short redirect pages that expose no
-  readable JD remain URL-only. `CAREER_OPS_BRIDGE_MODE=real` now defaults
-  `CAREER_OPS_REAL_EXECUTOR` to `codex` when unset; `claude` remains available
-  only by explicit `CAREER_OPS_REAL_EXECUTOR=claude`. Updated
+  readable JD remain URL-only. `AUTO_JOB_BRIDGE_MODE=real` now defaults
+  `AUTO_JOB_REAL_EXECUTOR` to `codex` when unset; `claude` remains available
+  only by explicit `AUTO_JOB_REAL_EXECUTOR=claude`. Updated
   `modes/newgrad-scan.md`, `modes/linkedin-scan.md`, and
   `docs/BROWSER_EXTENSION.md` to reflect Codex-default bridge startup and the
   external ATS detail behavior.
@@ -663,7 +663,7 @@ error path.
   with 36 tests. `npm --prefix bridge run typecheck` passed. Script ESM
   typecheck passed. `npm run linkedin-scan -- --help` passed and documents that
   `--open-external-apply` opens the external ATS URL and reads JD text. Starting
-  the bridge with only `CAREER_OPS_BRIDGE_MODE=real npm --prefix bridge run
+  the bridge with only `AUTO_JOB_BRIDGE_MODE=real npm --prefix bridge run
   start` produced health `execution.realExecutor=codex`, proving the new default.
 - 2026-04-22: Live external ATS detail smoke passed. Query:
   `cloud solutions architect genworth`, `--pages 2 --limit 20 --scroll-steps 0
@@ -688,9 +688,9 @@ error path.
   counts here. Assumption: do not submit, fill, save, Easy Apply, or advance any
   external application form.
 - 2026-04-22: Fresh rerun bridge health passed. Started with only
-  `CAREER_OPS_BRIDGE_MODE=real npm --prefix bridge run start`; health showed
+  `AUTO_JOB_BRIDGE_MODE=real npm --prefix bridge run start`; health showed
   `execution.mode=real` and `execution.realExecutor=codex`, proving the Codex
-  default without `CAREER_OPS_REAL_EXECUTOR`.
+  default without `AUTO_JOB_REAL_EXECUTOR`.
 - 2026-04-22: Fresh score-only preview passed. Command:
   `npm run linkedin-scan -- --url "https://www.linkedin.com/jobs/search-results/?keywords=software%20engineer&location=United%20States&origin=JOB_SEARCH_PAGE_SEARCH_BUTTON&f_TPR=r86400&f_E=2" --score-only --pages 10 --limit 120 --scroll-steps 0`.
   Result: 69 raw LinkedIn rows, 61 unique after dedupe, 6 promoted, 55 filtered.
@@ -868,7 +868,7 @@ TODOS cross-reference:
 Distribution check:
 
 - No new external artifact type is introduced. The scanner is exposed through
-  existing npm scripts and `/career-ops` mode routing.
+  existing npm scripts and `/auto-job` mode routing.
 
 ### Architecture Review
 
@@ -903,7 +903,7 @@ closed or explicitly removed from scope.
 Test plan artifact:
 
 ```text
-~/.gstack/projects/Jaydccq-career-ops/hongxichen-main-eng-review-test-plan-20260421-175927.md
+~/.gstack/projects/Jaydccq-auto-job/hongxichen-main-eng-review-test-plan-20260421-175927.md
 ```
 
 No prompt/LLM template changes are planned, so no eval suite is required beyond
@@ -933,7 +933,7 @@ traffic and larger blast radius.
 
 ## Final Outcome
 
-Implemented. `/career-ops linkedin-scan` now routes to `modes/linkedin-scan.md`,
+Implemented. `/auto-job linkedin-scan` now routes to `modes/linkedin-scan.md`,
 `npm run linkedin-scan` runs the `bb-browser` LinkedIn Jobs scanner, LinkedIn
 rows flow through the existing newgrad scorer/enricher as `linkedin-scan`, and
 targeted tests cover source tags, pending/history parsing, URL selection,
@@ -959,7 +959,7 @@ probing with `--open-external-apply`. The scanner skips Easy Apply and mutating
 controls, captures non-LinkedIn Apply URLs, opens the external ATS page when
 available, and merges readable ATS/JD text into the detail payload before bridge
 enrichment/evaluation. Real-mode bridge startup now defaults to Codex when
-`CAREER_OPS_REAL_EXECUTOR` is unset; Claude is only selected explicitly.
+`AUTO_JOB_REAL_EXECUTOR` is unset; Claude is only selected explicitly.
 
 Fresh rerun verification on 2026-04-22 used a 10-page LinkedIn software
 engineer query and observed 69 raw / 61 unique / 6 promoted. The bounded live

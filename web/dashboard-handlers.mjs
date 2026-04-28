@@ -22,7 +22,7 @@ import yaml from 'js-yaml';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const BRIDGE_BASE = (process.env.CAREER_OPS_BRIDGE_BASE || 'http://127.0.0.1:47319').replace(/\/+$/, '');
+const BRIDGE_BASE = (process.env.AUTO_JOB_BRIDGE_BASE || 'http://127.0.0.1:47319').replace(/\/+$/, '');
 const BRIDGE_TOKEN_PATH = join(ROOT, 'apps', 'server', '.bridge-token');
 const OUTPUT_DIR = join(ROOT, 'output');
 const WORK_DIR = join(OUTPUT_DIR, '.apply-docs');
@@ -1563,7 +1563,7 @@ async function postBridge(path, payload) {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-career-ops-token': token,
+        'x-auto-job-token': token,
       },
       body: JSON.stringify(bridgeEnvelope(payload)),
     });
@@ -1582,7 +1582,7 @@ async function getBridge(path) {
   let response;
   try {
     response = await fetch(`${BRIDGE_BASE}${path}`, {
-      headers: { 'x-career-ops-token': token },
+      headers: { 'x-auto-job-token': token },
     });
   } catch (error) {
     throw new ClientError(`bridge request failed; start bun run server. ${error.message}`, 503);

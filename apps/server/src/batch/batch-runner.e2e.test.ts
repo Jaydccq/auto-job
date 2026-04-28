@@ -29,7 +29,7 @@ afterEach(() => {
 });
 
 function makeTempRepo(): string {
-  const repoRoot = mkdtempSync(join(tmpdir(), "career-ops-batch-e2e-"));
+  const repoRoot = mkdtempSync(join(tmpdir(), "auto-job-batch-e2e-"));
   tempRoots.push(repoRoot);
 
   mkdirSync(join(repoRoot, "batch"), { recursive: true });

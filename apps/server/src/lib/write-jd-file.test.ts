@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { writeJdFile } from "./write-jd-file.js";
 import { jdFilename } from "./jd-filename.js";
 
-const TEST_DIR = join(tmpdir(), "career-ops-test-jds");
+const TEST_DIR = join(tmpdir(), "auto-job-test-jds");
 
 beforeEach(() => {
   mkdirSync(TEST_DIR, { recursive: true });

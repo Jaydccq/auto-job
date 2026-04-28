@@ -54,12 +54,12 @@ From the outside-voice eng review, the 4 issues that blocked the previous plan:
 
 **Step 1:** Create isolated worktree off `main`.
 
-Run: `git worktree add ../career-ops-eval-ux -b feat/evaluating-ux main`
-Expected: worktree at `../career-ops-eval-ux` on `feat/evaluating-ux`.
+Run: `git worktree add ../auto-job-eval-ux -b feat/evaluating-ux main`
+Expected: worktree at `../auto-job-eval-ux` on `feat/evaluating-ux`.
 
 **Step 2:** Install + green baseline.
 
-Run: `cd ../career-ops-eval-ux && bun install && bun test`
+Run: `cd ../auto-job-eval-ux && bun install && bun test`
 Expected: all existing tests pass.
 
 **Step 3:** Anchor the branch.
@@ -381,7 +381,7 @@ It's safe to close this popup. We'll notify you when the report is ready.
 **Step 2:** Add a Chrome notification on `done` event in `background/index.ts`:
 
 ```ts
-chrome.notifications.create(`career-ops-${jobId}`, {
+chrome.notifications.create(`auto-job-${jobId}`, {
   type: "basic",
   iconUrl: "icons/icon-128.png",
   title: `Evaluation ready — ${result.score.toFixed(1)}/5`,

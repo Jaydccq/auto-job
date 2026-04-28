@@ -52,7 +52,8 @@ overwritten by the runtime as it evolves. **Do not** put user data here.
 | Root `*.mjs` | CLI utilities (`verify`, `merge`, `dedup`, `normalize`, `pdf`, `liveness`, `scan`, `doctor`) |
 | `scripts/**` | Launchers and automation helpers |
 | `web/**` | Dashboard build / template |
-| `.claude/skills/career-ops/SKILL.md` | Claude Code routing |
+| `skills/**` | Agent-agnostic repository skill source |
+| `.claude/skills/**` | Claude Code mirror of `skills/**` |
 | `docs/**` | Architecture docs, exec plans, ADRs |
 
 ## Wire-level contracts (do not break silently)

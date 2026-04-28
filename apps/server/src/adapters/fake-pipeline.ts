@@ -3,7 +3,7 @@
  *
  * Emits scripted phase transitions with small delays, returns a canned
  * EvaluationResult derived from the input URL. Used when
- * CAREER_OPS_BRIDGE_MODE=fake (the default).
+ * AUTO_JOB_BRIDGE_MODE=fake (the default).
  *
  * Purpose:
  *   • Let us verify the full popup ↔ background ↔ HTTP ↔ SSE ↔ job-store
@@ -32,16 +32,16 @@ import type {
   JobId,
   JobPhase,
   TrackerRow,
-} from "@career-ops/shared";
-import type { BridgeError } from "@career-ops/shared";
-import type { AutofillProfile, AutofillResumeFile } from "@career-ops/shared";
+} from "@auto-job/shared";
+import type { BridgeError } from "@auto-job/shared";
+import type { AutofillProfile, AutofillResumeFile } from "@auto-job/shared";
 import type {
   NewGradRow,
   EnrichedRow,
   NewGradScoreResult,
   NewGradEnrichResult,
   PipelineEntry,
-} from "@career-ops/shared";
+} from "@auto-job/shared";
 import { scanSourceForRow } from "./newgrad-source.js";
 
 const DEFAULT_DELAY_MS = 400;
@@ -299,7 +299,7 @@ export function createFakePipelineAdapter(
           {
             key: "fullName",
             label: "Full name",
-            value: "Career Ops Candidate",
+            value: "Auto Job Candidate",
             source: "derived",
             confidence: 0.9,
             aliases: ["full name", "legal name", "name"],

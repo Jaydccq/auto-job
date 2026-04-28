@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createInMemoryJobStore } from "../job-store.js";
-import type { JobId, JobSnapshot, EvaluationResult } from "@career-ops/shared";
-import type { BridgeError } from "@career-ops/shared";
+import type { JobId, JobSnapshot, EvaluationResult } from "@auto-job/shared";
+import type { BridgeError } from "@auto-job/shared";
 
 function makeId(s: string): JobId { return s as JobId; }
 

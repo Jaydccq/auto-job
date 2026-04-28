@@ -54,15 +54,15 @@ through 22:00 America/New_York, and document the Codex App setup steps.
    and Indeed command construction omits empty `--location`.
 8. Preserve the user-selected Indeed search filters for scheduled scans.
    Verify: hourly automation builds the Indeed command with `--url` from
-   profile config or `CAREER_OPS_INDEED_URL`.
+   profile config or `AUTO_JOB_INDEED_URL`.
 
 ## Verification approach
 
 - `node --check scripts/hourly-job-scan.mjs`
-- `npm run auto:hourly-scan:dry` with `CAREER_OPS_SCAN_IGNORE_WINDOW=1` and a
+- `npm run auto:hourly-scan:dry` with `AUTO_JOB_SCAN_IGNORE_WINDOW=1` and a
   narrow source list if live browser state allows it.
 - `npm run verify` if targeted checks do not expose environment blockers.
-- `CAREER_OPS_SCAN_IGNORE_WINDOW=1 CAREER_OPS_SCAN_SOURCES= npm run
+- `AUTO_JOB_SCAN_IGNORE_WINDOW=1 AUTO_JOB_SCAN_SOURCES= npm run
   auto:hourly-scan` to verify the no-bridge preview fallback without running
   live source scans.
 
@@ -74,7 +74,7 @@ through 22:00 America/New_York, and document the Codex App setup steps.
   LinkedIn profile default URL, and Codex Automation setup documentation.
 - 2026-04-25: Verified `node --check scripts/hourly-job-scan.mjs`,
   `package.json` JSON parsing, `git diff --check` for changed files, and a
-  no-source dry automation run with `CAREER_OPS_SCAN_IGNORE_WINDOW=1`.
+  no-source dry automation run with `AUTO_JOB_SCAN_IGNORE_WINDOW=1`.
 - 2026-04-25: Ran `npm run verify`; it passed with existing duplicate warnings
   for RemoteHunter and Anduril rows.
 - 2026-04-25: Automation run `npm run auto:hourly-scan` did not reach source
@@ -86,19 +86,19 @@ through 22:00 America/New_York, and document the Codex App setup steps.
   tries to start the bridge by default. It now reuses an existing real/codex
   bridge when available and otherwise runs read-only preview commands, recording
   the bridge recovery command in the summary. Automatic startup remains
-  available with `CAREER_OPS_SCAN_START_BRIDGE=1`; hard failure remains
-  available with `CAREER_OPS_SCAN_REQUIRE_BRIDGE=1`.
+  available with `AUTO_JOB_SCAN_START_BRIDGE=1`; hard failure remains
+  available with `AUTO_JOB_SCAN_REQUIRE_BRIDGE=1`.
 - 2026-04-25: Verified the no-bridge fallback with
-  `CAREER_OPS_BRIDGE_PORT=9 CAREER_OPS_SCAN_IGNORE_WINDOW=1
-  CAREER_OPS_SCAN_SOURCES= npm run auto:hourly-scan`; it exited successfully,
+  `AUTO_JOB_BRIDGE_PORT=9 AUTO_JOB_SCAN_IGNORE_WINDOW=1
+  AUTO_JOB_SCAN_SOURCES= npm run auto:hourly-scan`; it exited successfully,
   wrote a summary with `bridge_unavailable_preview`, and did not try to listen
   on localhost. Removed the temporary verification summary afterward.
 - 2026-04-25: Ran `npm run verify`; it passed with the existing duplicate
   warnings for RemoteHunter and Anduril rows.
 - 2026-04-25: Updated hourly automation so LinkedIn scans derive their base URL
   from `config/profile.yml -> linkedin_scan.search_url` or
-  `CAREER_OPS_LINKEDIN_URL`, then replace `f_TPR` with
-  `CAREER_OPS_LINKEDIN_POSTED_WITHIN` defaulting to `r4000`. This keeps hourly
+  `AUTO_JOB_LINKEDIN_URL`, then replace `f_TPR` with
+  `AUTO_JOB_LINKEDIN_POSTED_WITHIN` defaulting to `r4000`. This keeps hourly
   LinkedIn scans focused on the newest roughly last-hour postings while manual
   LinkedIn scans can still use the profile URL directly.
 - 2026-04-25: Verified the LinkedIn URL transform with a Node YAML parse check;
@@ -108,10 +108,10 @@ through 22:00 America/New_York, and document the Codex App setup steps.
   the job-search automation. The command exited before source execution because
   it was outside the configured America/New_York schedule window, so no sources
   ran, no evaluations completed, and no new `data/automation` summary was
-  written. Manual catch-up command: `CAREER_OPS_SCAN_IGNORE_WINDOW=1 npm run
+  written. Manual catch-up command: `AUTO_JOB_SCAN_IGNORE_WINDOW=1 npm run
   auto:hourly-scan`.
 - 2026-04-25 03:47Z: Ran the requested test catch-up with
-  `CAREER_OPS_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan`. The sandbox run
+  `AUTO_JOB_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan`. The sandbox run
   wrote `data/automation/hourly-scan-2026-04-25T03-46-15-821Z.md` but hit DNS
   failures and `tsx` IPC `EPERM`, so the command was rerun with approved
   unsandboxed execution. The unsandboxed run wrote
@@ -125,7 +125,7 @@ through 22:00 America/New_York, and document the Codex App setup steps.
   failed bridge health checks with `fetch failed`, Indeed failed with
   `missing value for --location`, and Pallet returned HTTP 404 in direct scan.
 - 2026-04-25 03:50Z: After the user started the bridge, reran
-  `CAREER_OPS_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan` with approved
+  `AUTO_JOB_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan` with approved
   unsandboxed execution. The run wrote
   `data/automation/hourly-scan-2026-04-25T03-50-10-526Z.md`. The top-level
   orchestration bridge probe still reported `bridge_unavailable_preview`, so
@@ -142,11 +142,11 @@ through 22:00 America/New_York, and document the Codex App setup steps.
   `execution.mode=real` and `execution.realExecutor=codex`. Updated the
   orchestrator to poll briefly for a just-started bridge before preview
   fallback, and to omit the Indeed `--location` option when
-  `CAREER_OPS_INDEED_LOCATION` is empty.
+  `AUTO_JOB_INDEED_LOCATION` is empty.
 - 2026-04-25 04:20Z: Restarted the bb-browser daemon with
   `bb-browser daemon shutdown` and verified Chrome/CDP recovery with
   `bb-browser tab list`. Ran a full catch-up using
-  `CAREER_OPS_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan` in the approved
+  `AUTO_JOB_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan` in the approved
   local environment. The orchestrator detected the existing real/codex bridge,
   ran all sources, wrote
   `data/automation/hourly-scan-2026-04-25T04-19-55-048Z.md`, and completed 6
@@ -163,7 +163,7 @@ through 22:00 America/New_York, and document the Codex App setup steps.
   pipe-containing role titles. `npm run verify` passed afterward with only the
   existing RemoteHunter and Anduril duplicate warnings.
 - 2026-04-25: Updated the hourly orchestrator so Indeed scans prefer a full
-  search URL from `CAREER_OPS_INDEED_URL` or
+  search URL from `AUTO_JOB_INDEED_URL` or
   `config/profile.yml -> indeed_scan.search_url`. Added the user's entry-level
   Indeed URL to profile config so the scheduled run preserves the `sc=` filter
   instead of rebuilding a plain query/location search.
@@ -176,7 +176,7 @@ through 22:00 America/New_York, and document the Codex App setup steps.
 - 2026-04-27 08:02Z: Ran `npm run auto:hourly-scan` from the local checkout for
   the job-search automation. The plain command exited at the schedule guard
   because it was outside the America/New_York window, so reran
-  `CAREER_OPS_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan` to exercise the
+  `AUTO_JOB_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan` to exercise the
   requested scan path. The run wrote
   `data/automation/hourly-scan-2026-04-27T08-02-15-633Z.md`, attempted `scan`,
   `newgrad`, `builtin`, `linkedin`, and `indeed`, and completed 0 evaluations.
@@ -186,7 +186,7 @@ through 22:00 America/New_York, and document the Codex App setup steps.
 - 2026-04-27 10:03Z: Ran `npm run auto:hourly-scan` from the local checkout for
   the job-search automation. The plain command exited at the schedule guard
   because it was outside the America/New_York window, so reran
-  `CAREER_OPS_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan`. The catch-up run
+  `AUTO_JOB_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan`. The catch-up run
   wrote `data/automation/hourly-scan-2026-04-27T10-03-07-150Z.md`, requested
   `scan`, `newgrad`, `builtin`, `linkedin`, and `indeed`, and completed 0
   evaluations. Bridge was unavailable, so writes/evaluations were disabled with
@@ -197,7 +197,7 @@ through 22:00 America/New_York, and document the Codex App setup steps.
 - 2026-04-27 11:03Z: Ran `npm run auto:hourly-scan` from the local checkout for
   the job-search automation. The plain command exited at the schedule guard
   because it was 07:03 America/New_York, so reran
-  `CAREER_OPS_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan`. The catch-up run
+  `AUTO_JOB_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan`. The catch-up run
   wrote `data/automation/hourly-scan-2026-04-27T11-03-16-362Z.md`, requested
   `scan`, `newgrad`, `builtin`, `linkedin`, and `indeed`, and completed 0
   evaluations. Bridge was unavailable, so writes/evaluations were disabled with
@@ -314,7 +314,7 @@ through 22:00 America/New_York, and document the Codex App setup steps.
   list`.
 - 2026-04-27 16:56Z: Restarted `bb-browser` with `bb-browser daemon shutdown`
   and `bb-browser tab list`, then reran only
-  `CAREER_OPS_SCAN_SOURCES=builtin,linkedin,indeed npm run auto:hourly-scan`
+  `AUTO_JOB_SCAN_SOURCES=builtin,linkedin,indeed npm run auto:hourly-scan`
   outside the sandbox. The run wrote
   `data/automation/hourly-scan-2026-04-27T16-56-08-591Z.md`; Built In parsed 2
   rows and promoted 0, LinkedIn parsed 74 raw / 71 unique rows, promoted 55,
@@ -340,10 +340,10 @@ through 22:00 America/New_York, and document the Codex App setup steps.
   Codex cron. Re-scoped Codex Automation to reporting only and added host-side
   launchd scripts: `scripts/run-hourly-scan-host.zsh` for the real scan and
   `scripts/install-hourly-scan-launchd.zsh` to install
-  `com.career-ops.hourly-scan`. Updated `docs/codex-hourly-scan-automation.md`
+  `com.auto-job.hourly-scan`. Updated `docs/codex-hourly-scan-automation.md`
   so live scanning is owned by launchd while Codex cron inspects the newest
   `data/automation/hourly-scan-*.md` summary afterward.
-- 2026-04-27: Installed `com.career-ops.hourly-scan` under the user launchd
+- 2026-04-27: Installed `com.auto-job.hourly-scan` under the user launchd
   domain and verified it can run `npm run auto:hourly-scan` outside the Codex
   sandbox. The first launchd run detected `existing_real_codex`, completed 2
   direct-scan evaluations, ran Newgrad through enrichment, and rebuilt the
@@ -359,8 +359,8 @@ through 22:00 America/New_York, and document the Codex App setup steps.
   evaluations, rebuilt the dashboard with 376 reports, 264 applications, 593
   pipeline rows, and 1416 scan-history rows, and left only existing duplicate
   warnings in `npm run verify`.
-- 2026-04-27: Changed hourly scan defaults so `CAREER_OPS_SCAN_EVALUATE_LIMIT`
-  and `CAREER_OPS_SCAN_ENRICH_LIMIT` are optional caps instead of built-in
+- 2026-04-27: Changed hourly scan defaults so `AUTO_JOB_SCAN_EVALUATE_LIMIT`
+  and `AUTO_JOB_SCAN_ENRICH_LIMIT` are optional caps instead of built-in
   defaults. When unset, the orchestrator no longer passes `--evaluate-limit` or
   `--enrich-limit`, so scanner defaults remain uncapped. Updated
   `docs/codex-hourly-scan-automation.md` to document the uncapped default.
@@ -390,7 +390,7 @@ through 22:00 America/New_York, and document the Codex App setup steps.
 - Codex cron cannot perform the live scan when its run context has
   `approval_policy=never`; use host launchd for the real command and keep Codex
   Automation as a summary/notification layer.
-- Wait up to `CAREER_OPS_SCAN_BRIDGE_WAIT_MS` for bridge readiness so a bridge
+- Wait up to `AUTO_JOB_SCAN_BRIDGE_WAIT_MS` for bridge readiness so a bridge
   started immediately before the automation run does not cause a false preview
   fallback.
 - Sanitize markdown tracker cells in `merge-tracker.mjs` because generated TSV
@@ -401,7 +401,7 @@ through 22:00 America/New_York, and document the Codex App setup steps.
 - Keep user-selected Indeed filters as a full URL in profile config, because
   query/location reconstruction drops SERP filters such as entry-level `sc=`.
 - Keep hourly enrichment/evaluation uncapped by default; use
-  `CAREER_OPS_SCAN_ENRICH_LIMIT` and `CAREER_OPS_SCAN_EVALUATE_LIMIT` only as
+  `AUTO_JOB_SCAN_ENRICH_LIMIT` and `AUTO_JOB_SCAN_EVALUATE_LIMIT` only as
   explicit operator caps.
 - Keep Codex App Automation as a concise reporting layer. The prompt should not
   embed the full setup guide or stale tuning examples, because host launchd owns

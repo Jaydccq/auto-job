@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const REPO_PATH = resolve(fileURLToPath(import.meta.url), "../..");
 const HOME = homedir();
-const LABEL = "io.hongxi.career-ops";
+const LABEL = "io.hongxi.auto-job";
 const TEMPLATE = join(REPO_PATH, "templates", `${LABEL}.plist.template`);
 const TARGET = join(HOME, "Library", "LaunchAgents", `${LABEL}.plist`);
 const LOG_DIR = join(HOME, "Library", "Logs", "CareerOps");

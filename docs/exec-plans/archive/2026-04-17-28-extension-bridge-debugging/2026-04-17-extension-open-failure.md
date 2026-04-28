@@ -2,7 +2,7 @@
 
 ## Background
 
-The Chrome extension is expected to open an in-page career-ops panel from the toolbar action. The current manifest does not define a default popup; the background service worker injects `panel.js` into the active tab and sends a `togglePanel` message.
+The Chrome extension is expected to open an in-page auto-job panel from the toolbar action. The current manifest does not define a default popup; the background service worker injects `panel.js` into the active tab and sends a `togglePanel` message.
 
 ## Goal
 

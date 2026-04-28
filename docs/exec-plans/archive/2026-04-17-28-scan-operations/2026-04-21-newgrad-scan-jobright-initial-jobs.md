@@ -6,12 +6,12 @@ The bb-browser JobRight adapter showed that JobRight minisite pages expose a
 structured `__NEXT_DATA__.props.pageProps.initialJobs` payload. Follow-up
 browser inspection also found the same page's paginated
 `/swan/mini-sites/list` endpoint, which returns 50 jobs at a time by offset.
-The current `/career-ops newgrad-scan` autonomous runner uses a DOM scroller
+The current `/auto-job newgrad-scan` autonomous runner uses a DOM scroller
 for full 24-hour list extraction after resolving the embedded JobRight page.
 
 ## Goal
 
-Use structured JobRight sources to make `/career-ops newgrad-scan` faster and
+Use structured JobRight sources to make `/auto-job newgrad-scan` faster and
 more reliable when it is safe, without reducing default scan coverage. The
 default path should cover the same 24-hour freshness range without requiring
 DOM scrolling when the paginated JobRight API is available.
@@ -62,7 +62,7 @@ DOM scrolling when the paginated JobRight API is available.
 ## Progress Log
 
 - 2026-04-21: Created plan after the user asked where the bb-browser JobRight
-  adapter insight could optimize `/career-ops newgrad-scan`.
+  adapter insight could optimize `/auto-job newgrad-scan`.
 - 2026-04-21: Added `--list-source auto|dom|initial-jobs` to
   `scripts/newgrad-scan-autonomous.ts`.
 - 2026-04-21: Added a JobRight `initialJobs` extractor and auto-selection logic:
@@ -106,7 +106,7 @@ DOM scrolling when the paginated JobRight API is available.
 ## Key Decisions
 
 - Do not make the bb-browser private adapter a runtime dependency of
-  Career-Ops. Encode the same structured extraction insight directly in the
+  Auto-Job. Encode the same structured extraction insight directly in the
   repo-owned autonomous scanner.
 - Preserve coverage by making DOM extraction the fallback whenever JobRight's
   structured API is unavailable.
@@ -130,7 +130,7 @@ DOM scrolling when the paginated JobRight API is available.
 
 ## Final Outcome
 
-`/career-ops newgrad-scan` now has repo-owned JobRight structured list sources.
+`/auto-job newgrad-scan` now has repo-owned JobRight structured list sources.
 Default auto mode uses the paginated JobRight API for the full exact 24-hour
 freshness window, falls back to `initialJobs`, then falls back to the DOM
 scroller. `--list-source api` forces the 24-hour API path, `--list-source dom`

@@ -17,7 +17,7 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           pr-message: |
-            Welcome to career-ops, @${{ github.actor }}! Thanks for your first PR.
+            Welcome to auto-job, @${{ github.actor }}! Thanks for your first PR.
 
             A few things to know:
             - Tests will run automatically — check the status below

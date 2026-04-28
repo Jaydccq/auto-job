@@ -7,7 +7,7 @@ import { readAutofillProfile, readAutofillResume } from "./autofill-profile.js";
 
 describe("readAutofillProfile", () => {
   it("assembles common application fields from profile.yml and cv.md", () => {
-    const repoRoot = mkdtempSync(join(tmpdir(), "career-ops-autofill-"));
+    const repoRoot = mkdtempSync(join(tmpdir(), "auto-job-autofill-"));
     mkdirSync(join(repoRoot, "config"), { recursive: true });
     mkdirSync(join(repoRoot, "docs"), { recursive: true });
     writeFileSync(join(repoRoot, "docs/resume.pdf"), "%PDF-1.5 test", "utf-8");

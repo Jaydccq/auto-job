@@ -54,9 +54,9 @@ export function presetDescription(preset: BridgePreset): string {
     case "fake":
       return "Fast UI smoke mode. No real report or PDF files are written.";
     case "real-claude":
-      return "Full checked-in career-ops flow using claude -p as the executor.";
+      return "Full checked-in auto-job flow using claude -p as the executor.";
     case "real-codex":
-      return "Full checked-in career-ops flow using codex exec as the executor.";
+      return "Full checked-in auto-job flow using codex exec as the executor.";
     case "real-openrouter":
       return "API-based, no CLI required. Uses OpenRouter for model routing (BYO key).";
   }
@@ -65,13 +65,13 @@ export function presetDescription(preset: BridgePreset): string {
 export function presetCommand(preset: BridgePreset): string {
   switch (preset) {
     case "fake":
-      return "CAREER_OPS_BACKEND=fake bun run server";
+      return "AUTO_JOB_BACKEND=fake bun run server";
     case "real-claude":
-      return "CAREER_OPS_BACKEND=real-claude bun run server";
+      return "AUTO_JOB_BACKEND=real-claude bun run server";
     case "real-codex":
       return "bun run server";
     case "real-openrouter":
-      return "CAREER_OPS_BACKEND=real-openrouter bun run server";
+      return "AUTO_JOB_BACKEND=real-openrouter bun run server";
   }
 }
 
