@@ -300,3 +300,62 @@ test('isValidStoredSignal: soft event still re-classifies and drops on mismatch'
   };
   assert.equal(isValidStoredSignal(signal), false);
 });
+
+test('classifyEvent: "we regret to inform you" classifies as rejected', () => {
+  const event = classifyEvent({
+    subject: 'Application Update',
+    text: 'Dear Hongxi, we regret to inform you that we will be moving on with other candidates for this role.',
+    from: { name: 'Acme Hiring Team', email: 'no-reply@ashbyhq.com' },
+  });
+  assert.equal(event, 'rejected');
+});
+
+test('classifyEvent: "moving in a different direction" classifies as rejected', () => {
+  const event = classifyEvent({
+    subject: 'Application Update',
+    text: 'Hi Hongxi, we are moving in a different direction with the role.',
+    from: { name: 'Acme Hiring Team', email: 'no-reply@ashbyhq.com' },
+  });
+  assert.equal(event, 'rejected');
+});
+
+test('classifyEvent: "not advancing" / "will not be advancing" classifies as rejected', () => {
+  for (const phrase of [
+    'we are not advancing your application at this time',
+    'we will not be advancing your candidacy',
+  ]) {
+    const event = classifyEvent({
+      subject: 'Application Update',
+      text: phrase,
+      from: { name: 'Acme Hiring Team', email: 'no-reply@ashbyhq.com' },
+    });
+    assert.equal(event, 'rejected', `expected rejected for: ${phrase}`);
+  }
+});
+
+test('classifyEvent: "position has been put on hold" classifies as rejected', () => {
+  const event = classifyEvent({
+    subject: 'Application Update',
+    text: 'Hi Hongxi, the position has been put on hold while we re-scope the team.',
+    from: { name: 'Acme Hiring Team', email: 'no-reply@ashbyhq.com' },
+  });
+  assert.equal(event, 'rejected');
+});
+
+test('classifyEvent: soft phrase + "opportunity" hiring noun classifies as rejected', () => {
+  const event = classifyEvent({
+    subject: 'Update on the role',
+    text: 'Unfortunately we will not be moving forward with this opportunity at this time.',
+    from: { name: 'Acme Hiring Team', email: 'no-reply@ashbyhq.com' },
+  });
+  assert.equal(event, 'rejected');
+});
+
+test('classifyEvent: soft phrase + "opening" hiring noun classifies as rejected', () => {
+  const event = classifyEvent({
+    subject: 'Update',
+    text: 'We have other candidates more aligned with this opening.',
+    from: { name: 'Acme Hiring Team', email: 'no-reply@ashbyhq.com' },
+  });
+  assert.equal(event, 'rejected');
+});

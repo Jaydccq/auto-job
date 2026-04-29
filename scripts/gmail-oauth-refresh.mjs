@@ -118,9 +118,12 @@ const HARD_REJECTION_PATTERNS = [
   /\bnot selected (?:for|to|at)\b/i,
   /\bnot been selected\b/i,
   /\bdecided not to proceed\b/i,
-  /\b(?:filled the position|position has been filled|closed the role|role has been (?:closed|filled))\b/i,
+  /\b(?:filled the position|position has been filled|position has been put on hold|closed the role|role has been (?:closed|filled|put on hold))\b/i,
   /\bunable to (?:move forward|proceed)\b/i,
   /\bnot able to offer\b/i,
+  /\bregret to inform\b/i,
+  /\bmoving in a different direction\b/i,
+  /\b(?:will not(?: be)?|we are not|are not)\s+advancing\b/i,
 ];
 
 const SOFT_REJECTION_PATTERNS = [
@@ -129,6 +132,8 @@ const SOFT_REJECTION_PATTERNS = [
   /\bother candidates\b/i,
   /\bmore aligned with\b/i,
 ];
+
+const HIRING_NOUN_PATTERN = /\b(?:application|candidacy|interview|role|position|opportunity|opening|requisition)\b/i;
 
 const APPLICATION_REVIEW_ONLY_PATTERNS = [
   /\bcurrently reviewing\b/i,
@@ -754,7 +759,8 @@ export function classifyEvent({ subject = '', text = '', from = {} }) {
   const trustedSender = isTrustedRecruitingSender(from);
   const personalHiringContext = hasPersonalHiringContext(haystack);
   const weakHiringContext = hasWeakHiringContext(haystack);
-  const hiringContext = personalHiringContext || (trustedSender && weakHiringContext);
+  const hardRejectionPresent = hasAnyPattern(HARD_REJECTION_PATTERNS, haystack);
+  const hiringContext = personalHiringContext || hardRejectionPresent || (trustedSender && weakHiringContext);
 
   if (hasAnyPattern(NEWSLETTER_NOISE_PATTERNS, subject) && !hasDirectSignalContext(subject)) return '';
   if (!hiringContext || isLikelyMailboxNoise({ text: haystack, from })) return '';
@@ -771,7 +777,7 @@ export function classifyEvent({ subject = '', text = '', from = {} }) {
     const result = decide('rejected');
     if (result) return result;
   }
-  if (hasSoftRejection && /\b(?:application|candidacy|interview|role|position)\b/i.test(lower) &&
+  if (hasSoftRejection && HIRING_NOUN_PATTERN.test(lower) &&
       !hasAnyPattern(APPLICATION_RECEIPT_PATTERNS, lower)) {
     const result = decide('rejected');
     if (result) return result;
