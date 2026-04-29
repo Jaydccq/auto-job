@@ -76,7 +76,10 @@ live scanner.
    1. Which sources ran
    2. How many evaluations completed
    3. Any source blocked by login, checkpoint, rate limit, verification, parsing, browser/CDP, bridge, DNS, or sandbox execution error
-   4. The newest high-fit roles worth reviewing
+   4. The newest high-fit roles worth reviewing. Only use final results:
+      completed evaluations scored `3.5+/5`, or output lines with an offer /
+      explicit high-priority marker. Do not use `Top promoted rows` as
+      high-fit roles.
    5. The summary file path under data/automation
 
    If the newest summary reports sandbox EPERM, bridge_unavailable_preview, DNS ENOTFOUND, or tsx IPC failures, state that the Codex cron context is not suitable for live scanning and that the host-side scheduler/terminal run must execute bun run auto:hourly-scan. Never submit applications or click Apply, Easy Apply, Save, job alerts, resume upload, or final submit controls.
@@ -114,6 +117,9 @@ live scanner.
 - Runs tracker/dashboard maintenance after successful live scans.
 - Writes `data/automation/hourly-scan-*.md` with source status, completed
   evaluation count, blocker recovery commands, high-fit roles, and output tails.
+  High-fit roles come only from completed evaluations scored `3.5+/5` or output
+  lines with an offer / explicit high-priority marker; `Top promoted rows` are
+  list-screen candidates and are not included in this section.
 
 ## Tuning knobs
 

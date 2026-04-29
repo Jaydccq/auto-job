@@ -557,16 +557,27 @@ function blockedReason(output) {
 
 function highFitLines(results) {
   const lines = [];
+  const evaluationPatterns = [
+    /- (.+?)\s+[—-]\s+(.+?): (\d+(?:\.\d+)?)\/5 report=(\S+)/g,
+    /- (.+?) \| (.+?): (\d+(?:\.\d+)?)\/5 report=(\S+)/g,
+  ];
+  const priorityMarker = /\b(?:offer|high[- ]priority|priority[:=]\s*(?:high|urgent|attention)|"priority"\s*:\s*"(?:high|urgent|attention)"|urgent|attention)\b/i;
+
   for (const result of results) {
-    for (const match of result.outputTail.matchAll(/- (.+?) - (.+?): ([4-5](?:\.\d+)?)\/5 report=(\S+)/g)) {
-      lines.push(`- ${match[1]} - ${match[2]} (${match[3]}/5, ${match[4]})`);
+    for (const pattern of evaluationPatterns) {
+      for (const match of result.outputTail.matchAll(pattern)) {
+        const score = Number(match[3]);
+        if (score >= 3.5) {
+          lines.push(`- ${match[1]} - ${match[2]} (${match[3]}/5, ${match[4]})`);
+        }
+      }
     }
-    for (const match of result.outputTail.matchAll(/- (.+?) \| (.+?): ([4-5](?:\.\d+)?)\/5 report=(\S+)/g)) {
-      lines.push(`- ${match[1]} - ${match[2]} (${match[3]}/5, ${match[4]})`);
-    }
-    for (const match of result.outputTail.matchAll(/^\s*\+ (.+?) \| (.+?) \| (.+)$/gm)) {
+
+    for (const rawLine of result.outputTail.split(/\r?\n/)) {
       if (lines.length >= 12) break;
-      lines.push(`- ${match[1]} - ${match[2]} (${match[3]})`);
+      const line = rawLine.trim();
+      if (!line || line.startsWith("Top promoted rows:") || /^\d+\.\s/.test(line)) continue;
+      if (priorityMarker.test(line)) lines.push(`- ${result.label}: ${line}`);
     }
   }
   return [...new Set(lines)].slice(0, 12);
@@ -576,6 +587,7 @@ async function writeSummary(results, bridgeState) {
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const summaryPath = join(automationDir, `hourly-scan-${stamp}.md`);
   const totalCompleted = results.reduce((total, result) => total + completedEvaluations(result), 0);
+  const highFit = highFitLines(results);
   const blockers = results
     .filter((result) => !result.ok)
     .map((result) => ({
@@ -616,7 +628,7 @@ async function writeSummary(results, bridgeState) {
     "",
     "## Newest high-fit roles worth reviewing",
     "",
-    ...(highFitLines(results).length > 0 ? highFitLines(results) : ["No 4.0+ completed evaluations or new-offer lines detected in captured output."]),
+    ...(highFit.length > 0 ? highFit : ["No 3.5+ completed evaluations or offer/high-priority lines detected in captured output."]),
     "",
     "## Output tails",
     "",
