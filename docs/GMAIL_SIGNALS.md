@@ -12,11 +12,44 @@ language tied to an application, or a trusted ATS/recruiting sender. Marketing
 offers, newsletters, Reddit digests, utility alerts, rent/payment notices, and
 shopping mail should be ignored.
 
+Sender policy:
+
+- Trusted ATS senders (`*@ashbyhq.com`, `*@greenhouse.io` / `*@greenhouse-mail.io`,
+  `*@hire.lever.co` / `*@lever.co`, `*@myworkday.com` / `*@workday.com`,
+  `*@smartrecruiters.com`, `*@talent.icims.com`, `*@jobvite.com`) yield the
+  highest-confidence company via the sender display name minus suffixes
+  (`Hiring Team`, `Recruiting`, `Talent Acquisition`, `Talent Team`, `Careers`,
+  `Candidate Experience`, `People Team`, `HR Team`, `Human Resources`).
+- LinkedIn `*@linkedin.com` senders are restricted to `applied` or `responded`
+  events only — they cannot produce `rejected`, `offer`, or `interview`
+  signals because LinkedIn application-confirmation bodies frequently contain
+  misleading phrasing.
+- Rejection requires either a hard phrase (`not moving forward`,
+  `decided not to proceed`, `position has been filled`, `not selected for`,
+  `unable to move forward`, `not able to offer`) or a soft phrase
+  (`unfortunately`, `not an ideal fit`, `other candidates`, `more aligned with`)
+  combined with a hiring noun (`application` / `candidacy` / `interview` /
+  `role` / `position`) AND no application-receipt phrase in the same body.
+
 Recommended fields:
 
 ```json
-{"id":"gmail-message-id:event","applicationNum":123,"company":"Example Co","role":"Software Engineer","eventType":"interview","eventDate":"2026-04-25","priority":"attention","summary":"Recruiter sent an interview scheduling link","recommendedAction":"Schedule interview","messageId":"...","threadId":"...","confidence":0.9}
+{"id":"gmail-message-id:event","applicationNum":123,"company":"Example Co","role":"Software Engineer","eventType":"interview","eventDate":"2026-04-25","priority":"attention","summary":"Recruiter sent an interview scheduling link","recommendedAction":"Schedule interview","messageId":"...","threadId":"...","confidence":0.91}
 ```
+
+`confidence` is computed from a weighted feature set: ATS-sender trust 0.30,
+explicit company 0.20, explicit role 0.15, hard event phrase 0.15, weak event
+phrase 0.05 (only when no hard phrase is present), explicit subject match
+0.10, plus a 0.20 floor. Result is clamped to `[0, 1]` and rounded to two
+decimals. Consumers may filter signals below a threshold (e.g., `>= 0.55`)
+for noisier dashboards.
+
+Stored-signal validation: legacy rows with hard event types
+(`offer` / `rejected` / `interview` / `online_assessment`) are retained
+without re-classifying as long as the current sender policy still permits
+that event type. Rows with soft event types (`applied` / `responded` /
+`action_required`) re-run through the classifier on each merge and must
+still match.
 
 Dashboard matching:
 
