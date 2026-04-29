@@ -132,3 +132,48 @@ test('aggregateByThread: signal with neither threadId nor messageId is skipped',
   const result = aggregateByThread(signals);
   assert.equal(result.size, 1);
 });
+
+import { selectBestCompanyAndRole } from './gmail-applications.mjs';
+
+test('selectBestCompanyAndRole: empty signals returns empty fields', () => {
+  const result = selectBestCompanyAndRole([]);
+  assert.deepEqual(result, { company: '', role: '', humanContact: '', confidence: 0 });
+});
+
+test('selectBestCompanyAndRole: picks signal with highest confidence', () => {
+  const signals = [
+    { company: 'Whatnot', role: 'SE Fraud', confidence: 0.65, recentContact: 'no reply', sender: 'no-reply@example.com' },
+    { company: 'Whatnot', role: 'Software Engineer, Fraud', confidence: 0.95, recentContact: 'Whatnot Hiring Team', sender: 'no-reply@ashbyhq.com' },
+  ];
+  const result = selectBestCompanyAndRole(signals);
+  assert.equal(result.company, 'Whatnot');
+  assert.equal(result.role, 'Software Engineer, Fraud');
+  assert.equal(result.confidence, 0.95);
+});
+
+test('selectBestCompanyAndRole: prefers a real human contact over no-reply', () => {
+  const signals = [
+    { company: 'Acme', role: 'SE', confidence: 0.9, recentContact: 'no reply', sender: 'no-reply@acme.com' },
+    { company: 'Acme', role: 'SE', confidence: 0.7, recentContact: 'Sarah K.', sender: '"Sarah K." <sarah@acme.com>' },
+  ];
+  const result = selectBestCompanyAndRole(signals);
+  assert.equal(result.humanContact, '"Sarah K." <sarah@acme.com>');
+});
+
+test('selectBestCompanyAndRole: falls back to highest-confidence sender when no human present', () => {
+  const signals = [
+    { company: 'Acme', role: 'SE', confidence: 0.9, recentContact: 'Acme Hiring Team', sender: 'no-reply@ashbyhq.com' },
+  ];
+  const result = selectBestCompanyAndRole(signals);
+  assert.equal(result.humanContact, 'Acme Hiring Team');
+});
+
+test('selectBestCompanyAndRole: skips Unknown Company and Unknown Role when better alternative exists', () => {
+  const signals = [
+    { company: 'Unknown Company', role: 'Unknown Role', confidence: 0.95, sender: 'x@y.com' },
+    { company: 'Whatnot', role: 'Software Engineer', confidence: 0.6, sender: 'x@y.com' },
+  ];
+  const result = selectBestCompanyAndRole(signals);
+  assert.equal(result.company, 'Whatnot');
+  assert.equal(result.role, 'Software Engineer');
+});

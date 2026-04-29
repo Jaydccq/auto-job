@@ -49,3 +49,45 @@ export function aggregateByThread(signals = []) {
   }
   return byThread;
 }
+
+const NOREPLY_PATTERNS = [
+  /no[-_.]?reply/i,
+  /donotreply/i,
+  /^notifications?$/i,
+];
+
+const TEAM_NAME_PATTERN = /(hiring team|recruiting team|talent acquisition|talent team|careers|candidate experience|people team|hr team|human resources)/i;
+
+function isHumanContact(signal) {
+  const sender = String(signal?.sender || '').toLowerCase();
+  const contact = String(signal?.recentContact || '');
+  if (!sender || !contact) return false;
+  if (NOREPLY_PATTERNS.some((re) => re.test(sender))) return false;
+  if (TEAM_NAME_PATTERN.test(contact)) return false;
+  return true;
+}
+
+function isUsableCompany(value) {
+  return value && value !== 'Unknown Company';
+}
+
+function isUsableRole(value) {
+  return value && value !== 'Unknown Role';
+}
+
+export function selectBestCompanyAndRole(signals = []) {
+  if (!Array.isArray(signals) || signals.length === 0) {
+    return { company: '', role: '', humanContact: '', confidence: 0 };
+  }
+  const ranked = [...signals].sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0));
+  const company = ranked.find((s) => isUsableCompany(s.company))?.company
+    || ranked[0].company || '';
+  const role = ranked.find((s) => isUsableRole(s.role))?.role
+    || ranked[0].role || '';
+  const humanSignal = ranked.find(isHumanContact);
+  const humanContact = humanSignal
+    ? humanSignal.sender
+    : (ranked[0].recentContact || ranked[0].sender || '');
+  const confidence = Number(ranked[0].confidence || 0);
+  return { company, role, humanContact, confidence };
+}
