@@ -171,10 +171,14 @@ export function buildApplicationRecord(threadKey, signals, now = new Date()) {
         summary: s.summary || s.snippet || '',
       };
       if (DEADLINE_EVENTS.has(s.eventType)) {
-        const text = `${s.subject || ''}\n${s.summary || s.snippet || ''}`;
-        const ref = entry.at ? new Date(entry.at) : now;
-        const due = parseDeadline(text, ref);
-        if (due) entry.dueAt = due;
+        if (s.dueAt) {
+          entry.dueAt = s.dueAt;
+        } else {
+          const text = `${s.subject || ''}\n${s.summary || s.snippet || ''}`;
+          const ref = entry.at ? new Date(entry.at) : now;
+          const due = parseDeadline(text, ref);
+          if (due) entry.dueAt = due;
+        }
       }
       return entry;
     });

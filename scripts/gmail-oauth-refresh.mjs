@@ -12,7 +12,9 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { buildApplications, writeApplications } from './gmail-applications.mjs';
+import { buildApplications, writeApplications, parseDeadline } from './gmail-applications.mjs';
+
+const DEADLINE_EVENT_TYPES = new Set(['interview', 'online_assessment', 'action_required']);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -866,7 +868,11 @@ export function extractSignalFromMessage(message) {
       /\b(application update|interview|offer|assessment)\b/i.test(subject),
   });
 
-  return {
+  const dueAt = DEADLINE_EVENT_TYPES.has(eventType)
+    ? parseDeadline(searchText, new Date(receivedAt))
+    : '';
+
+  const signal = {
     id: `${message.id}:${eventType}`,
     company: company || 'Unknown Company',
     role,
@@ -882,6 +888,8 @@ export function extractSignalFromMessage(message) {
     threadId: message.threadId,
     confidence,
   };
+  if (dueAt) signal.dueAt = dueAt;
+  return signal;
 }
 
 export function parseGmailSignals(filePath = SIGNALS_PATH) {
