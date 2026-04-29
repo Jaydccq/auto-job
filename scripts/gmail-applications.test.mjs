@@ -324,3 +324,30 @@ test('buildApplications: applicationKey is stable based on company+role', () => 
   assert.match(apps[0].applicationKey, /^whatnot/);
   assert.ok(apps[0].applicationKey.includes('software-engineer'));
 });
+
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { writeApplications, parseApplications } from './gmail-applications.mjs';
+
+test('writeApplications + parseApplications: round-trips JSONL', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'gmail-apps-test-'));
+  const path = join(dir, 'apps.jsonl');
+  const apps = [
+    { applicationKey: 'a|1', threadId: 't1', currentState: 'applied' },
+    { applicationKey: 'b|2', threadId: 't2', currentState: 'rejected' },
+  ];
+  try {
+    writeApplications(apps, path);
+    const reloaded = parseApplications(path);
+    assert.equal(reloaded.length, 2);
+    assert.equal(reloaded[0].applicationKey, 'a|1');
+    assert.equal(reloaded[1].currentState, 'rejected');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('parseApplications: missing file returns empty array', () => {
+  assert.deepEqual(parseApplications('/nonexistent/path/apps.jsonl'), []);
+});

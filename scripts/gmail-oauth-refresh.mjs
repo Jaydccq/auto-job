@@ -12,6 +12,7 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { buildApplications, writeApplications } from './gmail-applications.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -20,6 +21,7 @@ const DATA_DIR = join(ROOT, 'data');
 const CREDENTIALS_PATH = join(CONFIG_DIR, 'gmail-oauth-credentials.json');
 const TOKEN_PATH = join(CONFIG_DIR, 'gmail-oauth-token.json');
 const SIGNALS_PATH = join(DATA_DIR, 'gmail-signals.jsonl');
+const APPLICATIONS_PATH = join(DATA_DIR, 'gmail-applications.jsonl');
 const GMAIL_READONLY_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
@@ -973,10 +975,14 @@ async function runScan(options) {
   const merged = mergeSignals(existingSignals, signals);
   if (!options.dryRun) writeSignals(merged);
 
+  const applications = buildApplications(merged, new Date());
+  if (!options.dryRun) writeApplications(applications, APPLICATIONS_PATH);
+
   console.log(`[gmail-oauth] scanned ${seen.size} messages`);
   console.log(`[gmail-oauth] extracted ${signals.length} signals`);
   console.log(`[gmail-oauth] retained ${retainedExistingCount}/${existingSignals.length} existing signals after strict validation`);
   console.log(`[gmail-oauth] ${options.dryRun ? 'would write' : 'wrote'} ${merged.length} total signals to ${SIGNALS_PATH}`);
+  console.log(`[gmail-oauth] ${options.dryRun ? 'would write' : 'wrote'} ${applications.length} applications to ${APPLICATIONS_PATH}`);
   if (existsSync(SIGNALS_PATH)) {
     console.log(`[gmail-oauth] current signal file mtime ${statSync(SIGNALS_PATH).mtime.toISOString()}`);
   }

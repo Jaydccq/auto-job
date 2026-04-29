@@ -1,3 +1,6 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+
 export const STATE_PRIORITY = [
   'offer',
   'rejected',
@@ -185,4 +188,21 @@ export function buildApplications(signals = [], now = new Date()) {
   return apps.sort((a, b) =>
     String(b.lastUpdateAt || '').localeCompare(String(a.lastUpdateAt || ''))
   );
+}
+
+export function writeApplications(apps, path) {
+  mkdirSync(dirname(path), { recursive: true });
+  const body = apps.map((app) => JSON.stringify(app)).join('\n');
+  writeFileSync(path, body ? `${body}\n` : '');
+}
+
+export function parseApplications(path) {
+  if (!existsSync(path)) return [];
+  const apps = [];
+  for (const line of readFileSync(path, 'utf8').split('\n')) {
+    const text = line.trim();
+    if (!text || text.startsWith('#')) continue;
+    try { apps.push(JSON.parse(text)); } catch { /* skip malformed */ }
+  }
+  return apps;
 }
