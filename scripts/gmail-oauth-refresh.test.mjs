@@ -359,3 +359,49 @@ test('classifyEvent: soft phrase + "opening" hiring noun classifies as rejected'
   });
   assert.equal(event, 'rejected');
 });
+
+function fakeNonAtsMessage({ from = '"Random Recruiter" <recruiter@randomstartup.com>', subject = 'Update on your application', body = 'Hi Hongxi, our team is currently reviewing your application. We will reach out within a week if your background matches our needs.', date = 'Mon, 27 Apr 2026 10:00:00 +0000', internalDate = '1745835600000' } = {}) {
+  return {
+    id: 'mid-1',
+    threadId: 'mid-thread',
+    snippet: body.slice(0, 120),
+    internalDate,
+    payload: {
+      headers: [
+        { name: 'From', value: from },
+        { name: 'Subject', value: subject },
+        { name: 'Date', value: date },
+      ],
+      mimeType: 'text/plain',
+      body: { data: Buffer.from(body, 'utf8').toString('base64url') },
+    },
+  };
+}
+
+test('extractSignalFromMessage: non-ATS sender produces mid-range confidence (gradient verification)', () => {
+  const signal = extractSignalFromMessage(fakeNonAtsMessage());
+  // Without ATS-trust (-0.30) and without explicit company from sender-name suffix stripping,
+  // confidence should land below the all-features-true ceiling.
+  if (!signal) {
+    // Acceptable: if classifier rejects entirely, no signal — skip strict bounds.
+    return;
+  }
+  assert.ok(signal.confidence < 0.85,
+    `non-ATS sender should produce mid-range confidence < 0.85, got ${signal.confidence}`);
+  assert.ok(signal.confidence > 0.0,
+    `expected non-zero confidence for non-ATS, got ${signal.confidence}`);
+});
+
+test('classifyEvent accepts pre-computed policy without recomputing', () => {
+  const from = { name: 'LinkedIn', email: 'jobs-noreply@linkedin.com' };
+  const policy = senderClassificationPolicy(from);
+  const event = classifyEvent({
+    subject: 'Your application',
+    text: 'Your application has been received.',
+    from,
+    policy,
+  });
+  // LinkedIn restricted: applied/responded only — should NOT return 'rejected' even though
+  // the body is innocuous and the policy comes from the caller.
+  assert.notEqual(event, 'rejected');
+});

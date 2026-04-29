@@ -135,6 +135,9 @@ const SOFT_REJECTION_PATTERNS = [
 
 const HIRING_NOUN_PATTERN = /\b(?:application|candidacy|interview|role|position|opportunity|opening|requisition)\b/i;
 
+const HARD_EVENT_PHRASE_PATTERN = /\b(offer letter|job offer|interview is scheduled|online assessment)\b/i;
+const SUBJECT_MATCH_PATTERN = /\b(application update|interview|offer|assessment)\b/i;
+
 const APPLICATION_REVIEW_ONLY_PATTERNS = [
   /\bcurrently reviewing\b/i,
   /\bwill be reviewed\b/i,
@@ -752,11 +755,11 @@ function isGenericRole(value = '') {
     /\b(application has been received|your application seems|we will contact you|requirements of the|needs of the team|role\. in the meantime|world who help|first 90 days)\b/i.test(value);
 }
 
-export function classifyEvent({ subject = '', text = '', from = {} }) {
+export function classifyEvent({ subject = '', text = '', from = {}, policy = null }) {
   const haystack = `${subject}\n${text}`;
   const lower = haystack.toLowerCase();
-  const policy = senderClassificationPolicy(from);
-  const trustedSender = isTrustedRecruitingSender(from);
+  const resolvedPolicy = policy || senderClassificationPolicy(from);
+  const trustedSender = resolvedPolicy.isTrusted;
   const personalHiringContext = hasPersonalHiringContext(haystack);
   const weakHiringContext = hasWeakHiringContext(haystack);
   const hardRejectionPresent = hasAnyPattern(HARD_REJECTION_PATTERNS, haystack);
@@ -765,7 +768,7 @@ export function classifyEvent({ subject = '', text = '', from = {} }) {
   if (hasAnyPattern(NEWSLETTER_NOISE_PATTERNS, subject) && !hasDirectSignalContext(subject)) return '';
   if (!hiringContext || isLikelyMailboxNoise({ text: haystack, from })) return '';
 
-  const decide = (event) => (policy.allowedEvents.has(event) ? event : '');
+  const decide = (event) => (resolvedPolicy.allowedEvents.has(event) ? event : '');
 
   if (/\b(offer letter|job offer|employment offer|extend(?:ing)? (?:you )?an offer|offer for (?:the )?(?:position|role|job|opening))\b/.test(lower)) {
     const result = decide('offer');
@@ -819,7 +822,8 @@ export function extractSignalFromMessage(message) {
   const subject = headers.subject || '';
   const bodyText = compactText(sanitizeMessageText(collectTextParts(message.payload).join('\n')), 4000);
   const searchText = `${subject}\n${bodyText}`;
-  const eventType = classifyEvent({ subject, text: bodyText, from });
+  const policy = senderClassificationPolicy(from);
+  const eventType = classifyEvent({ subject, text: bodyText, from, policy });
   if (!eventType) return null;
 
   const companyCandidates = [
@@ -862,16 +866,15 @@ export function extractSignalFromMessage(message) {
       ? new Date(headers.date).toISOString()
       : new Date().toISOString();
 
-  const policy = senderClassificationPolicy(from);
   const confidence = computeConfidence({
     isTrustedAtsSender: policy.isTrusted,
     hasExplicitCompany: Boolean(company) && !isGenericCompany(company),
     hasExplicitRole: Boolean(extractedRole),
     hasHardEventPhrase: hasAnyPattern(HARD_REJECTION_PATTERNS, searchText) ||
-      /\b(offer letter|job offer|interview is scheduled|online assessment)\b/i.test(searchText),
+      HARD_EVENT_PHRASE_PATTERN.test(searchText),
     hasWeakEventPhrase: hasWeakHiringContext(searchText),
     hasExplicitSubjectMatch: hasAnyPattern(APPLICATION_RECEIPT_PATTERNS, subject) ||
-      /\b(application update|interview|offer|assessment)\b/i.test(subject),
+      SUBJECT_MATCH_PATTERN.test(subject),
   });
 
   const dueAt = DEADLINE_EVENT_TYPES.has(eventType)
