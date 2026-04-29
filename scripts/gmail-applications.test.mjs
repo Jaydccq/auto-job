@@ -237,3 +237,90 @@ test('computeApplicationAttention: returns reason and since fields', () => {
   assert.ok(attention.reason && typeof attention.reason === 'string');
   assert.equal(attention.since, '2026-04-10T00:00:00Z');
 });
+
+import { buildApplicationRecord, buildApplications } from './gmail-applications.mjs';
+
+const FIXED_NOW = new Date('2026-05-01T12:00:00Z');
+
+test('buildApplicationRecord: derives all fields from a single-signal thread', () => {
+  const signals = [{
+    messageId: 'm1',
+    threadId: 't1',
+    company: 'Whatnot',
+    role: 'Software Engineer, Fraud',
+    eventType: 'applied',
+    eventDate: '2026-04-27',
+    receivedAt: '2026-04-27T06:40:05.000Z',
+    recentContact: 'Whatnot Hiring Team',
+    sender: 'Whatnot Hiring Team <no-reply@ashbyhq.com>',
+    confidence: 0.95,
+  }];
+  const app = buildApplicationRecord('t1', signals, FIXED_NOW);
+  assert.equal(app.threadId, 't1');
+  assert.equal(app.company, 'Whatnot');
+  assert.equal(app.role, 'Software Engineer, Fraud');
+  assert.equal(app.currentState, 'applied');
+  assert.equal(app.firstSeenAt, '2026-04-27T06:40:05.000Z');
+  assert.equal(app.lastUpdateAt, '2026-04-27T06:40:05.000Z');
+  assert.equal(app.messageCount, 1);
+  assert.equal(app.timeline.length, 1);
+  assert.equal(app.timeline[0].event, 'applied');
+  assert.equal(app.attention.level, 'info');
+  assert.equal(app.confidence, 0.95);
+});
+
+test('buildApplicationRecord: multi-event thread derives correct currentState', () => {
+  const signals = [
+    { messageId: 'm1', threadId: 't1', company: 'Acme', role: 'SE',
+      eventType: 'applied', receivedAt: '2026-04-10T10:00:00Z', confidence: 0.85 },
+    { messageId: 'm2', threadId: 't1', company: 'Acme', role: 'SE',
+      eventType: 'interview', receivedAt: '2026-04-20T14:00:00Z', confidence: 0.92 },
+  ];
+  const app = buildApplicationRecord('t1', signals, FIXED_NOW);
+  assert.equal(app.currentState, 'interview');
+  assert.equal(app.firstSeenAt, '2026-04-10T10:00:00Z');
+  assert.equal(app.lastUpdateAt, '2026-04-20T14:00:00Z');
+  assert.equal(app.messageCount, 2);
+  assert.equal(app.attention.level, 'action');
+});
+
+test('buildApplicationRecord: terminal rejected latches even when later applied appears', () => {
+  const signals = [
+    { messageId: 'm1', threadId: 't1', company: 'Acme', role: 'SE',
+      eventType: 'applied', receivedAt: '2026-04-01T00:00:00Z', confidence: 0.8 },
+    { messageId: 'm2', threadId: 't1', company: 'Acme', role: 'SE',
+      eventType: 'rejected', receivedAt: '2026-04-15T00:00:00Z', confidence: 0.9 },
+    { messageId: 'm3', threadId: 't1', company: 'Acme', role: 'SE',
+      eventType: 'applied', receivedAt: '2026-04-20T00:00:00Z', confidence: 0.7 },
+  ];
+  const app = buildApplicationRecord('t1', signals, FIXED_NOW);
+  assert.equal(app.currentState, 'rejected');
+  assert.equal(app.attention.level, 'urgent');
+});
+
+test('buildApplications: full pipeline produces one record per thread', () => {
+  const signals = [
+    { messageId: 'a', threadId: 't1', company: 'A', role: 'SE',
+      eventType: 'applied', receivedAt: '2026-04-01T00:00:00Z', confidence: 0.8 },
+    { messageId: 'b', threadId: 't1', company: 'A', role: 'SE',
+      eventType: 'interview', receivedAt: '2026-04-10T00:00:00Z', confidence: 0.9 },
+    { messageId: 'c', threadId: 't2', company: 'B', role: 'SE',
+      eventType: 'applied', receivedAt: '2026-04-05T00:00:00Z', confidence: 0.7 },
+  ];
+  const apps = buildApplications(signals, FIXED_NOW);
+  assert.equal(apps.length, 2);
+  const t1 = apps.find((a) => a.threadId === 't1');
+  const t2 = apps.find((a) => a.threadId === 't2');
+  assert.equal(t1.currentState, 'interview');
+  assert.equal(t2.currentState, 'applied');
+});
+
+test('buildApplications: applicationKey is stable based on company+role', () => {
+  const signals = [
+    { messageId: 'a', threadId: 't1', company: 'Whatnot', role: 'Software Engineer, Fraud',
+      eventType: 'applied', receivedAt: '2026-04-01T00:00:00Z', confidence: 0.95 },
+  ];
+  const apps = buildApplications(signals, FIXED_NOW);
+  assert.match(apps[0].applicationKey, /^whatnot/);
+  assert.ok(apps[0].applicationKey.includes('software-engineer'));
+});

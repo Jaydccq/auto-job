@@ -125,3 +125,64 @@ export function computeApplicationAttention(app = {}, now = new Date()) {
   }
   return { level: 'info', reason: '', since, dueAt: '' };
 }
+
+function normalizeKey(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+}
+
+function applicationKeyFor(company, role, fallback) {
+  const co = normalizeKey(company);
+  const ro = normalizeKey(role);
+  if (co && ro) return `${co}|${ro}`;
+  if (co) return `${co}|`;
+  return fallback || '';
+}
+
+export function buildApplicationRecord(threadKey, signals, now = new Date()) {
+  const sorted = [...signals].sort((a, b) =>
+    String(a.receivedAt || a.eventDate || '').localeCompare(String(b.receivedAt || b.eventDate || ''))
+  );
+  const timeline = sorted
+    .filter((s) => s.eventType)
+    .map((s) => ({
+      event: s.eventType,
+      at: s.receivedAt || s.eventDate || '',
+      messageId: s.messageId,
+      subject: s.subject,
+      summary: s.summary || s.snippet || '',
+    }));
+  const currentState = applyStateMachine(timeline);
+  const { company, role, humanContact, confidence } = selectBestCompanyAndRole(sorted);
+  const firstSeenAt = sorted[0]?.receivedAt || sorted[0]?.eventDate || '';
+  const lastUpdateAt = sorted[sorted.length - 1]?.receivedAt || sorted[sorted.length - 1]?.eventDate || '';
+  const application = {
+    applicationKey: applicationKeyFor(company, role, threadKey),
+    threadId: threadKey,
+    company,
+    role,
+    currentState,
+    firstSeenAt,
+    lastUpdateAt,
+    messageCount: sorted.length,
+    humanContact,
+    timeline,
+    confidence,
+  };
+  application.attention = computeApplicationAttention(application, now);
+  return application;
+}
+
+export function buildApplications(signals = [], now = new Date()) {
+  const byThread = aggregateByThread(signals);
+  const apps = [];
+  for (const [threadKey, threadSignals] of byThread) {
+    apps.push(buildApplicationRecord(threadKey, threadSignals, now));
+  }
+  return apps.sort((a, b) =>
+    String(b.lastUpdateAt || '').localeCompare(String(a.lastUpdateAt || ''))
+  );
+}
