@@ -41,6 +41,13 @@ export interface CreateServerOptions {
    * is "fake".
    */
   backend?: AdapterMode;
+  /**
+   * OpenRouter model slug, e.g. "anthropic/claude-3.5-sonnet". Only used
+   * when backend === "real-openrouter". Mutates process.env.OPENROUTER_MODEL
+   * so the adapter (and any subprocess that reads the env) picks it up.
+   * If omitted, the adapter falls back to its built-in default.
+   */
+  openrouterModel?: string;
 }
 
 export interface ServerHandle {
@@ -101,7 +108,11 @@ function buildAdapter(config: BridgeConfig): PipelineAdapter {
     case "real":
       if (config.realExecutor === "openrouter") {
         const apiKey = resolveOpenRouterApiKey();
-        return createOpenRouterPipelineAdapter(pipelineCfg, { apiKey });
+        const model = process.env.OPENROUTER_MODEL?.trim();
+        return createOpenRouterPipelineAdapter(
+          pipelineCfg,
+          model ? { apiKey, model } : { apiKey },
+        );
       }
       return createClaudePipelineAdapter(pipelineCfg);
   }
@@ -115,6 +126,11 @@ function buildAdapter(config: BridgeConfig): PipelineAdapter {
 export function createServer(opts: CreateServerOptions = {}): ServerHandle {
   if (opts.backend !== undefined) {
     applyBackendOverride(opts.backend);
+  }
+  if (typeof opts.openrouterModel === "string") {
+    const trimmed = opts.openrouterModel.trim();
+    if (trimmed) process.env.OPENROUTER_MODEL = trimmed;
+    else delete process.env.OPENROUTER_MODEL;
   }
 
   const config = loadConfig();

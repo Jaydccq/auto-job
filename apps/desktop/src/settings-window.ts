@@ -14,6 +14,7 @@ import { BrowserWindow, ipcMain, app } from "electron";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import {
+  DEFAULT_OPENROUTER_MODEL,
   loadSettings,
   saveSettings,
   hasOpenRouterKey,
@@ -33,6 +34,9 @@ interface SavePayload {
   backend?: Settings["backend"];
   startAtLogin?: boolean;
   openrouterKey?: string | null;
+  /** New model slug, or null to keep the current value. Empty string falls
+   *  back to DEFAULT_OPENROUTER_MODEL — empty input must not save "". */
+  openrouterModel?: string | null;
 }
 
 export function openSettingsWindow(onSaved: (next: Settings) => Promise<void> | void): void {
@@ -70,10 +74,16 @@ export function openSettingsWindow(onSaved: (next: Settings) => Promise<void> | 
 
     ipcMain.handle("settings:save", async (_e, payload: SavePayload) => {
       const current = loadSettings();
+      const trimmedModel =
+        typeof payload.openrouterModel === "string" ? payload.openrouterModel.trim() : "";
       const next: Settings = {
         backend: payload.backend ?? current.backend,
         startAtLogin:
           typeof payload.startAtLogin === "boolean" ? payload.startAtLogin : current.startAtLogin,
+        openrouterModel:
+          payload.openrouterModel === undefined
+            ? current.openrouterModel
+            : trimmedModel || DEFAULT_OPENROUTER_MODEL,
       };
       saveSettings(next);
       if (payload.openrouterKey) saveOpenRouterKey(payload.openrouterKey);

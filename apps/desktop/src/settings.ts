@@ -26,11 +26,17 @@ export type Backend = "fake" | "real-claude" | "real-codex" | "real-openrouter";
 export interface Settings {
   backend: Backend;
   startAtLogin: boolean;
+  /** OpenRouter model slug, e.g. "anthropic/claude-3.5-sonnet". Used only when
+   *  backend === "real-openrouter". Trimmed string; never null. */
+  openrouterModel: string;
 }
+
+export const DEFAULT_OPENROUTER_MODEL = "anthropic/claude-3.5-sonnet";
 
 export const DEFAULT_SETTINGS: Settings = {
   backend: "real-codex",
   startAtLogin: false,
+  openrouterModel: DEFAULT_OPENROUTER_MODEL,
 };
 
 function isBackend(value: unknown): value is Backend {
@@ -46,10 +52,12 @@ export function loadSettings(): Settings {
   if (!existsSync(SETTINGS_PATH)) return { ...DEFAULT_SETTINGS };
   try {
     const raw = JSON.parse(readFileSync(SETTINGS_PATH, "utf8")) as Partial<Settings>;
+    const modelRaw = typeof raw.openrouterModel === "string" ? raw.openrouterModel.trim() : "";
     return {
       backend: isBackend(raw.backend) ? raw.backend : DEFAULT_SETTINGS.backend,
       startAtLogin:
         typeof raw.startAtLogin === "boolean" ? raw.startAtLogin : DEFAULT_SETTINGS.startAtLogin,
+      openrouterModel: modelRaw || DEFAULT_OPENROUTER_MODEL,
     };
   } catch {
     return { ...DEFAULT_SETTINGS };

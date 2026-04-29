@@ -50,6 +50,25 @@
     <label for="openrouter-key">OpenRouter API Key</label>
     <input id="openrouter-key" type="password" placeholder="sk-or-...">
     <div class="key-status" id="key-status">Not set</div>
+
+    <label for="openrouter-model">OpenRouter Model</label>
+    <input id="openrouter-model" type="text" list="openrouter-model-list"
+           placeholder="anthropic/claude-3.5-sonnet" autocomplete="off">
+    <datalist id="openrouter-model-list">
+      <option value="anthropic/claude-3.5-sonnet"></option>
+      <option value="anthropic/claude-3.5-haiku"></option>
+      <option value="openai/gpt-4o"></option>
+      <option value="openai/gpt-4o-mini"></option>
+      <option value="openai/gpt-4-turbo"></option>
+      <option value="google/gemini-2.0-flash-exp:free"></option>
+      <option value="google/gemini-pro-1.5"></option>
+      <option value="meta-llama/llama-3.1-70b-instruct"></option>
+      <option value="meta-llama/llama-3.3-70b-instruct"></option>
+      <option value="deepseek/deepseek-chat"></option>
+      <option value="qwen/qwq-32b-preview"></option>
+      <option value="x-ai/grok-2-1212"></option>
+    </datalist>
+    <div class="key-status">Pick from the list or type any slug from openrouter.ai/models</div>
   </div>
 
   <div class="checkbox-row">
@@ -78,6 +97,7 @@
       const openrouterSection = document.getElementById("openrouter-section");
       const keyStatus = document.getElementById("key-status");
       const keyInput = document.getElementById("openrouter-key");
+      const modelInput = document.getElementById("openrouter-model");
       const startAtLogin = document.getElementById("start-at-login");
       const saveBtn = document.getElementById("save");
       const cancelBtn = document.getElementById("cancel");
@@ -102,6 +122,7 @@
         keyStatus.textContent = state.hasKey
           ? "Key is set (paste a new key to overwrite)"
           : "Not set";
+        modelInput.value = state.openrouterModel || "";
         toggleOpenRouterSection();
       });
 
@@ -118,6 +139,7 @@
             backend: backendSel.value,
             startAtLogin: startAtLogin.checked,
             openrouterKey: keyInput.value.trim() || null,
+            openrouterModel: modelInput.value.trim() || null,
           });
           api.close();
         } catch (err) {

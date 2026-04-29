@@ -140,15 +140,19 @@ function resolveBackend(): AdapterMode {
 }
 
 let currentBackend: AdapterMode = resolveBackend();
+let currentOpenrouterModel: string = loadSettings().openrouterModel;
 
 async function startServer(): Promise<void> {
   trayState = "idle";
   trayController?.rebuild();
   try {
-    server = createServer({ backend: currentBackend });
+    server = createServer({
+      backend: currentBackend,
+      openrouterModel: currentOpenrouterModel,
+    });
     const info = await server.start({ port: PORT, host: HOST });
     console.log(
-      `[auto-job] server listening on http://${info.host}:${info.port} (backend=${currentBackend})`,
+      `[auto-job] server listening on http://${info.host}:${info.port} (backend=${currentBackend}, openrouterModel=${currentOpenrouterModel})`,
     );
     trayState = "running";
   } catch (err) {
@@ -215,8 +219,11 @@ function openDashboardWindow(): void {
 
 function handleOpenSettings(): void {
   openSettingsWindow(async (next) => {
-    if (next.backend !== currentBackend) {
+    const backendChanged = next.backend !== currentBackend;
+    const modelChanged = next.openrouterModel !== currentOpenrouterModel;
+    if (backendChanged || modelChanged) {
       currentBackend = next.backend as AdapterMode;
+      currentOpenrouterModel = next.openrouterModel;
       try {
         await restartServer();
       } catch (err) {
