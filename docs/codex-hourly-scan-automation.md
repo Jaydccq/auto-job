@@ -9,13 +9,13 @@ writes user-layer artifacts under `data/`, `reports/`, `batch/`, and `web/`.
 The automation command is:
 
 ```bash
-bun run auto:hourly-scan
+npm run auto:hourly-scan
 ```
 
 For a no-evaluation preview:
 
 ```bash
-AUTO_JOB_SCAN_IGNORE_WINDOW=1 bun run auto:hourly-scan:dry
+AUTO_JOB_SCAN_IGNORE_WINDOW=1 npm run auto:hourly-scan:dry
 ```
 
 The dry command still runs scanner read paths, but it skips bridge startup,
@@ -47,7 +47,7 @@ data/automation/launchd-hourly-scan.err.log
 `bb-browser`, and runs:
 
 ```bash
-bun run auto:hourly-scan
+npm run auto:hourly-scan
 ```
 
 ## Codex App setup
@@ -70,16 +70,19 @@ live scanner.
 5. Use this prompt:
 
    ```text
-   Check the latest Auto-Job hourly scan result in the local checkout. Do not run bun run auto:hourly-scan from this Codex cron context if the session has approval_policy=never or sandbox networking/IPC restrictions, because that environment cannot access the local bridge/browser reliably.
+   Check the latest Auto-Job hourly scan result in the local checkout. Do not run npm run auto:hourly-scan from this Codex cron context if the session has approval_policy=never or sandbox networking/IPC restrictions, because that environment cannot access the local bridge/browser reliably.
 
    Inspect data/automation/hourly-scan-*.md and report the newest summary:
    1. Which sources ran
    2. How many evaluations completed
    3. Any source blocked by login, checkpoint, rate limit, verification, parsing, browser/CDP, bridge, DNS, or sandbox execution error
-   4. The newest high-fit roles worth reviewing
+   4. The newest high-fit roles worth reviewing. Only use final results:
+      completed evaluations scored `3.5+/5`, or output lines with an offer /
+      explicit high-priority marker. Do not use `Top promoted rows` as
+      high-fit roles.
    5. The summary file path under data/automation
 
-   If the newest summary reports sandbox EPERM, bridge_unavailable_preview, DNS ENOTFOUND, or tsx IPC failures, state that the Codex cron context is not suitable for live scanning and that the host-side scheduler/terminal run must execute bun run auto:hourly-scan. Never submit applications or click Apply, Easy Apply, Save, job alerts, resume upload, or final submit controls.
+   If the newest summary reports sandbox EPERM, bridge_unavailable_preview, DNS ENOTFOUND, or tsx IPC failures, state that the Codex cron context is not suitable for live scanning and that the host-side scheduler/terminal run must execute npm run auto:hourly-scan. Never submit applications or click Apply, Easy Apply, Save, job alerts, resume upload, or final submit controls.
    ```
 
 ## What the command does
@@ -114,6 +117,9 @@ live scanner.
 - Runs tracker/dashboard maintenance after successful live scans.
 - Writes `data/automation/hourly-scan-*.md` with source status, completed
   evaluation count, blocker recovery commands, high-fit roles, and output tails.
+  High-fit roles come only from completed evaluations scored `3.5+/5` or output
+  lines with an offer / explicit high-priority marker; `Top promoted rows` are
+  list-screen candidates and are not included in this section.
 
 ## Tuning knobs
 
@@ -150,15 +156,15 @@ For an occasional deeper manual run:
 AUTO_JOB_SCAN_IGNORE_WINDOW=1 \
 AUTO_JOB_SCAN_EVAL_MODE=default \
 AUTO_JOB_SCAN_SOURCES=newgrad,builtin,linkedin,indeed \
-bun run auto:hourly-scan
+npm run auto:hourly-scan
 ```
 
 ## Manual recovery
 
 - LinkedIn login/checkpoint: `bb-browser open https://www.linkedin.com/login`
 - Indeed verification: `bb-browser open https://www.indeed.com`
-- Jobright/newgrad login: `bun run newgrad-scan:login`
-- Bridge recovery: `bun run server`
+- Jobright/newgrad login: `npm run newgrad-scan:login`
+- Bridge recovery: `npm run server`
 
 Complete manual login or verification in the opened browser, close any manual
 scan browser window that uses the same profile, then let the next automation run
@@ -168,7 +174,7 @@ If Codex Automation reports `listen EPERM`, start the bridge once from a normal
 local terminal:
 
 ```bash
-bun run server
+npm run server
 ```
 
 Keep that terminal process running. The next hourly automation run will reuse

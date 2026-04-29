@@ -140,4 +140,4 @@ Draft answers for the public application-form free-text fields. Each answer:
 3. **PDF only on explicit request or auto-pipeline trigger.** Do not generate
    one for sub-4.5 scores.
 4. **Update the user.** One-line summary: company, role, score, recommendation.
-5. **Never run** `bun run merge` automatically — that is an operator action.
+5. **Never run** `npm run merge` automatically — that is an operator action.

@@ -32,7 +32,7 @@ contents as private and start with your own.
 ### Desktop app
 
 ```bash
-bun run --cwd apps/desktop package
+npm --prefix apps/desktop run package
 open "apps/desktop/release/mac-arm64/Auto Job.app"
 ```
 
@@ -42,10 +42,10 @@ Tray icon, dashboard window, settings panel. The extension talks to it on
 ### Headless LaunchAgent (macOS)
 
 ```bash
-bun run app:install   # one-time
-bun run app:status
-bun run app:logs
-bun run app:restart
+npm run app:install   # one-time
+npm run app:status
+npm run app:logs
+npm run app:restart
 ```
 
 Server runs at login. No window.
@@ -53,9 +53,9 @@ Server runs at login. No window.
 ### Manual / development
 
 ```bash
-bun run server                                       # Codex backend
-AUTO_JOB_BACKEND=fake bun run server               # fake adapter
-AUTO_JOB_BACKEND=real-openrouter bun run server    # OpenRouter
+npm run server                                       # Codex backend
+AUTO_JOB_BACKEND=fake npm run server               # fake adapter
+AUTO_JOB_BACKEND=real-openrouter npm run server    # OpenRouter
 ```
 
 Then visit `http://127.0.0.1:47319/dashboard/`.
@@ -63,11 +63,11 @@ Then visit `http://127.0.0.1:47319/dashboard/`.
 ## Quick start
 
 ```bash
-bun install
-bun run doctor              # checks Node, Playwright, profile, portals
-bun run server              # in another shell
-bun run scan -- --no-evaluate   # smoke a discovery scan
-bun run verify              # full health gate
+npm install
+npm run doctor              # checks Node, Playwright, profile, portals
+npm run server              # in another shell
+npm run scan -- --no-evaluate   # smoke a discovery scan
+npm run verify              # full health gate
 ```
 
 Onboard a fresh user:
@@ -75,7 +75,7 @@ Onboard a fresh user:
 1. Drop your CV markdown at `cv.md`.
 2. Copy `config/profile.example.yml` to `config/profile.yml`; fill it in.
 3. Copy `templates/portals.example.yml` to `portals.yml`; trim it.
-4. Run `bun run doctor` until it's all green.
+4. Run `npm run doctor` until it's all green.
 5. Open Codex or Claude Code in this repo and paste a job posting URL. The
    `auto-job` skill takes it from there.
 

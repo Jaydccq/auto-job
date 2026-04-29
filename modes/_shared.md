@@ -14,7 +14,7 @@ this file.
 | `config/profile.yml` | Identity, contact, target ranges | Every session start |
 | `modes/_profile.md` | User-specific archetypes, narrative, blocked companies | Every evaluation |
 | `data/applications.md` | Tracker | Tracker reads/writes only |
-| `templates/states.yml` | Canonical statuses | Tracker writers and `bun run normalize` |
+| `templates/states.yml` | Canonical statuses | Tracker writers and `npm run normalize` |
 
 **Rule — no hardcoded metrics.** Read counts, latencies, percentages from
 `cv.md` and `article-digest.md` at evaluation time. If a number is in this file,
@@ -116,7 +116,7 @@ tab-separated, in this exact order:
 (default: `Evaluated`). `{pdf}` is `✅` or `❌`. `{report-link}` is the
 relative markdown link, e.g. `[042](reports/042-acme-2026-04-28.md)`.
 
-Never edit `data/applications.md` directly to add an entry. `bun run merge`
+Never edit `data/applications.md` directly to add an entry. `npm run merge`
 handles deduplication, status promotion, and column ordering.
 
 ## Posting legitimacy (Block G)
@@ -145,7 +145,7 @@ longer; staff+ roles have long fill times; rolling postings exist).
 | Posting still active | Playwright (`browser_navigate` + `browser_snapshot`) | WebFetch alone |
 | Comp / market data | WebSearch + cited sources | A guess |
 | JD text | Playwright snapshot, fall back to WebFetch only if SPA hostile | Cached LinkedIn description |
-| Tracker mutation | TSV → `bun run merge` | Direct edit of `data/applications.md` |
+| Tracker mutation | TSV → `npm run merge` | Direct edit of `data/applications.md` |
 
 **Playwright concurrency rule:** never run two Playwright sessions in
 parallel within the same process. The scanner workers serialize at the
@@ -157,8 +157,8 @@ adapter level; respect that.
 |------|---------|
 | Read | `cv.md`, `_profile.md`, `article-digest.md`, prior reports |
 | Write | New reports, TSV additions, generated HTML, draft answers |
-| Edit | Tracker status updates only (use `bun run merge` for adds) |
-| Bash | `bun run pdf`, `bun run merge`, `bun run normalize`, `bun run verify` |
+| Edit | Tracker status updates only (use `npm run merge` for adds) |
+| Bash | `npm run pdf`, `npm run merge`, `npm run normalize`, `npm run verify` |
 | WebSearch | Comp data, layoffs, hiring freezes, contact discovery |
 | WebFetch | Static JD pages (fallback only) |
 | Playwright | Live posting verification, capture, autofill |
@@ -193,4 +193,4 @@ replacement is a small parsing risk.
 5. Never recommend below-market comp without flagging it.
 6. Never produce a PDF before reading the JD.
 7. Never bypass the tracker — every evaluated offer gets a TSV.
-8. Never edit `data/applications.md` to add a new row (use `bun run merge`).
+8. Never edit `data/applications.md` to add a new row (use `npm run merge`).

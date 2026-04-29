@@ -48,14 +48,14 @@ user-provided project description.
 4. Update `cv.md` surgically.
    Verify: only the project and skill text required by the request changes.
 5. Run targeted validation.
-   Verify: `bun run sync-check`, markdown structure checks, and grep checks for
+   Verify: `npm run sync-check`, markdown structure checks, and grep checks for
    excluded unsafe claims.
 6. Record outcome in this plan.
    Verify: progress log, key decisions, risks, and final outcome are current.
 
 ## Verification Approach
 
-- `bun run sync-check`
+- `npm run sync-check`
 - Markdown structure scan for expected project headings.
 - Search `cv.md` for unsupported claims such as LoRA, PEFT, adapter tuning, and
   LLM fine-tuning.
@@ -80,7 +80,7 @@ user-provided project description.
 - 2026-04-23: Confirmed `cv.md` is intentionally ignored by `.gitignore` as a
   personal user-layer file, so the content change is local rather than visible in
   ordinary `git diff`.
-- 2026-04-23: `bun run sync-check` passed.
+- 2026-04-23: `npm run sync-check` passed.
 - 2026-04-23: `rg -n "LoRA|PEFT|adapter tuning|adapter[- ]?tuning|fine[- ]?tuning|LLM fine" cv.md`
   returned no matches.
 - 2026-04-23: `rg -n "Python Machine Learning|C/C\+\+ Systems|PyTorch|xv6|pthreads|PASCAL VOC|Gaussian-Bernoulli" cv.md`
@@ -100,7 +100,7 @@ user-provided project description.
   and removed it from the Python tech stack.
 - 2026-04-23: Replaced `real-time feature extraction` with `CNN feature
   extraction` because the provided material supports the latter more directly.
-- 2026-04-23: `bun run sync-check` passed after the revision.
+- 2026-04-23: `npm run sync-check` passed after the revision.
 - 2026-04-23: `rg -n "Machine Learning & Computer Vision System Portfolio|C/C\+\+ Systems Programming Portfolio|HTTP Caching Proxy Server|Academic Project Portfolio|from scratch|LoRA|PEFT|adapter tuning|adapter[- ]?tuning|fine[- ]?tuning|LLM fine" cv.md`
   found only the three expected project headings.
 - 2026-04-23: User provided C/C++ rewrite guidance to shift from

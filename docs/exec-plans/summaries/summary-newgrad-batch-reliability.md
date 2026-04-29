@@ -42,8 +42,8 @@ Related higher-level context that remains top-level:
 
 ## Verification Completed
 
-- `bun run --cwd apps/extension typecheck`
-- `bun run ext:build`
+- `npm --prefix apps/extension run typecheck`
+- `npm run ext:build`
 - bridge health check via `/v1/health`
 - repository audit of `reports/`, `data/applications.md`, and `data/pipeline.md`
 - residual queue intake verification with zero bridge queue-intake failures

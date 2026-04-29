@@ -61,6 +61,19 @@ hourly recent-source flow for `newgrad`, `linkedin`, `builtin`, and `indeed`.
   `git diff --check` for touched files. A read-only state check found
   `hourly-scan-2026-04-28T15-23-32-912Z.md` as the latest successful broad
   scan, about 35 minutes old, so the next default run would skip `scan`.
+- 2026-04-28: Narrowed the hourly summary `Newest high-fit roles worth
+  reviewing` section so it no longer reads from `Top promoted rows`. It now
+  includes only final completed evaluations at `3.5+/5` or output lines with an
+  offer / explicit high-priority marker.
+- 2026-04-28: Verified the high-fit extraction with a focused Node sample:
+  `3.4/5` was excluded, `3.5/5` and `4.1/5` completed evaluations were
+  included, numbered `Top promoted rows` were excluded, and a `priority=high`
+  output line was included. Also reran `node --check scripts/hourly-job-scan.mjs`
+  and `git diff --check` for touched files.
+- 2026-04-29: Reporting-only automation check found the newest completed
+  summary still at `data/automation/hourly-scan-2026-04-28T16-19-04-129Z.md`.
+  A later 17:00Z launch left a stale-looking lock and failed before summary
+  creation because the launchd environment could not spawn `npm`.
 
 ## Key Decisions
 
@@ -71,6 +84,9 @@ hourly recent-source flow for `newgrad`, `linkedin`, `builtin`, and `indeed`.
   cadence decision auditable in existing automation artifacts.
 - Do not count dry-run summaries as successful broad scans, because dry runs do
   not persist new offers.
+- Treat promoted rows as pre-evaluation candidates only. The hourly summary's
+  high-fit review list must come from final evaluation or explicit
+  offer/high-priority output signals.
 
 ## Risks And Blockers
 
@@ -78,6 +94,9 @@ hourly recent-source flow for `newgrad`, `linkedin`, `builtin`, and `indeed`.
   jobs until the next cadence window.
 - Existing worktree has many unrelated modified files; changes must stay
   surgical.
+- Host launchd must provide `npm` on `PATH`; otherwise the runner can create a
+  lock, skip `scan`, fail on the first npm-backed source, and produce no
+  hourly summary.
 
 ## Final Outcome
 

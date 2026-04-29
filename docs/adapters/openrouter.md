@@ -42,7 +42,7 @@ chmod 600 ~/.config/auto-job/openrouter.key
 ### 3. Start the bridge in OpenRouter mode
 
 ```sh
-AUTO_JOB_BACKEND=real-openrouter bun run server
+AUTO_JOB_BACKEND=real-openrouter npm run server
 ```
 
 Equivalent direct invocation:
@@ -50,7 +50,7 @@ Equivalent direct invocation:
 ```sh
 AUTO_JOB_BRIDGE_MODE=real \
   AUTO_JOB_REAL_EXECUTOR=openrouter \
-  bun run server
+  npm run server
 ```
 
 Verify with `/v1/health`:
@@ -112,7 +112,7 @@ OpenRouter dashboard to cap your exposure.
   pasting the JD into the popup before clicking Evaluate.
 - **No PDF generation.** PDFs require Playwright + the `generate-pdf.mjs`
   script and are out of scope for this adapter. Reports are written as
-  markdown only; use the Bun document-generation scripts afterward when you
+  markdown only; use the npm document-generation scripts afterward when you
   need PDFs.
 - **Tracker.** The adapter writes `batch/tracker-additions/{jobId}.tsv`
   the same way the CLI adapters do, so `node merge-tracker.mjs` works

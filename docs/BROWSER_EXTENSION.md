@@ -10,8 +10,8 @@ This workflow lets you evaluate a job posting directly from Chrome without dupli
 
 ## Prerequisites
 
-- Workspace dependencies installed: `bun install` (root)
-- Playwright Chromium installed if you want live liveness checks: `bunx playwright install chromium`
+- Workspace dependencies installed: `npm install` (root)
+- Playwright Chromium installed if you want live liveness checks: `npx playwright install chromium`
 - For `AUTO_JOB_BACKEND=real-codex` (default) or `real-claude`: the matching CLI on `PATH`
 - For `AUTO_JOB_BACKEND=real-openrouter`: `OPENROUTER_API_KEY` in the environment
 
@@ -20,7 +20,7 @@ This workflow lets you evaluate a job posting directly from Chrome without dupli
 From the repo root:
 
 ```bash
-bun run verify
+npm run verify
 ```
 
 That now runs the existing tracker integrity checks plus:
@@ -35,8 +35,8 @@ The repo root now exposes short aliases so you do not have to type env vars by h
 Typical Codex flow:
 
 ```bash
-bun run ext:build
-bun run server
+npm run ext:build
+npm run server
 ```
 
 That does two things from the repo root:
@@ -47,24 +47,24 @@ That does two things from the repo root:
 Other common shortcuts:
 
 ```bash
-bun run ext:build
-bun run server                                  # real / codex (default)
-AUTO_JOB_BACKEND=real-claude bun run server   # real / claude
-AUTO_JOB_BACKEND=fake bun run server          # fake (UI smoke)
+npm run ext:build
+npm run server                                  # real / codex (default)
+AUTO_JOB_BACKEND=real-claude npm run server   # real / claude
+AUTO_JOB_BACKEND=fake npm run server          # fake (UI smoke)
 ```
 
 If you want a simple macOS picker instead of remembering commands:
 
 ```bash
-bun run ext:launcher
+npm run ext:launcher
 ```
 
 That opens a native dialog where you can choose build/start actions.
 
 The default command flow is:
 
-- run `bun run ext:build`
-- start `bun run server` in Terminal
+- run `npm run ext:build`
+- start `npm run server` in Terminal
 - reveal `apps/extension/dist` in Finder
 - open `chrome://extensions` in Chrome
 
@@ -79,16 +79,16 @@ Less common maintenance actions live under `Advanced tools…` so the main launc
 Default mode is `fake`, which is safe for UI and integration testing.
 
 ```bash
-bun run server
+npm run server
 ```
 
 Optional modes (set `AUTO_JOB_BACKEND` to pick the adapter):
 
 ```bash
-AUTO_JOB_BACKEND=real-codex bun run server
-AUTO_JOB_BACKEND=real-claude bun run server
-AUTO_JOB_BACKEND=real-openrouter OPENROUTER_API_KEY=... bun run server
-AUTO_JOB_BACKEND=fake bun run server
+AUTO_JOB_BACKEND=real-codex npm run server
+AUTO_JOB_BACKEND=real-claude npm run server
+AUTO_JOB_BACKEND=real-openrouter OPENROUTER_API_KEY=... npm run server
+AUTO_JOB_BACKEND=fake npm run server
 ```
 
 The raw commands above still work; the root aliases are just shorter wrappers around them.
@@ -111,7 +111,7 @@ curl -s -H "x-auto-job-token: $(cat apps/server/.bridge-token)" http://127.0.0.1
 ## Build and Load the Extension
 
 ```bash
-bun run ext:build
+npm run ext:build
 ```
 
 Then in Chrome:

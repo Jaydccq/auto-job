@@ -436,7 +436,7 @@ describe("scoreRow", () => {
 
 **Step 2: Run tests to verify they fail**
 
-Run: `cd bridge && bunx vitest run src/adapters/newgrad-scorer.test.ts`
+Run: `cd bridge && npx vitest run src/adapters/newgrad-scorer.test.ts`
 Expected: FAIL — module not found
 
 **Step 3: Write the scorer implementation**
@@ -598,7 +598,7 @@ export function scoreAndFilter(
 
 **Step 4: Run tests to verify they pass**
 
-Run: `cd bridge && bunx vitest run src/adapters/newgrad-scorer.test.ts`
+Run: `cd bridge && npx vitest run src/adapters/newgrad-scorer.test.ts`
 Expected: All PASS
 
 **Step 5: Commit**
@@ -1197,7 +1197,7 @@ scores them locally, enriches high-scoring rows, and adds survivors to the pipel
 ## Prerequisites
 
 - Chrome extension installed and configured with bridge token
-- Bridge server running (`bun run server`)
+- Bridge server running (`npm run server`)
 
 ## Execution
 
@@ -1207,7 +1207,7 @@ This mode uses the Chrome extension for DOM extraction. The CLI coordinates.
 
 Check `/v1/health`. If not reachable, tell the user:
 
-> "Start the bridge first: `bun run server`"
+> "Start the bridge first: `npm run server`"
 
 ### Step 2: Direct user to browser
 
@@ -1263,22 +1263,22 @@ git commit -m "feat(newgrad-scan): CLI mode and skill router entry"
 
 **Step 1: Type-check bridge**
 
-Run: `cd bridge && bunx tsc --noEmit`
+Run: `cd bridge && npx tsc --noEmit`
 Expected: 0 errors
 
 **Step 2: Type-check extension**
 
-Run: `cd extension && bunx tsc --noEmit`
+Run: `cd extension && npx tsc --noEmit`
 Expected: 0 errors
 
 **Step 3: Run bridge tests**
 
-Run: `cd bridge && bunx vitest run`
+Run: `cd bridge && npx vitest run`
 Expected: All pass (including new newgrad-scorer tests)
 
 **Step 4: Manual integration test**
 
-1. Start bridge: `bun run server`
+1. Start bridge: `npm run server`
 2. Load extension in Chrome (`chrome://extensions` → Load unpacked → `extension/`)
 3. Navigate to `https://www.newgrad-jobs.com/`
 4. Verify the floating panel shows "newgrad-jobs.com Scanner" with "Scan & Score" button

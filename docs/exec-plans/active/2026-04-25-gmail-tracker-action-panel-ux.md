@@ -58,11 +58,11 @@ Out of scope:
 5. Compact application rows.
    Verify: each row shows company, role, stage, attention, recent contact, latest thread/update, email count, and actions without large vertical labels.
 6. Rebuild and test.
-   Verify: `bun run dashboard:build` succeeds and browser checks pass at desktop and mobile widths.
+   Verify: `npm run dashboard:build` succeeds and browser checks pass at desktop and mobile widths.
 
 ## Verification Approach
 
-- `bun run dashboard:build`
+- `npm run dashboard:build`
 - Headless browser smoke check:
   - tracker tab renders action center and pipeline overview
   - summary labels are the four priority metrics
@@ -105,7 +105,7 @@ Changed files:
 
 Verification run:
 
-- `bun run dashboard:build` succeeded, writing `web/index.html` with 352 reports, 253 applications, 524 pipeline items, and 1,313 scan-history rows.
+- `npm run dashboard:build` succeeded, writing `web/index.html` with 352 reports, 253 applications, 524 pipeline items, and 1,313 scan-history rows.
 - Headless Playwright smoke check passed at 1440, 768, and 320 px:
   - Summary labels were `need attention`, `interviewing`, `OA / assessments`, and `active applications`.
   - Action Center rendered 6 cards.

@@ -278,7 +278,7 @@ async function refreshHealth(): Promise<boolean> {
       setupTokenInput.focus();
     } else {
       setHealth("bad", res.error.code);
-      setOfflineBanner("Bridge not reachable. Run: bun run server");
+      setOfflineBanner("Bridge not reachable. Run: npm run server");
     }
     offlineBannerEl.classList.remove("hidden");
     currentBridgePreset = null;
@@ -567,7 +567,7 @@ function classifyError(code: string, message: string): {
     return {
       category: "Connection error",
       explanation: "The local bridge isn't running or can't be reached.",
-      recovery: { before: "Start the bridge:", code: "bun run server" },
+      recovery: { before: "Start the bridge:", code: "npm run server" },
       retryable: true,
     };
   }

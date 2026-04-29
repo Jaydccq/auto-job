@@ -41,13 +41,13 @@ Out of scope:
 3. Add summary strips for filtered sections.
    Verify: Summaries update after filtering and sorting.
 4. Rebuild static dashboard.
-   Verify: `bun run dashboard:build` succeeds.
+   Verify: `npm run dashboard:build` succeeds.
 5. Run browser smoke checks at desktop and mobile widths.
    Verify: No page errors, pagination works, and mobile has no page-level horizontal overflow.
 
 ## Verification Approach
 
-- `bun run dashboard:build`
+- `npm run dashboard:build`
 - Headless Playwright smoke checks for pagination and page counts.
 - Headless Playwright responsive checks at 320, 768, 1024, and 1440 px.
 
@@ -78,7 +78,7 @@ Completed.
 
 Verification run:
 
-- `bun run dashboard:build` succeeded with 345 reports, 248 applications, 508 pipeline items, and 1274 scan-history rows.
+- `npm run dashboard:build` succeeded with 345 reports, 248 applications, 508 pipeline items, and 1274 scan-history rows.
 - Playwright interaction smoke check passed:
   - Tracker `Ready 4+` preset sets Status to `Evaluated`, min score to `4`, renders rows, and shows 4 summary cards.
   - Pipeline `Pending` preset activates the pending toggle.

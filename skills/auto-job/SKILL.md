@@ -7,7 +7,7 @@ description: Agent-agnostic local Auto-Job routing skill for Codex, Claude Code,
 
 This is the repository-local, agent-agnostic skill source. Runtime-specific
 mirrors such as `.claude/skills/auto-job/SKILL.md` must stay byte-for-byte
-synced with this file; `bun run verify:skills` enforces that.
+synced with this file; `npm run verify:skills` enforces that.
 
 Routes the user's intent into the right mode under `modes/`. Always read
 `modes/_shared.md` before doing anything substantive — it owns the rubric,
@@ -67,7 +67,7 @@ scope and should not be used as a generic helper.
 - **Never put user-specific personalization into the owned-runtime layer.**
   See `DATA_CONTRACT.md`.
 - **Never edit `data/applications.md` to add a row.** Write a TSV under
-  `batch/tracker-additions/` and let `bun run merge` apply it.
+  `batch/tracker-additions/` and let `npm run merge` apply it.
 - **Always include `**URL:**` in the report header** so the dashboard can
   link out.
 - **Score < 3.5 → recommend SKIP.** Do not generate a PDF for sub-4.5
@@ -80,7 +80,7 @@ scope and should not be used as a generic helper.
 | Read | `cv.md`, `_profile.md`, `article-digest.md`, prior reports, JD captures |
 | Write | New reports, TSV additions, generated HTML, draft answers |
 | Edit | Tracker status promotions only |
-| Bash | `bun run pdf`, `bun run merge`, `bun run normalize`, `bun run verify`, `bun run liveness` |
+| Bash | `npm run pdf`, `npm run merge`, `npm run normalize`, `npm run verify`, `npm run liveness` |
 | WebSearch | Comp data, layoffs, company news, contact discovery |
 | WebFetch | Static JD pages (fallback) |
 | Playwright | Live posting verification, capture, autofill (one session at a time) |

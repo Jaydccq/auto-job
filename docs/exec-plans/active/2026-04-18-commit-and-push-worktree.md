@@ -59,7 +59,7 @@ Create one commit containing the repository changes that should be versioned, ex
 
 ## Risks and Blockers
 
-- `bun run verify` is already known to fail due to malformed tracker row `#172` in `data/applications.md`.
+- `npm run verify` is already known to fail due to malformed tracker row `#172` in `data/applications.md`.
 - Push may require network/remote access.
 
 ## Final Outcome
@@ -76,4 +76,4 @@ Privacy/runtime handling:
 Verification:
 
 - Passed: `git diff --check`
-- Known pre-existing issue: `bun run verify` fails on malformed tracker row `#172` in `data/applications.md`.
+- Known pre-existing issue: `npm run verify` fails on malformed tracker row `#172` in `data/applications.md`.

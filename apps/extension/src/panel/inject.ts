@@ -706,7 +706,7 @@ function buildHTML(): string {
   </div>
   <div class="panel-body">
     <div id="offline-banner" class="offline-banner hidden">
-      Bridge not reachable. Run: <code>bun run server</code>
+      Bridge not reachable. Run: <code>npm run server</code>
     </div>
     <div id="mode-panel" class="section">
       <div class="mode-summary">
@@ -1275,7 +1275,7 @@ function initPanel(shadow: ShadowRoot, root: HTMLElement): void {
         setupTokenInput.focus();
       } else {
         setHealth("bad", code);
-        setOfflineBanner("Bridge not reachable. Run: bun run server");
+        setOfflineBanner("Bridge not reachable. Run: npm run server");
       }
       offlineBanner.classList.remove("hidden");
       currentBridgePreset = null;

@@ -5,7 +5,7 @@
 The auto-job runtime exposes exactly two command surfaces:
 
 1. **`skills/auto-job/SKILL.md`** — the agent-agnostic repository skill that routes user intent to a mode file under `modes/`. Runtime-specific mirrors such as `.claude/skills/auto-job/SKILL.md` must stay byte-for-byte synced.
-2. **Root `package.json` scripts** — Bun-runnable entry points that drive the local Fastify server, the Chrome extension build, the Electron desktop app, scanners, and the verification gate.
+2. **Root `package.json` scripts** — npm-runnable entry points that drive the local Fastify server, the Chrome extension build, the Electron desktop app, scanners, and the verification gate.
 
 Everything else is out of scope. The runtime no longer ships, advertises, or supports alternative command surfaces.
 
@@ -34,7 +34,7 @@ Active modes live under `modes/` and are limited to behaviors the local server a
 
 Adding a new mode requires:
 
-1. A skill route in `skills/auto-job/SKILL.md`, with runtime mirrors kept in sync by `bun run verify:skills`.
+1. A skill route in `skills/auto-job/SKILL.md`, with runtime mirrors kept in sync by `npm run verify:skills`.
 2. A consumer in `apps/server/src/` (or a documented manual flow).
 3. An entry in this contract.
 
@@ -47,7 +47,7 @@ No command surface may submit an application, click Apply, click Next, or click 
 ## Verification
 
 ```bash
-bun run --cwd apps/server vitest run src/adapters/command-surface-contract.test.ts
-bun run verify:repo-guard
-bun run verify:skills
+npm --prefix apps/server run vitest run src/adapters/command-surface-contract.test.ts
+npm run verify:repo-guard
+npm run verify:skills
 ```

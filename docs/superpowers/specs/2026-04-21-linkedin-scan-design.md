@@ -126,7 +126,7 @@ Mode checks bridge and bb-browser availability
         |       -> tell user to run bb-browser open https://www.linkedin.com/login
         |
         +-- logged in
-                -> run `bun run linkedin-scan -- --url <configured or supplied URL>`
+                -> run `npm run linkedin-scan -- --url <configured or supplied URL>`
                         |
                         +-- --score-only: stop after scoring
                         +-- default: enrich promoted rows and queue direct eval
@@ -165,9 +165,9 @@ Unit and structural tests:
 
 Integration checks:
 
-- `bun run linkedin-scan -- --score-only --limit 5` against the logged-in
+- `npm run linkedin-scan -- --score-only --limit 5` against the logged-in
   LinkedIn search URL returns extracted/scored rows without writing files.
-- `bun run linkedin-scan -- --no-evaluate --enrich-limit 2` enriches detail pages
+- `npm run linkedin-scan -- --no-evaluate --enrich-limit 2` enriches detail pages
   and writes only scanner-managed pipeline/history rows.
 - Bridge tests and type checks pass.
 

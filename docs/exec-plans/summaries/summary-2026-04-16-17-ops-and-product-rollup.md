@@ -53,11 +53,11 @@ This rollup replaces the following completed summary files:
 
 ## Verification Completed
 
-- `bun run --cwd apps/server test -- src/adapters/newgrad-pending.test.ts src/adapters/claude-pipeline.test.ts`
-- `bun run --cwd apps/server typecheck`
-- `bun run --cwd apps/extension typecheck`
-- `bun run ext:build`
-- `bun run dashboard`
+- `npm --prefix apps/server run test -- src/adapters/newgrad-pending.test.ts src/adapters/claude-pipeline.test.ts`
+- `npm --prefix apps/server run typecheck`
+- `npm --prefix apps/extension run typecheck`
+- `npm run ext:build`
+- `npm run dashboard`
 - headless browser/DOM verification for the static dashboard layout and `Apply Next` view
 - `git diff --cached --stat`, `git status --short`, and `git log --oneline` for commit grouping
 - `python3 .claude/skills/exec-plan-consolidator/scripts/plan_inventory.py`

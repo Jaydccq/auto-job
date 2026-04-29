@@ -64,7 +64,7 @@ current branch and summarize what upstream changed.
   new Gemini and LaTeX entry points.
 - 2026-04-22: Verified no conflict markers remained in the resolved files.
 - 2026-04-22: `git diff --cached --check` passed.
-- 2026-04-22: `bun run verify` passed with 0 errors and 2 existing duplicate
+- 2026-04-22: `npm run verify` passed with 0 errors and 2 existing duplicate
   warnings in `data/applications.md`.
 
 ## Key Decisions
@@ -80,7 +80,7 @@ current branch and summarize what upstream changed.
 
 ## Risks and Blockers
 
-- `bun run verify` reports two duplicate-warning groups in
+- `npm run verify` reports two duplicate-warning groups in
   `data/applications.md`; they are warnings, not merge blockers.
 
 ## Final Outcome
@@ -88,4 +88,4 @@ current branch and summarize what upstream changed.
 Merged upstream changes through `upstream/main` commit `b8a3a12` into local
 `main`. Conflicts were resolved in `.gitignore`, `README.md`, and
 `package.json`. Verification passed with `git diff --cached --check` and
-`bun run verify`.
+`npm run verify`.

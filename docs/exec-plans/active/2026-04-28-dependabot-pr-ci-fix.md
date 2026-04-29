@@ -11,7 +11,7 @@ Five Dependabot PRs are open against `main`:
 - #5 `dotenv` 16.6.1 -> 17.4.2
 
 The GitHub `Tests` check fails on all five before package-specific checks can
-complete because the runner does not install Bun. The `Welcome` check also
+complete because the runner does not install npm. The `Welcome` check also
 fails on PRs that opened against the older base workflow because
 `actions/first-interaction@v3` expects underscore input names.
 
@@ -22,11 +22,11 @@ branch, then re-run or rebase the dependency PR checks.
 
 ## Scope
 
-- Fix `.github/workflows/test.yml` so `node test-all.mjs --quick` can run Bun
-  workspace commands on GitHub-hosted runners using the same Bun version tested
+- Fix `.github/workflows/test.yml` so `node test-all.mjs --quick` can run npm
+  workspace commands on GitHub-hosted runners using the same npm version tested
   locally.
 - Use the workspace lockfile install path in CI so app/package dependencies are
-  present before Bun runs workspace scripts.
+  present before npm runs workspace scripts.
 - Fix `.github/workflows/welcome.yml` input names for
   `actions/first-interaction@v3`.
 - Verify the same quick test entrypoint locally.
@@ -38,7 +38,7 @@ fixed.
 
 ## Assumptions
 
-- The observed `spawnSync bun ENOENT` failures are shared CI setup failures,
+- The observed `spawnSync npm ENOENT` failures are shared CI setup failures,
   not dependency upgrade failures.
 - A base-branch CI fix is the simplest durable fix for all five PRs.
 - If individual package failures remain after CI setup is corrected, each PR
@@ -46,7 +46,7 @@ fixed.
 
 ## Implementation Steps
 
-1. Update test workflow to install Bun and workspace dependencies before
+1. Update test workflow to install npm and workspace dependencies before
    `node test-all.mjs --quick`.
    Verify: workflow file is syntactically valid YAML and local quick tests use
    the same command.
@@ -57,7 +57,7 @@ fixed.
 4. Push the CI fix branch and open a PR.
    Verify: GitHub checks start on the CI-fix PR.
 5. After the CI fix is merged, re-run or update the five Dependabot PR checks.
-   Verify: #1-#5 no longer fail for missing Bun or invalid welcome inputs.
+   Verify: #1-#5 no longer fail for missing npm or invalid welcome inputs.
 
 ## Verification Approach
 
@@ -68,10 +68,10 @@ fixed.
 ## Progress Log
 
 - 2026-04-28: Inspected #1-#5. All failing `Tests` logs show
-  `spawnSync bun ENOENT` in workspace checks.
+  `spawnSync npm ENOENT` in workspace checks.
 - 2026-04-28: Inspected `Welcome` failure for #1. The log reports unexpected
   dashed inputs and missing `issue_message`.
-- 2026-04-28: Updated `test.yml` to install Bun 1.3.5, install dependencies
+- 2026-04-28: Updated `test.yml` to install npm 1.3.5, install dependencies
   through `pnpm install --frozen-lockfile`, and `welcome.yml` to use
   underscored action inputs.
 - 2026-04-28: `pnpm install --frozen-lockfile` initially exposed stale
@@ -88,6 +88,13 @@ fixed.
   `/private/tmp/auto-job-ci-verify-7ddd264`, installed dependencies with
   `CI=true pnpm install --frozen-lockfile`, then ran
   `node test-all.mjs --quick`: 33 passed, 0 failed.
+- 2026-04-28: Merged CI fix PR #6 into `main`.
+- 2026-04-28: Updated Dependabot PR branches #1-#4 by merging latest `main`.
+  PR #5 had already been refreshed by Dependabot and was up to date with
+  latest `main`.
+- 2026-04-28: Rechecked #1-#5 after branch updates. All five PRs report
+  `mergeStateStatus: CLEAN`, with `test`, CodeQL analysis, and CodeQL all
+  successful.
 
 ## Key Decisions
 
@@ -103,6 +110,6 @@ fixed.
 
 ## Final Outcome
 
-Base CI fix is implemented and clean-worktree verified. The next required step
-is to merge the CI-fix PR, then re-run or update Dependabot PRs #1-#5 so their
-checks execute with Bun and pnpm workspace dependencies installed.
+Base CI fix is implemented, merged, and clean-worktree verified. Dependabot PRs
+#1-#5 have been refreshed against the fixed base and all required checks are
+green and mergeable.

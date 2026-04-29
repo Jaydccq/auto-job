@@ -43,7 +43,7 @@ existing scan/evaluate commands.
 5. Harden JD/page text prompt embedding.
    Verify: tests cover boundary strings in quick and full eval inputs.
 6. Update docs and run targeted verification.
-   Verify: `bun run newgrad-scan -- --help`, bridge typecheck, targeted tests,
+   Verify: `npm run newgrad-scan -- --help`, bridge typecheck, targeted tests,
    and `git diff --check`.
 
 ## Engineering Review

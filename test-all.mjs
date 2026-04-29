@@ -63,8 +63,8 @@ run("verify:repo-guard", process.execPath, [join(repoRoot, "scripts/verify-repo-
 console.log("\n3. Server workspace");
 const serverDir = join(repoRoot, "apps/server");
 if (existsSync(serverDir)) {
-  run("server typecheck", "bun", ["run", "typecheck"], { cwd: serverDir });
-  run("server tests", "bun", ["run", "test"], { cwd: serverDir, timeout: 120000 });
+  run("server typecheck", "npm", ["run", "typecheck"], { cwd: serverDir });
+  run("server tests", "npm", ["run", "test"], { cwd: serverDir, timeout: 120000 });
 } else {
   fail("apps/server missing");
 }
@@ -72,8 +72,8 @@ if (existsSync(serverDir)) {
 console.log("\n4. Extension workspace");
 const extDir = join(repoRoot, "apps/extension");
 if (existsSync(extDir)) {
-  run("extension typecheck", "bun", ["run", "typecheck"], { cwd: extDir });
-  run("extension build", "bun", ["run", "build"], { cwd: extDir });
+  run("extension typecheck", "npm", ["run", "typecheck"], { cwd: extDir });
+  run("extension build", "npm", ["run", "build"], { cwd: extDir });
 } else {
   fail("apps/extension missing");
 }
@@ -81,7 +81,7 @@ if (existsSync(extDir)) {
 console.log("\n5. Shared workspace");
 const sharedDir = join(repoRoot, "packages/shared");
 if (existsSync(sharedDir)) {
-  run("shared typecheck", "bun", ["run", "typecheck"], { cwd: sharedDir });
+  run("shared typecheck", "npm", ["run", "typecheck"], { cwd: sharedDir });
 }
 
 console.log(`\nResult: ${passed} passed, ${failed} failed.`);

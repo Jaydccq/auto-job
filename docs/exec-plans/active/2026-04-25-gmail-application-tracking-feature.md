@@ -187,7 +187,7 @@ If the first implementation touches more than the importer, one data artifact, t
 
 Detected test infrastructure:
 
-- `package.json` exposes `bun run verify`, `bun run dashboard:build`, and `test-all.mjs`.
+- `package.json` exposes `npm run verify`, `npm run dashboard:build`, and `test-all.mjs`.
 - `CLAUDE.md` says GitHub Actions run `test-all.mjs`.
 - Existing scripts are plain Node `.mjs` modules.
 
@@ -254,7 +254,7 @@ Test requirements:
 - Test exact-vs-ambiguous matching.
 - Test that no new rows are appended directly to `data/applications.md`.
 - Run `node verify-pipeline.mjs` after any tracker mutation.
-- Run `bun run dashboard:build` if dashboard rendering changes.
+- Run `npm run dashboard:build` if dashboard rendering changes.
 
 ## Performance Review
 
@@ -307,14 +307,14 @@ Stage 2 performance risks are material:
 5. Wire follow-up/attention output.
    Verify: `node followup-cadence.mjs --summary` still works and attention items are visible in the chosen artifact or dashboard.
 6. Optional dashboard display.
-   Verify: `bun run dashboard:build` succeeds and the dashboard renders the new derived data.
+   Verify: `npm run dashboard:build` succeeds and the dashboard renders the new derived data.
 
 ## Verification Approach
 
 - Use fixture-driven tests for all classifier and matcher branches.
 - Use dry-run snapshots for proposed tracker changes.
 - Use `node verify-pipeline.mjs` after any tracker write.
-- Use `bun run dashboard:build` for dashboard changes.
+- Use `npm run dashboard:build` for dashboard changes.
 - Record Gmail query scope and scan limitations in every run artifact.
 
 ## Key Decisions
@@ -334,9 +334,9 @@ Stage 2 performance risks are material:
 - Decision: Render unmatched Gmail signals as display-only Gmail-derived pipeline rows.
   Rationale: Gmail can contain active applications that are not yet represented by an exact tracker row. Showing them in the dashboard is useful, but mutating the canonical tracker still requires the existing review/merge path.
 - Decision: Keep private Gmail/profile data out of tracked static dashboard exports.
-  Rationale: `data/gmail-signals.jsonl` and `config/profile.yml` are user-specific local data. `bun run dashboard` can include them for the private local view, but `bun run dashboard:build` must not embed them into tracked `web/index.html`.
+  Rationale: `data/gmail-signals.jsonl` and `config/profile.yml` are user-specific local data. `npm run dashboard` can include them for the private local view, but `npm run dashboard:build` must not embed them into tracked `web/index.html`.
 - Decision: Run a dashboard-start Gmail refresh hook, not the Codex Gmail connector itself.
-  Rationale: `bun run dashboard` runs in a normal Node/Bun process and cannot call Codex MCP app tools. The startup hook gives the dashboard a reliable refresh boundary and can execute a future OAuth/CLI scanner without pretending the Codex-only connector is available to package scripts.
+  Rationale: `npm run dashboard` runs in a normal Node/npm process and cannot call Codex MCP app tools. The startup hook gives the dashboard a reliable refresh boundary and can execute a future OAuth/CLI scanner without pretending the Codex-only connector is available to package scripts.
 - Decision: Expose connector-assisted Gmail scanning as `/auto-job gmail-scan`.
   Rationale: This matches the existing `newgrad-scan` project pattern: the checked-in `auto-job` skill routes to a mode file that defines prerequisites, execution, output artifacts, and verification. It keeps the Codex-only Gmail connector workflow explicit while preserving the future path for a standalone OAuth scanner.
 - Decision: Implement the standalone scanner with Google's Desktop OAuth loopback flow, PKCE, and `gmail.readonly`.
@@ -347,7 +347,7 @@ Stage 2 performance risks are material:
 - Gmail skill access may not be available in non-Codex environments.
 - Dashboard startup can only run standalone local commands; it cannot directly invoke Codex Gmail app tools.
 - `/auto-job gmail-scan` requires a Codex session with the Gmail connector; non-Codex clients need the future OAuth scanner instead.
-- OAuth authorization creates persistent Gmail read access; the user must run `bun run gmail:auth` and approve the consent screen directly.
+- OAuth authorization creates persistent Gmail read access; the user must run `npm run gmail:auth` and approve the consent screen directly.
 - Gmail search scope can miss messages; every run must report coverage.
 - Parsing hiring emails is noisy; low-confidence signals must go to review queue.
 - If hosted productization is required immediately, this plan must be superseded by an OAuth/backend plan.
@@ -387,14 +387,14 @@ Relevant primary sources:
 - 2026-04-25: Wrote Stage 1 recommendation: use Gmail skill as read adapter for local MVP, make repo-owned derived signals durable, defer OAuth to productization.
 - 2026-04-25: User chose the existing dashboard as the first UI surface.
 - 2026-04-25: Added dashboard parsing for optional `data/gmail-signals.jsonl`, Tracker tab Gmail signal filter/column/summary, schema docs, parser coverage in `test-all.mjs`, and `.gitignore` protection for the personal signal file.
-- 2026-04-25: Verified `node --check web/build-dashboard.mjs`, `node --check test-all.mjs`, `bun run dashboard:build`, `node verify-pipeline.mjs`, and `git diff --check`.
+- 2026-04-25: Verified `node --check web/build-dashboard.mjs`, `node --check test-all.mjs`, `npm run dashboard:build`, `node verify-pipeline.mjs`, and `git diff --check`.
 - 2026-04-25: Ran `node test-all.mjs --quick`; new Gmail parser test passed, but the full suite failed on pre-existing absolute-path findings in automation logs and older plan docs unrelated to this dashboard change.
 - 2026-04-25: User requested a pipeline/application-tracker dashboard matching the shared target copy and behavior.
 - 2026-04-25: Reworked the existing Tracker tab into a pipeline view with hero counts, Gmail account display, top opportunities, grouped application cards, recent contact, attention state, updated recency, search, stage filter, Gmail signal filter, and sort controls.
 - 2026-04-25: Added profile email parsing from `config/profile.yml` so the dashboard can show the configured mailbox without hard-coding user data.
 - 2026-04-25: Browser-tested the local dashboard at `http://127.0.0.1:47329/`; verified the Tracker view renders the new pipeline UI, removes the broken `Showing 1-0 of 0 opportunities`/`Loading recommended jobs` state, shows the configured email account, and has no console errors.
 - 2026-04-25: Fixed a responsive layout bug found in browser testing where the Updated column could wrap below the row; changed the flow-card grid to a stable six-column layout and constrained updated date text to one line.
-- 2026-04-25: Re-verified `node --check web/build-dashboard.mjs`, `node --check test-all.mjs`, `bun run dashboard:build`, and `git diff --check`. Re-ran `node test-all.mjs --quick`; the Gmail parser/profile test passes and the suite still fails only on existing absolute-path findings outside this change.
+- 2026-04-25: Re-verified `node --check web/build-dashboard.mjs`, `node --check test-all.mjs`, `npm run dashboard:build`, and `git diff --check`. Re-ran `node test-all.mjs --quick`; the Gmail parser/profile test passes and the suite still fails only on existing absolute-path findings outside this change.
 - 2026-04-25: User clarified the dashboard must be populated by scanning Gmail application/interview/OA/offer/rejection emails, not just by showing empty Gmail fields for existing tracker rows.
 - 2026-04-25: Used the Gmail connector with read-only Gmail search over the last 12 months for ATS/recruiting senders and company-specific searches, then read selected high-signal threads for Arista, Formant, Rokt, Rubrik, Verkada, xAI, and Loop.
 - 2026-04-25: Wrote derived mailbox facts to local, gitignored `data/gmail-signals.jsonl`; recorded message/thread ids, company, role, event type, date, sender/recent contact, short snippet/summary, email counts, confidence, and recommended action where relevant.
@@ -402,43 +402,43 @@ Relevant primary sources:
 - 2026-04-25: Added expandable per-row email evidence showing sender, relative time, subject, and short snippet/summary while avoiding full raw body storage.
 - 2026-04-25: Added `data/gmail-signals.jsonl` to the test suite's gitignored user-file checks.
 - 2026-04-25: Browser-tested the updated Tracker tab at `http://127.0.0.1:47329/`; verified 63 synced signals, Gmail-only rows for Arista/Formant/Rokt, expandable Arista email evidence, and no browser console errors.
-- 2026-04-25: Re-verified `node --check web/build-dashboard.mjs`, `node --check test-all.mjs`, `bun run dashboard:build`, and `git diff --check`. Re-ran `node test-all.mjs --quick`; 67 checks pass including Gmail parser/profile and gitignore checks, and the suite still fails only on pre-existing absolute-path findings outside this change.
-- 2026-04-25: Found and fixed a privacy leak path where static `web/index.html` could embed local profile/Gmail signal data after `bun run dashboard:build`; static export now omits profile email and Gmail signals, while `web/dashboard-server.mjs` explicitly enables both for the private local server.
+- 2026-04-25: Re-verified `node --check web/build-dashboard.mjs`, `node --check test-all.mjs`, `npm run dashboard:build`, and `git diff --check`. Re-ran `node test-all.mjs --quick`; 67 checks pass including Gmail parser/profile and gitignore checks, and the suite still fails only on pre-existing absolute-path findings outside this change.
+- 2026-04-25: Found and fixed a privacy leak path where static `web/index.html` could embed local profile/Gmail signal data after `npm run dashboard:build`; static export now omits profile email and Gmail signals, while `web/dashboard-server.mjs` explicitly enables both for the private local server.
 - 2026-04-25: Rebuilt the static dashboard and verified `web/index.html` no longer contains the Gmail account, Arista/Richard evidence, or Gmail message ids. Restarted the local server and re-verified the enriched private dashboard still shows the configured Gmail account, 63 synced signals, Gmail-only rows, and no browser console errors.
-- 2026-04-25: User requested that every `bun run dashboard` perform one Gmail update before showing the dashboard.
-- 2026-04-25: Added `scripts/refresh-gmail-signals.mjs` as the dashboard-start refresh boundary, wired `web/dashboard-server.mjs` to call it once before listening, added `bun run gmail:update`, and added a typo-compatible `dashborad` script for the user's command spelling.
-- 2026-04-25: Documented the refresh command contract: `AUTO_JOB_GMAIL_REFRESH_COMMAND` must be a JSON array for a standalone OAuth/CLI scanner that writes `data/gmail-signals.jsonl`; without that command, dashboard startup records a skipped refresh because Codex Gmail connector access is not callable from Node/Bun.
-- 2026-04-25: Verified `node --check scripts/refresh-gmail-signals.mjs`, `node --check web/dashboard-server.mjs`, `node --check web/build-dashboard.mjs`, `node --check test-all.mjs`, `node scripts/refresh-gmail-signals.mjs`, `bun run dashboard:build`, `git diff --check`, and static privacy grep for Gmail account/Arista/Richard/message-id text.
+- 2026-04-25: User requested that every `npm run dashboard` perform one Gmail update before showing the dashboard.
+- 2026-04-25: Added `scripts/refresh-gmail-signals.mjs` as the dashboard-start refresh boundary, wired `web/dashboard-server.mjs` to call it once before listening, added `npm run gmail:update`, and added a typo-compatible `dashborad` script for the user's command spelling.
+- 2026-04-25: Documented the refresh command contract: `AUTO_JOB_GMAIL_REFRESH_COMMAND` must be a JSON array for a standalone OAuth/CLI scanner that writes `data/gmail-signals.jsonl`; without that command, dashboard startup records a skipped refresh because Codex Gmail connector access is not callable from Node/npm.
+- 2026-04-25: Verified `node --check scripts/refresh-gmail-signals.mjs`, `node --check web/dashboard-server.mjs`, `node --check web/build-dashboard.mjs`, `node --check test-all.mjs`, `node scripts/refresh-gmail-signals.mjs`, `npm run dashboard:build`, `git diff --check`, and static privacy grep for Gmail account/Arista/Richard/message-id text.
 - 2026-04-25: Ran `node test-all.mjs --quick`; the new Gmail refresh parser/gitignore checks pass, and the suite still fails only on pre-existing absolute-path findings in older automation logs/plans outside this change.
-- 2026-04-25: Started the dashboard through `bun run dashboard`; the startup log shows one Gmail refresh hook attempt before the server listens. Browser-tested `http://127.0.0.1:47329/`; verified the Tracker tab shows the Gmail account, skipped refresh status, 63 synced signals, Arista rows, and no console errors.
+- 2026-04-25: Started the dashboard through `npm run dashboard`; the startup log shows one Gmail refresh hook attempt before the server listens. Browser-tested `http://127.0.0.1:47329/`; verified the Tracker tab shows the Gmail account, skipped refresh status, 63 synced signals, Arista rows, and no console errors.
 - 2026-04-25: User requested a Auto-Job skill entry point like `newgrad-scan` for the Gmail workflow.
 - 2026-04-25: Added `modes/gmail-scan.md`, routed `gmail-scan`/`gmail` through `.claude/skills/auto-job/SKILL.md`, added an OpenCode command wrapper, and updated `CLAUDE.md`, `docs/CODEX.md`, `docs/GMAIL_SIGNALS.md`, `web/README.md`, and `test-all.mjs`.
 - 2026-04-25: Updated the dashboard refresh skipped message to point users to `/auto-job gmail-scan` when no standalone refresh command is configured.
-- 2026-04-25: Verified the Gmail-scan skill wiring with `node --check scripts/refresh-gmail-signals.mjs`, `node --check web/build-dashboard.mjs`, `node --check web/dashboard-server.mjs`, `node --check test-all.mjs`, `bun run gmail:update`, `bun run dashboard:build`, and `git diff --check`.
+- 2026-04-25: Verified the Gmail-scan skill wiring with `node --check scripts/refresh-gmail-signals.mjs`, `node --check web/build-dashboard.mjs`, `node --check web/dashboard-server.mjs`, `node --check test-all.mjs`, `npm run gmail:update`, `npm run dashboard:build`, and `git diff --check`.
 - 2026-04-25: Re-ran `node test-all.mjs --quick`; the new `gmail-scan` mode existence and auto-job router checks pass. The suite still fails only on pre-existing absolute-path findings in older logs/plans.
-- 2026-04-25: Restarted `bun run dashboard` and browser-tested the Tracker tab; verified the updated refresh message points to `/auto-job gmail-scan`, synced signals remain 63, and console errors are empty.
-- 2026-04-25: User requested `/superpowers` planning plus `/plan-eng-review` for the missing OAuth/CLI scanner so `bun run dashboard` can really pull Gmail on startup.
+- 2026-04-25: Restarted `npm run dashboard` and browser-tested the Tracker tab; verified the updated refresh message points to `/auto-job gmail-scan`, synced signals remain 63, and console errors are empty.
+- 2026-04-25: User requested `/superpowers` planning plus `/plan-eng-review` for the missing OAuth/CLI scanner so `npm run dashboard` can really pull Gmail on startup.
 - 2026-04-25: Ran the gstack plan-eng-review preamble; it reported branch `main`, repo mode `collaborative`, telemetry `community`, and an available gstack upgrade. Auto-upgrade is disabled, so implementation continued with the current skill version.
 - 2026-04-25: Checked current official Google docs for Gmail `users.messages.list`, `users.messages.get`, and OAuth 2.0 desktop/native loopback flow before implementing the scanner.
 - 2026-04-25: Added `scripts/gmail-oauth-refresh.mjs` with `auth` and `scan` modes, Desktop OAuth PKCE loopback support, refresh-token reuse, Gmail API message list/get calls, hiring-event classification, signal merge/dedupe, and JSONL output.
 - 2026-04-25: Updated `scripts/refresh-gmail-signals.mjs` so dashboard startup defaults to the OAuth scanner when no explicit `AUTO_JOB_GMAIL_REFRESH_COMMAND` is set, and reports `setup_required` instead of failing hard when OAuth credentials/tokens are not configured.
-- 2026-04-25: Added `bun run gmail:auth` and `bun run gmail:scan`, gitignored `config/gmail-oauth-credentials.json` and `config/gmail-oauth-token.json`, and documented the setup in `docs/GMAIL_SIGNALS.md`, `web/README.md`, and `modes/gmail-scan.md`.
-- 2026-04-25: Verified the OAuth scanner path with syntax checks, the dashboard refresh wrapper, static privacy grep, `bun run dashboard:build`, `git diff --check`, and `node test-all.mjs --quick`; the new Gmail OAuth parser/merge and gitignore checks pass, while the quick suite still fails only on pre-existing absolute-path findings in older logs/plans.
-- 2026-04-25: Restarted `bun run dashboard`; startup now attempts the OAuth scanner first and reports `setup_required` until `config/gmail-oauth-credentials.json` and `config/gmail-oauth-token.json` exist. Browser-tested the Tracker tab and verified the private dashboard still shows the Gmail account, 63 signals, Arista/Formant/Rokt action rows, and no JavaScript console errors.
-- 2026-04-25: User hit `OAuth state mismatch` during `bun run gmail:auth` after the browser landed on a bare `/oauth2callback` URL. Fixed the auth callback parser so empty callback visits keep waiting instead of rejecting the flow; only callback requests carrying OAuth params now trigger state validation.
+- 2026-04-25: Added `npm run gmail:auth` and `npm run gmail:scan`, gitignored `config/gmail-oauth-credentials.json` and `config/gmail-oauth-token.json`, and documented the setup in `docs/GMAIL_SIGNALS.md`, `web/README.md`, and `modes/gmail-scan.md`.
+- 2026-04-25: Verified the OAuth scanner path with syntax checks, the dashboard refresh wrapper, static privacy grep, `npm run dashboard:build`, `git diff --check`, and `node test-all.mjs --quick`; the new Gmail OAuth parser/merge and gitignore checks pass, while the quick suite still fails only on pre-existing absolute-path findings in older logs/plans.
+- 2026-04-25: Restarted `npm run dashboard`; startup now attempts the OAuth scanner first and reports `setup_required` until `config/gmail-oauth-credentials.json` and `config/gmail-oauth-token.json` exist. Browser-tested the Tracker tab and verified the private dashboard still shows the Gmail account, 63 signals, Arista/Formant/Rokt action rows, and no JavaScript console errors.
+- 2026-04-25: User hit `OAuth state mismatch` during `npm run gmail:auth` after the browser landed on a bare `/oauth2callback` URL. Fixed the auth callback parser so empty callback visits keep waiting instead of rejecting the flow; only callback requests carrying OAuth params now trigger state validation.
 - 2026-04-25: Re-verified the callback fix with `node --check scripts/gmail-oauth-refresh.mjs`, `node --check test-all.mjs`, `git diff --check`, and `node test-all.mjs --quick`. The Gmail parser/auth callback regression test passes; the quick suite still fails only on pre-existing absolute-path findings in older logs/plans.
 - 2026-04-25: User hit Google `Error 400: redirect_uri_mismatch`, which indicates the saved OAuth client was likely a `Web application` client. Updated the scanner to reject Web client JSON locally with a setup message requiring Application type `Desktop app`, and documented the Desktop-app requirement in the Gmail signal and dashboard docs.
 - 2026-04-25: Re-verified the Desktop-app guard with `node --check scripts/gmail-oauth-refresh.mjs`, `node --check test-all.mjs`, `git diff --check`, and `node test-all.mjs --quick`. The Gmail OAuth credential-type regression test passes; quick suite failures remain the unrelated historical absolute-path findings.
-- 2026-04-25: After OAuth authorization, `bun run gmail:scan` reached Google APIs but failed because Gmail API is not enabled for project `23015884588`. Updated the scanner to classify that response as setup-required and documented that Gmail API must be enabled for the same OAuth project before scanning can succeed.
-- 2026-04-25: Verified the setup-required path with `node --check scripts/gmail-oauth-refresh.mjs`, `node --check test-all.mjs`, `git diff --check`, `bun run gmail:scan`, and `bun run gmail:update`; dashboard refresh status now records the Gmail API-disabled setup message while preserving the existing 63 local signals.
-- 2026-04-25: User enabled Gmail API for the OAuth project. Re-ran `bun run gmail:update`; the OAuth scanner completed successfully and wrote 338 parsed signals with 0 parse errors.
-- 2026-04-25: Started `bun run dashboard`; startup performed another OAuth scanner refresh successfully, updated `data/gmail-signals.jsonl` to 339 parsed signals with 0 parse errors, and served the dashboard at `http://127.0.0.1:47329/`. Verified the served HTML includes the Gmail refresh success status, Tracker view, and Gmail data.
+- 2026-04-25: After OAuth authorization, `npm run gmail:scan` reached Google APIs but failed because Gmail API is not enabled for project `23015884588`. Updated the scanner to classify that response as setup-required and documented that Gmail API must be enabled for the same OAuth project before scanning can succeed.
+- 2026-04-25: Verified the setup-required path with `node --check scripts/gmail-oauth-refresh.mjs`, `node --check test-all.mjs`, `git diff --check`, `npm run gmail:scan`, and `npm run gmail:update`; dashboard refresh status now records the Gmail API-disabled setup message while preserving the existing 63 local signals.
+- 2026-04-25: User enabled Gmail API for the OAuth project. Re-ran `npm run gmail:update`; the OAuth scanner completed successfully and wrote 338 parsed signals with 0 parse errors.
+- 2026-04-25: Started `npm run dashboard`; startup performed another OAuth scanner refresh successfully, updated `data/gmail-signals.jsonl` to 339 parsed signals with 0 parse errors, and served the dashboard at `http://127.0.0.1:47329/`. Verified the served HTML includes the Gmail refresh success status, Tracker view, and Gmail data.
 
 ## Final Outcome
 
 Stage 1 dashboard integration is implemented for optional derived Gmail signals and a pipeline-oriented Tracker UI. The Tracker tab now reads local Gmail scan output from `data/gmail-signals.jsonl` through `web/build-dashboard.mjs`, matches by `applicationNum` or exact company+role, derives active/attention counts from tracker plus Gmail-only rows, shows the configured Gmail account from `config/profile.yml`, and presents active applications as grouped pipeline cards with top opportunities and expandable email evidence.
 
-OAuth/CLI scanner status: implemented, authorized, and wired into dashboard startup. `bun run dashboard` now invokes the OAuth scanner before serving the page and writes fresh derived signals to `data/gmail-signals.jsonl`. Exact tracker mutation remains gated; the scanner writes Gmail signals only.
+OAuth/CLI scanner status: implemented, authorized, and wired into dashboard startup. `npm run dashboard` now invokes the OAuth scanner before serving the page and writes fresh derived signals to `data/gmail-signals.jsonl`. Exact tracker mutation remains gated; the scanner writes Gmail signals only.
 
 Privacy note: `data/gmail-signals.jsonl` and `data/gmail-refresh-status.json` stay gitignored, and static `web/index.html` exports omit local profile and Gmail signal data. The enriched Gmail view is available through the private local dashboard server.
 

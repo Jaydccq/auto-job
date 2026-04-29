@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const bunCmd = process.platform === "win32" ? "bun.cmd" : "bun";
+const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
 const nodeCmd = process.execPath;
 
 const host = process.env.AUTO_JOB_BRIDGE_HOST ?? "127.0.0.1";
@@ -160,7 +160,7 @@ async function prepareBridge() {
   }
 
   if (existing) {
-    const message = `Bridge at ${bridgeBase} is running but is not real/codex. Stop it and run "bun run server".`;
+    const message = `Bridge at ${bridgeBase} is running but is not real/codex. Stop it and run "npm run server".`;
     if (requireBridge) throw new Error(message);
     console.warn(message);
     console.warn("Continuing in read-only preview mode.");
@@ -174,14 +174,14 @@ async function prepareBridge() {
   if (!startBridge) {
     const message = `No real/codex bridge is reachable at ${bridgeBase}. Continuing in read-only preview mode.`;
     if (requireBridge) {
-      throw new Error(`${message} Recovery: start the bridge outside the automation sandbox with "bun run server".`);
+      throw new Error(`${message} Recovery: start the bridge outside the automation sandbox with "npm run server".`);
     }
     console.warn(message);
-    console.warn('For write/evaluation runs, start the bridge outside the automation sandbox with "bun run server".');
+    console.warn('For write/evaluation runs, start the bridge outside the automation sandbox with "npm run server".');
     return {
       writesEnabled: false,
       status: "bridge_unavailable_preview",
-      detail: `${message} Recovery: bun run server`,
+      detail: `${message} Recovery: npm run server`,
     };
   }
 
@@ -215,7 +215,7 @@ async function prepareBridge() {
     }
   }
 
-  const message = 'Bridge did not become healthy in real/codex mode. Recovery: run "bun run server".';
+  const message = 'Bridge did not become healthy in real/codex mode. Recovery: run "npm run server".';
   if (requireBridge) throw new Error(message);
   console.warn(message);
   console.warn("Continuing in read-only preview mode.");
@@ -453,10 +453,10 @@ async function runCommand(label, args) {
   const startedAt = Date.now();
   console.log("");
   console.log(`Starting source: ${label}`);
-  console.log(`${bunCmd} ${args.join(" ")}`);
+  console.log(`${npmCmd} ${args.join(" ")}`);
 
   return new Promise((resolveRun) => {
-    const child = spawn(bunCmd, args, {
+    const child = spawn(npmCmd, args, {
       cwd: repoRoot,
       env: process.env,
       stdio: ["ignore", "pipe", "pipe"],
@@ -523,10 +523,10 @@ function recoveryCommand(label, output) {
     return "bb-browser open https://www.indeed.com";
   }
   if (lower.includes("jobright") && lower.includes("login")) {
-    return "bun run newgrad-scan:login";
+    return "npm run newgrad-scan:login";
   }
   if (lower.includes("bridge") && (lower.includes("not reachable") || lower.includes("not real/codex"))) {
-    return "bun run server";
+    return "npm run server";
   }
   if (label === "linkedin" && lower.includes("no rows extracted")) {
     return "bb-browser open https://www.linkedin.com/login";
@@ -557,16 +557,27 @@ function blockedReason(output) {
 
 function highFitLines(results) {
   const lines = [];
+  const evaluationPatterns = [
+    /- (.+?)\s+[—-]\s+(.+?): (\d+(?:\.\d+)?)\/5 report=(\S+)/g,
+    /- (.+?) \| (.+?): (\d+(?:\.\d+)?)\/5 report=(\S+)/g,
+  ];
+  const priorityMarker = /\b(?:offer|high[- ]priority|priority[:=]\s*(?:high|urgent|attention)|"priority"\s*:\s*"(?:high|urgent|attention)"|urgent|attention)\b/i;
+
   for (const result of results) {
-    for (const match of result.outputTail.matchAll(/- (.+?) - (.+?): ([4-5](?:\.\d+)?)\/5 report=(\S+)/g)) {
-      lines.push(`- ${match[1]} - ${match[2]} (${match[3]}/5, ${match[4]})`);
+    for (const pattern of evaluationPatterns) {
+      for (const match of result.outputTail.matchAll(pattern)) {
+        const score = Number(match[3]);
+        if (score >= 3.5) {
+          lines.push(`- ${match[1]} - ${match[2]} (${match[3]}/5, ${match[4]})`);
+        }
+      }
     }
-    for (const match of result.outputTail.matchAll(/- (.+?) \| (.+?): ([4-5](?:\.\d+)?)\/5 report=(\S+)/g)) {
-      lines.push(`- ${match[1]} - ${match[2]} (${match[3]}/5, ${match[4]})`);
-    }
-    for (const match of result.outputTail.matchAll(/^\s*\+ (.+?) \| (.+?) \| (.+)$/gm)) {
+
+    for (const rawLine of result.outputTail.split(/\r?\n/)) {
       if (lines.length >= 12) break;
-      lines.push(`- ${match[1]} - ${match[2]} (${match[3]})`);
+      const line = rawLine.trim();
+      if (!line || line.startsWith("Top promoted rows:") || /^\d+\.\s/.test(line)) continue;
+      if (priorityMarker.test(line)) lines.push(`- ${result.label}: ${line}`);
     }
   }
   return [...new Set(lines)].slice(0, 12);
@@ -576,6 +587,7 @@ async function writeSummary(results, bridgeState) {
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const summaryPath = join(automationDir, `hourly-scan-${stamp}.md`);
   const totalCompleted = results.reduce((total, result) => total + completedEvaluations(result), 0);
+  const highFit = highFitLines(results);
   const blockers = results
     .filter((result) => !result.ok)
     .map((result) => ({
@@ -608,7 +620,7 @@ async function writeSummary(results, bridgeState) {
     "## Blockers and recovery",
     "",
     [
-      ...(bridgeState.writesEnabled ? [] : [`- bridge: ${bridgeState.status}; recovery: \`bun run server\``]),
+      ...(bridgeState.writesEnabled ? [] : [`- bridge: ${bridgeState.status}; recovery: \`npm run server\``]),
       ...(blockers.length === 0
         ? ["No login, checkpoint, rate-limit, verification, parsing, or timeout blocker detected from output tails."]
         : blockers.map((item) => `- ${item.label}: ${item.reason || "manual_recovery"}${item.recovery ? `; recovery: \`${item.recovery}\`` : ""}`)),
@@ -616,7 +628,7 @@ async function writeSummary(results, bridgeState) {
     "",
     "## Newest high-fit roles worth reviewing",
     "",
-    ...(highFitLines(results).length > 0 ? highFitLines(results) : ["No 4.0+ completed evaluations or new-offer lines detected in captured output."]),
+    ...(highFit.length > 0 ? highFit : ["No 3.5+ completed evaluations or offer/high-priority lines detected in captured output."]),
     "",
     "## Output tails",
     "",

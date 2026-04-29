@@ -7,7 +7,7 @@ description: Agent-agnostic skill for consolidating and compressing repository e
 
 This is the repository-local, agent-agnostic skill source. Runtime-specific
 mirrors such as `.claude/skills/exec-plan-consolidator/SKILL.md` must stay
-byte-for-byte synced with this file; `bun run verify:skills` enforces that.
+byte-for-byte synced with this file; `npm run verify:skills` enforces that.
 
 ## Overview
 

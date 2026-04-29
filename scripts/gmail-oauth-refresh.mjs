@@ -12,6 +12,9 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { buildApplications, writeApplications, parseDeadline } from './gmail-applications.mjs';
+
+const DEADLINE_EVENT_TYPES = new Set(['interview', 'online_assessment', 'action_required']);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -20,6 +23,7 @@ const DATA_DIR = join(ROOT, 'data');
 const CREDENTIALS_PATH = join(CONFIG_DIR, 'gmail-oauth-credentials.json');
 const TOKEN_PATH = join(CONFIG_DIR, 'gmail-oauth-token.json');
 const SIGNALS_PATH = join(DATA_DIR, 'gmail-signals.jsonl');
+const APPLICATIONS_PATH = join(DATA_DIR, 'gmail-applications.jsonl');
 const GMAIL_READONLY_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
@@ -108,6 +112,32 @@ const APPLICATION_RECEIPT_PATTERNS = [
   /\bsubmitted your application\b/i,
 ];
 
+const HARD_REJECTION_PATTERNS = [
+  /\bnot moving forward\b/i,
+  /\bwill not be moving forward\b/i,
+  /\bnot selected (?:for|to|at)\b/i,
+  /\bnot been selected\b/i,
+  /\bdecided not to proceed\b/i,
+  /\b(?:filled the position|position has been filled|position has been put on hold|closed the role|role has been (?:closed|filled|put on hold))\b/i,
+  /\bunable to (?:move forward|proceed)\b/i,
+  /\bnot able to offer\b/i,
+  /\bregret to inform\b/i,
+  /\bmoving in a different direction\b/i,
+  /\b(?:will not(?: be)?|we are not|are not)\s+advancing\b/i,
+];
+
+const SOFT_REJECTION_PATTERNS = [
+  /\bunfortunately\b/i,
+  /\bnot (?:an? )?(?:ideal|right) fit\b/i,
+  /\bother candidates\b/i,
+  /\bmore aligned with\b/i,
+];
+
+const HIRING_NOUN_PATTERN = /\b(?:application|candidacy|interview|role|position|opportunity|opening|requisition)\b/i;
+
+const HARD_EVENT_PHRASE_PATTERN = /\b(offer letter|job offer|interview is scheduled|online assessment)\b/i;
+const SUBJECT_MATCH_PATTERN = /\b(application update|interview|offer|assessment)\b/i;
+
 const APPLICATION_REVIEW_ONLY_PATTERNS = [
   /\bcurrently reviewing\b/i,
   /\bwill be reviewed\b/i,
@@ -195,15 +225,15 @@ function usage() {
   return `auto-job Gmail OAuth scanner
 
 Usage:
-  bun run gmail:auth
-  bun run gmail:scan [--max-messages 250] [--query "..."] [--dry-run]
+  npm run gmail:auth
+  npm run gmail:scan [--max-messages 250] [--query "..."] [--dry-run]
   node scripts/gmail-oauth-refresh.mjs auth
   node scripts/gmail-oauth-refresh.mjs scan
 
 Setup:
   1. Create a Google Cloud OAuth client with Application type "Desktop app".
   2. Save the downloaded client JSON to config/gmail-oauth-credentials.json.
-  3. Run bun run gmail:auth and approve gmail.readonly access.
+  3. Run npm run gmail:auth and approve gmail.readonly access.
 
 The scanner writes derived hiring facts to data/gmail-signals.jsonl.
 `;
@@ -265,12 +295,12 @@ export function readOAuthClient(path = CREDENTIALS_PATH) {
   const raw = readJson(path);
   if (!raw) {
     throw setupRequired(
-      `Missing ${path}. Save a Google OAuth Desktop client JSON there, then run bun run gmail:auth.`
+      `Missing ${path}. Save a Google OAuth Desktop client JSON there, then run npm run gmail:auth.`
     );
   }
   if (raw.web && !raw.installed) {
     throw setupRequired(
-      `Invalid OAuth client in ${path}: found a Web application client. Create an OAuth client with Application type "Desktop app", download that JSON, replace this file, then run bun run gmail:auth again.`
+      `Invalid OAuth client in ${path}: found a Web application client. Create an OAuth client with Application type "Desktop app", download that JSON, replace this file, then run npm run gmail:auth again.`
     );
   }
   const client = raw.installed || raw;
@@ -419,7 +449,7 @@ function readToken() {
   const token = readJson(TOKEN_PATH);
   if (!token?.refresh_token) {
     throw setupRequired(
-      `Missing Gmail OAuth token. Run bun run gmail:auth first; token path: ${TOKEN_PATH}`
+      `Missing Gmail OAuth token. Run npm run gmail:auth first; token path: ${TOKEN_PATH}`
     );
   }
   return token;
@@ -463,7 +493,7 @@ async function gmailFetch(path, token, params = {}) {
   if (!response.ok) {
     const message = json.error?.message || json.error || `Gmail API HTTP ${response.status}`;
     if (isGmailApiSetupError(message)) {
-      throw setupRequired(`${message}\nEnable Gmail API for the same Google Cloud project as config/gmail-oauth-credentials.json, then retry bun run gmail:scan.`);
+      throw setupRequired(`${message}\nEnable Gmail API for the same Google Cloud project as config/gmail-oauth-credentials.json, then retry npm run gmail:scan.`);
     }
     throw new Error(message);
   }
@@ -523,6 +553,13 @@ function collectTextParts(part, out = []) {
   return out;
 }
 
+const ZERO_WIDTH_AND_INVISIBLE_RE = /[͏​‌‍⁠﻿]/g;
+
+export function sanitizeMessageText(value) {
+  if (typeof value !== 'string' || !value) return '';
+  return value.replace(ZERO_WIDTH_AND_INVISIBLE_RE, '');
+}
+
 function compactText(text = '', max = 420) {
   const clean = text.replace(/\s+/g, ' ').trim();
   return clean.length > max ? `${clean.slice(0, max - 1).trim()}...` : clean;
@@ -556,6 +593,33 @@ function isTrustedRecruitingSender(from = {}) {
     return true;
   }
   return /\b(recruiting|talent acquisition|candidate experience|careers)\b/i.test(`${from.name || ''} ${from.email || ''}`);
+}
+
+const ALL_EVENT_TYPES = new Set([
+  'applied',
+  'responded',
+  'online_assessment',
+  'interview',
+  'offer',
+  'rejected',
+  'action_required',
+]);
+
+const RESTRICTED_SENDER_DOMAINS = new Map([
+  ['linkedin.com', new Set(['applied', 'responded'])],
+]);
+
+export function senderClassificationPolicy(from = {}) {
+  const domain = emailDomain(from.email || '');
+  for (const [restrictedDomain, allowedEvents] of RESTRICTED_SENDER_DOMAINS) {
+    if (domain === restrictedDomain || domain.endsWith(`.${restrictedDomain}`)) {
+      return { allowedEvents: new Set(allowedEvents), isTrusted: false };
+    }
+  }
+  return {
+    allowedEvents: new Set(ALL_EVENT_TYPES),
+    isTrusted: isTrustedRecruitingSender(from),
+  };
 }
 
 function hasPersonalHiringContext(text = '') {
@@ -622,6 +686,24 @@ function cleanCompany(value = '') {
     .trim();
 }
 
+const ATS_SENDER_NAME_SUFFIX_RE = /\s+(?:hiring team|recruiting team|recruiting|talent acquisition|talent team|talent|careers|candidate experience|people team|hr team|human resources)\s*$/i;
+
+export function companyFromAtsSenderName(from = {}) {
+  const domain = emailDomain(from.email || '');
+  const isAts = TRUSTED_RECRUITING_DOMAINS.some(
+    (trusted) => domain === trusted || domain.endsWith(`.${trusted}`)
+  );
+  if (!isAts) return '';
+  const rawName = (from.name || '').trim();
+  if (!rawName) return '';
+  if (GENERIC_SENDER_NAMES.has(rawName.toLowerCase())) return '';
+  const stripped = rawName.replace(ATS_SENDER_NAME_SUFFIX_RE, '').trim();
+  if (!stripped) return '';
+  if (GENERIC_SENDER_NAMES.has(stripped.toLowerCase())) return '';
+  if (isGenericCompany(stripped)) return '';
+  return cleanCompany(stripped);
+}
+
 function cleanRole(value = '') {
   return value
     .replace(/\s+(position|role|job|opening)$/i, '')
@@ -637,11 +719,34 @@ function firstPattern(patterns, text) {
   return '';
 }
 
-function isGenericCompany(value = '') {
-  return !value ||
-    /^(jobvite|ats|greenhouse|workday|myworkday|rippling|unknown company)$/i.test(value) ||
-    /^(?:an?\s+)?unattended mailbox\b/i.test(value) ||
-    /\b(position|role|job|opening)\s+at\b/i.test(value);
+const ROLE_NOUN_PATTERN = /^(?:senior\s+|staff\s+|principal\s+|junior\s+|lead\s+)?(?:software|data|machine learning|ml|ai|backend|frontend|full[- ]?stack|platform|systems?|security|devops|site reliability|infrastructure|product|research|applied)\s+(?:engineer|scientist|developer|manager|analyst|researcher|intern)s?$/i;
+// "The" alone is not a fragment — real companies start with "The" (Disney, Home Depot, Trade Desk).
+// Only treat "the X" as a fragment when X is lowercase prose or a known stopword.
+const PREPOSITION_FRAGMENT_PATTERN = /^(?:this|that|an?|our|your|their|his|her)\b/i;
+const THE_FRAGMENT_PATTERN = /^the\s+(?:[a-z]|ideal|next|right|best|perfect|first|last|new|same|only|role|position|opportunity|opening|candidate|team|company|hiring)\b/;
+const ROLE_AT_COMPANY_PATTERN = /\b(?:engineer|scientist|developer|manager|analyst|researcher|intern)\s+(?:at|with|for)\s+/i;
+
+export function isGenericCompany(value = '') {
+  if (!value) return true;
+  if (/^(jobvite|ats|greenhouse|workday|myworkday|rippling|unknown company)$/i.test(value)) return true;
+  if (/^(?:an?\s+)?unattended mailbox\b/i.test(value)) return true;
+  if (/\b(position|role|job|opening)\s+at\b/i.test(value)) return true;
+  if (ROLE_NOUN_PATTERN.test(value.trim())) return true;
+  if (PREPOSITION_FRAGMENT_PATTERN.test(value.trim())) return true;
+  if (THE_FRAGMENT_PATTERN.test(value.trim())) return true;
+  if (ROLE_AT_COMPANY_PATTERN.test(value)) return true;
+  return false;
+}
+
+export function computeConfidence(features = {}) {
+  let score = 0.2;
+  if (features.isTrustedAtsSender) score += 0.30;
+  if (features.hasExplicitCompany) score += 0.20;
+  if (features.hasExplicitRole) score += 0.15;
+  if (features.hasHardEventPhrase) score += 0.15;
+  if (features.hasWeakEventPhrase && !features.hasHardEventPhrase) score += 0.05;
+  if (features.hasExplicitSubjectMatch) score += 0.10;
+  return Math.max(0, Math.min(1, Number(score.toFixed(2))));
 }
 
 function isGenericRole(value = '') {
@@ -650,43 +755,63 @@ function isGenericRole(value = '') {
     /\b(application has been received|your application seems|we will contact you|requirements of the|needs of the team|role\. in the meantime|world who help|first 90 days)\b/i.test(value);
 }
 
-export function classifyEvent({ subject = '', text = '', from = {} }) {
+export function classifyEvent({ subject = '', text = '', from = {}, policy = null }) {
   const haystack = `${subject}\n${text}`;
   const lower = haystack.toLowerCase();
-  const trustedSender = isTrustedRecruitingSender(from);
+  const resolvedPolicy = policy || senderClassificationPolicy(from);
+  const trustedSender = resolvedPolicy.isTrusted;
   const personalHiringContext = hasPersonalHiringContext(haystack);
   const weakHiringContext = hasWeakHiringContext(haystack);
-  const hiringContext = personalHiringContext || (trustedSender && weakHiringContext);
+  const hardRejectionPresent = hasAnyPattern(HARD_REJECTION_PATTERNS, haystack);
+  const hiringContext = personalHiringContext || hardRejectionPresent || (trustedSender && weakHiringContext);
 
   if (hasAnyPattern(NEWSLETTER_NOISE_PATTERNS, subject) && !hasDirectSignalContext(subject)) return '';
   if (!hiringContext || isLikelyMailboxNoise({ text: haystack, from })) return '';
 
+  const decide = (event) => (resolvedPolicy.allowedEvents.has(event) ? event : '');
+
   if (/\b(offer letter|job offer|employment offer|extend(?:ing)? (?:you )?an offer|offer for (?:the )?(?:position|role|job|opening))\b/.test(lower)) {
-    return 'offer';
+    const result = decide('offer');
+    if (result) return result;
   }
-  if (/\b(unfortunately|not moving forward|will not be moving forward|not selected|decided not to proceed|filled the position|closed the role|position has been filled)\b/.test(lower)) {
-    return 'rejected';
+  const hasHardRejection = hasAnyPattern(HARD_REJECTION_PATTERNS, lower);
+  const hasSoftRejection = hasAnyPattern(SOFT_REJECTION_PATTERNS, lower);
+  if (hasHardRejection) {
+    const result = decide('rejected');
+    if (result) return result;
+  }
+  if (hasSoftRejection && HIRING_NOUN_PATTERN.test(lower) &&
+      !hasAnyPattern(APPLICATION_RECEIPT_PATTERNS, lower)) {
+    const result = decide('rejected');
+    if (result) return result;
   }
   if (isApplicationReviewOnly(haystack)) {
-    return 'applied';
+    const result = decide('applied');
+    if (result) return result;
   }
   if (/\b(interview invitation|your interview|interview schedul(?:e|ing|ed)|interview is scheduled|meeting is scheduled|self-schedule|schedule (?:an? |your |the )?(?:interview|call|phone screen)|google meet|exploratory call|phone screen|onsite|technical screen)\b/.test(lower)) {
-    return 'interview';
+    const result = decide('interview');
+    if (result) return result;
   }
   if (/\b(online assessment|coding challenge|hackerrank|codesignal|oa\b|complete your test|assessment for (?:the )?(?:position|role|job))\b/.test(lower)) {
-    return 'online_assessment';
+    const result = decide('online_assessment');
+    if (result) return result;
   }
   if (/\b(action required|please complete|deadline|due by|requires your attention)\b/.test(lower)) {
-    return 'action_required';
+    const result = decide('action_required');
+    if (result) return result;
   }
   if (/\b(received your application|thank you for applying|application received|we received your application|submitted your application)\b/.test(lower)) {
-    return 'applied';
+    const result = decide('applied');
+    if (result) return result;
   }
   if (/\bapplication status\b/.test(lower)) {
-    return 'responded';
+    const result = decide('responded');
+    if (result) return result;
   }
   if (/\b(talent acquisition|next step|invite you|would like to speak|would like to schedule|would like to connect)\b/.test(lower)) {
-    return 'responded';
+    const result = decide('responded');
+    if (result) return result;
   }
   return '';
 }
@@ -695,12 +820,14 @@ export function extractSignalFromMessage(message) {
   const headers = headersFor(message);
   const from = parseEmail(headers.from || '');
   const subject = headers.subject || '';
-  const bodyText = compactText(collectTextParts(message.payload).join('\n'), 4000);
+  const bodyText = compactText(sanitizeMessageText(collectTextParts(message.payload).join('\n')), 4000);
   const searchText = `${subject}\n${bodyText}`;
-  const eventType = classifyEvent({ subject, text: bodyText, from });
+  const policy = senderClassificationPolicy(from);
+  const eventType = classifyEvent({ subject, text: bodyText, from, policy });
   if (!eventType) return null;
 
   const companyCandidates = [
+    companyFromAtsSenderName(from),
     cleanCompany(firstPattern([
       /application for\s+.+?\s+at\s+([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\n|\s{2,}|$)/i,
       /(?:thank you|thanks) for applying to\s+([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\||\n|\s{2,}|$)/i,
@@ -716,7 +843,7 @@ export function extractSignalFromMessage(message) {
     ], searchText)),
     domainCompany(from.email),
     senderNameCompany(from.name),
-  ].filter((candidate) => !isGenericCompany(candidate));
+  ].filter((candidate) => candidate && !isGenericCompany(candidate));
   const company = companyCandidates[0] || '';
 
   const roleCandidates = [
@@ -739,7 +866,22 @@ export function extractSignalFromMessage(message) {
       ? new Date(headers.date).toISOString()
       : new Date().toISOString();
 
-  return {
+  const confidence = computeConfidence({
+    isTrustedAtsSender: policy.isTrusted,
+    hasExplicitCompany: Boolean(company) && !isGenericCompany(company),
+    hasExplicitRole: Boolean(extractedRole),
+    hasHardEventPhrase: hasAnyPattern(HARD_REJECTION_PATTERNS, searchText) ||
+      HARD_EVENT_PHRASE_PATTERN.test(searchText),
+    hasWeakEventPhrase: hasWeakHiringContext(searchText),
+    hasExplicitSubjectMatch: hasAnyPattern(APPLICATION_RECEIPT_PATTERNS, subject) ||
+      SUBJECT_MATCH_PATTERN.test(subject),
+  });
+
+  const dueAt = DEADLINE_EVENT_TYPES.has(eventType)
+    ? parseDeadline(searchText, new Date(receivedAt))
+    : '';
+
+  const signal = {
     id: `${message.id}:${eventType}`,
     company: company || 'Unknown Company',
     role,
@@ -749,12 +891,14 @@ export function extractSignalFromMessage(message) {
     recentContact,
     sender: headers.from || '',
     subject,
-    summary: compactText(message.snippet || bodyText, 220),
-    snippet: compactText(message.snippet || bodyText, 220),
+    summary: compactText(sanitizeMessageText(message.snippet || bodyText), 220),
+    snippet: compactText(sanitizeMessageText(message.snippet || bodyText), 220),
     messageId: message.id,
     threadId: message.threadId,
-    confidence: company ? 0.78 : 0.52,
+    confidence,
   };
+  if (dueAt) signal.dueAt = dueAt;
+  return signal;
 }
 
 export function parseGmailSignals(filePath = SIGNALS_PATH) {
@@ -785,11 +929,21 @@ function normalizeEventType(value = '') {
   return normalized;
 }
 
+const HARD_STORED_EVENTS = new Set(['offer', 'rejected', 'interview', 'online_assessment']);
+
 export function isValidStoredSignal(signal = {}) {
   const expectedEvent = normalizeEventType(signal.eventType || signal.type || signal.status || '');
   if (!expectedEvent) return false;
   if (isGenericCompany(signal.company || '') || isGenericRole(signal.role || '')) return false;
   const from = parseEmail(signal.sender || signal.from || '');
+  // Hard-stored events represent past classifier judgment we should trust, EXCEPT when the
+  // current sender policy denies that event type — those are legacy misclassifications
+  // (e.g. LinkedIn 'rejected' rows stored before sender policy gating shipped) that must
+  // be cleaned up rather than trusted.
+  if (HARD_STORED_EVENTS.has(expectedEvent)) {
+    const policy = senderClassificationPolicy(from);
+    return policy.allowedEvents.has(expectedEvent);
+  }
   const subject = signal.subject || '';
   const text = [
     signal.summary,
@@ -838,10 +992,14 @@ async function runScan(options) {
   const merged = mergeSignals(existingSignals, signals);
   if (!options.dryRun) writeSignals(merged);
 
+  const applications = buildApplications(merged, new Date());
+  if (!options.dryRun) writeApplications(applications, APPLICATIONS_PATH);
+
   console.log(`[gmail-oauth] scanned ${seen.size} messages`);
   console.log(`[gmail-oauth] extracted ${signals.length} signals`);
   console.log(`[gmail-oauth] retained ${retainedExistingCount}/${existingSignals.length} existing signals after strict validation`);
   console.log(`[gmail-oauth] ${options.dryRun ? 'would write' : 'wrote'} ${merged.length} total signals to ${SIGNALS_PATH}`);
+  console.log(`[gmail-oauth] ${options.dryRun ? 'would write' : 'wrote'} ${applications.length} applications to ${APPLICATIONS_PATH}`);
   if (existsSync(SIGNALS_PATH)) {
     console.log(`[gmail-oauth] current signal file mtime ${statSync(SIGNALS_PATH).mtime.toISOString()}`);
   }

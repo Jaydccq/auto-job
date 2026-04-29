@@ -1119,7 +1119,7 @@ node -e "JSON.parse(require('fs').readFileSync('package.json','utf8')); console.
 Expected: `valid`
 
 ```bash
-bun run cover-letter 2>&1 | head -3
+npm run cover-letter 2>&1 | head -3
 ```
 
 Expected: `Usage: node generate-cover-letter.mjs <content.json> <output.pdf> ...` (the script's own usage message — confirms it's wired but rejects empty args).
@@ -1130,7 +1130,7 @@ Expected: `Usage: node generate-cover-letter.mjs <content.json> <output.pdf> ...
 git add package.json
 git commit -m "chore: add cover-letter package script
 
-Lets users run 'bun run cover-letter -- input.json output.pdf'
+Lets users run 'npm run cover-letter -- input.json output.pdf'
 as a more discoverable alias for the underlying node command."
 ```
 
@@ -1219,7 +1219,7 @@ cd "$(git rev-parse --show-toplevel)"  # Run from auto-job project root
 rm -f /tmp/test-cover-letter.pdf /tmp/cover-letter-acme-ai.html
 
 # Via package script
-bun run cover-letter -- examples/sample-cover-letter.json /tmp/test-cover-letter.pdf
+npm run cover-letter -- examples/sample-cover-letter.json /tmp/test-cover-letter.pdf
 ```
 
 Expected: full output ending with `✅ Cover letter ready: /tmp/test-cover-letter.pdf` and `Pages: 1`.
@@ -1301,7 +1301,7 @@ single-page constraint when content is at the upper word budget']"
 The feature is complete when ALL of the following are true:
 
 - [ ] `node generate-cover-letter.mjs examples/sample-cover-letter.json /tmp/test.pdf` produces a 1-page PDF
-- [ ] `bun run cover-letter -- examples/sample-cover-letter.json /tmp/test.pdf` does the same
+- [ ] `npm run cover-letter -- examples/sample-cover-letter.json /tmp/test.pdf` does the same
 - [ ] `node test-all.mjs --quick` reports `failed: 0`
 - [ ] `git diff generate-pdf.mjs cv.md config/profile.yml modes/_profile.md` is empty
 - [ ] `grep -c "cover-letter\|Cover Letter" .claude/skills/auto-job/SKILL.md` returns ≥ 4

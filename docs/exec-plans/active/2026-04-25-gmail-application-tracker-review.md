@@ -47,7 +47,7 @@ Identify active application rows from the repository tracker and summarize fresh
 - 2026-04-25: Read 15 shortlisted Gmail messages for Arista, Remitly, Arrivia/Provn, Uber, Appian, Foresight Health, Qualcomm, LendingClub, New Lantern, Disney, and Manulife.
 - 2026-04-25: Updated exact tracker matches from Gmail signals: Grant Street Group, Verkada, and KeyBank to `Applied`; LendingClub to `Rejected`.
 - 2026-04-25: Verified tracker health with `node verify-pipeline.mjs`: 0 errors; 2 existing duplicate warnings remained.
-- 2026-04-25: Rebuilt dashboard with `bun run dashboard:build`; `web/index.html` now reflects the tracker updates.
+- 2026-04-25: Rebuilt dashboard with `npm run dashboard:build`; `web/index.html` now reflects the tracker updates.
 
 ## Key Decisions
 

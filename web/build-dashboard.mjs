@@ -133,6 +133,23 @@ export function parseProfile(filePath = join(ROOT, 'config', 'profile.yml')) {
   };
 }
 
+export function parseGmailApplications(filePath = join(ROOT, 'data', 'gmail-applications.jsonl')) {
+  const raw = readOr(filePath);
+  const result = { rows: [], errors: [] };
+  if (!raw.trim()) return result;
+  raw.split('\n').forEach((line, index) => {
+    const text = line.trim();
+    if (!text || text.startsWith('#')) return;
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object') result.rows.push(parsed);
+    } catch (error) {
+      result.errors.push({ line: index + 1, error: error.message });
+    }
+  });
+  return result;
+}
+
 export function parseGmailRefreshStatus(filePath = join(ROOT, 'data', 'gmail-refresh-status.json')) {
   const raw = readOr(filePath).trim();
   if (!raw) return null;
@@ -158,6 +175,7 @@ export function buildDashboardData({ includeGmailSignals = false, includeProfile
     scanHistory: parseScanHistory(),
     keywordStats: parseKeywordStats(),
     gmailSignals: includeGmailSignals ? parseGmailSignals() : { rows: [], errors: [] },
+    gmailApplications: includeGmailSignals ? parseGmailApplications() : { rows: [], errors: [] },
     gmailRefresh: includeGmailSignals ? parseGmailRefreshStatus() : null
   };
 }

@@ -71,7 +71,7 @@ function usage(): string {
   return `auto-job rerun historical newgrad enrich
 
 Usage:
-  bun run newgrad-rerun-history -- [options]
+  npm run newgrad-rerun-history -- [options]
 
 Options:
   --limit <n>             Number of historical candidates to rerun. Default: ${DEFAULT_LIMIT}

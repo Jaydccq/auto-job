@@ -59,6 +59,7 @@ const DEFAULT_EVALUATION_QUEUE_DELAY_MS = 2100;
 const DEFAULT_EVALUATION_WAIT_TIMEOUT_MS = 20 * 60_000;
 const SCORE_CHUNK_SIZE = 50;
 const ENRICH_CHUNK_SIZE = 3;
+const DETAIL_FETCH_CONCURRENCY = 5;
 
 type Source = "builtin" | "indeed";
 
@@ -132,8 +133,8 @@ function usage(): string {
   return `auto-job browser-backed job-board scan
 
 Usage:
-  bun run builtin-scan -- [options]
-  bun run indeed-scan -- [options]
+  npm run builtin-scan -- [options]
+  npm run indeed-scan -- [options]
 
 Options:
   --source <builtin|indeed>       Source, normally supplied by package script.
@@ -525,7 +526,7 @@ async function assertBbBrowserAvailable(): Promise<void> {
 async function readBridgeToken(): Promise<string> {
   const tokenPath = join(repoRoot, "apps", "server", ".bridge-token");
   if (!existsSync(tokenPath)) {
-    throw new Error("bridge token not found; start the bridge with bun run server");
+    throw new Error("bridge token not found; start the bridge with npm run server");
   }
   return (await readFile(tokenPath, "utf8")).trim();
 }
@@ -614,20 +615,29 @@ async function scoreRows(
 }
 
 async function enrichRows(source: Source, promotedRows: readonly ScoredRow[]): Promise<EnrichedRow[]> {
-  const rows: EnrichedRow[] = [];
+  const rows: EnrichedRow[] = new Array(promotedRows.length);
+  const queue = promotedRows.map((scored, index) => ({ scored, index }));
 
-  for (const scored of promotedRows) {
-    const description = await captureDetailText(source, scored.row.detailUrl, scored.row.qualifications ?? "").catch((error) => {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`Detail text fetch failed for ${scored.row.company} - ${scored.row.title}: ${message}`);
-      return sanitizeJobBoardDetailText(source, "", scored.row.qualifications ?? "");
-    });
-    console.log(`Detail text: ${scored.row.company} - ${scored.row.title}: ${description.length} chars`);
-    rows.push({
-      row: scored,
-      detail: detailFromRow(source, scored.row, description),
-    });
+  async function worker(): Promise<void> {
+    while (queue.length > 0) {
+      const next = queue.shift();
+      if (!next) return;
+      const { scored, index } = next;
+      const description = await captureDetailText(source, scored.row.detailUrl, scored.row.qualifications ?? "").catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`Detail text fetch failed for ${scored.row.company} - ${scored.row.title}: ${message}`);
+        return sanitizeJobBoardDetailText(source, "", scored.row.qualifications ?? "");
+      });
+      console.log(`Detail text: ${scored.row.company} - ${scored.row.title}: ${description.length} chars`);
+      rows[index] = {
+        row: scored,
+        detail: detailFromRow(source, scored.row, description),
+      };
+    }
   }
+
+  const workerCount = Math.min(DETAIL_FETCH_CONCURRENCY, promotedRows.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
   return rows;
 }

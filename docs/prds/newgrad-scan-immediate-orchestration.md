@@ -25,7 +25,7 @@ changing the core funnel.
 
 ## Users
 
-- The operator running `bun run newgrad-scan`.
+- The operator running `npm run newgrad-scan`.
 - Future agents debugging scan failures or threshold behavior.
 - The candidate reviewing why a role was evaluated, skipped, or held for review.
 
@@ -84,7 +84,7 @@ changing the core funnel.
 
 ## Acceptance Criteria
 
-- Running `bun run newgrad-scan -- --score-only --limit 1` creates a scan-run
+- Running `npm run newgrad-scan -- --score-only --limit 1` creates a scan-run
   JSONL and summary without queueing evaluations.
 - Unit tests cover event writer behavior and summary aggregation.
 - Bridge tests cover row-level detail skip output.

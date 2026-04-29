@@ -17,7 +17,7 @@ function checkNode() {
     : {
         pass: false,
         label: `Node >= 20 required (have ${process.versions.node})`,
-        fix: ["Install Node 20+ from https://nodejs.org or use Bun for everything."],
+        fix: ["Install Node 20+ from https://nodejs.org or use npm for everything."],
       };
 }
 
@@ -29,13 +29,13 @@ async function checkPlaywright() {
     return {
       pass: false,
       label: "Playwright Chromium not installed",
-      fix: ["Run: bunx playwright install chromium"],
+      fix: ["Run: npx playwright install chromium"],
     };
   } catch {
     return {
       pass: false,
       label: "Playwright not available",
-      fix: ["Run: bun install"],
+      fix: ["Run: npm install"],
     };
   }
 }
@@ -43,7 +43,7 @@ async function checkPlaywright() {
 function checkInstall() {
   return existsSync(join(repoRoot, "node_modules"))
     ? { pass: true, label: "Top-level dependencies installed" }
-    : { pass: false, label: "Dependencies missing", fix: ["Run: bun install"] };
+    : { pass: false, label: "Dependencies missing", fix: ["Run: npm install"] };
 }
 
 function checkUserFile(rel, fix) {
@@ -99,10 +99,10 @@ async function main() {
 
   console.log("");
   if (failures > 0) {
-    console.log(`${failures} issue(s) found. Fix and rerun \`bun run doctor\`.`);
+    console.log(`${failures} issue(s) found. Fix and rerun \`npm run doctor\`.`);
     process.exit(1);
   }
-  console.log("All checks passed. Start with: bun run server");
+  console.log("All checks passed. Start with: npm run server");
   process.exit(0);
 }
 

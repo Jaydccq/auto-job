@@ -21,7 +21,7 @@ Cadence overrides may live in `modes/_profile.md` — read those first.
 
 Last-touch is computed from the row's note column when present
 (`last-touch:YYYY-MM-DD`), otherwise from the file mtime of the report.
-`bun run followup` (the legacy CLI) prints structured JSON; this mode treats
+`npm run followup` (the legacy CLI) prints structured JSON; this mode treats
 that as the source of truth.
 
 ## Drafting the message

@@ -1604,9 +1604,10 @@
   <button data-tab="apply-next" class="active"><span class="idx">01</span>Apply Next</button>
   <button data-tab="reports"><span class="idx">02</span>Reports</button>
   <button data-tab="tracker"><span class="idx">03</span>Tracker</button>
-  <button data-tab="pipeline"><span class="idx">04</span>Pipeline</button>
-  <button data-tab="scan"><span class="idx">05</span>Scan Hist.</button>
-  <button data-tab="keywords"><span class="idx">06</span>Keywords</button>
+  <button data-tab="apps"><span class="idx">04</span>Applications</button>
+  <button data-tab="pipeline"><span class="idx">05</span>Pipeline</button>
+  <button data-tab="scan"><span class="idx">06</span>Scan Hist.</button>
+  <button data-tab="keywords"><span class="idx">07</span>Keywords</button>
 </nav>
 
 <section id="tab-apply-next" class="pane active">
@@ -1969,6 +1970,47 @@
     </table>
   </div>
   </template>
+</section>
+
+<section id="tab-apps" class="pane">
+  <div class="apply-shell">
+    <section class="apply-overview">
+      <div class="apply-overview-copy">
+        <div class="kicker">Gmail Applications</div>
+        <h2>One row per email thread, not per email.</h2>
+        <p>Aggregated from <code>data/gmail-applications.jsonl</code>. Each row is a thread with a derived state (offer / rejected / interview / online_assessment / responded / applied), an attention level, a chronological timeline of events, and a chosen company / role / human contact across all signals on the thread.</p>
+      </div>
+      <div class="apply-stats">
+        <div class="apply-stat"><strong id="apps-total-n">0</strong><span>Applications</span></div>
+        <div class="apply-stat"><strong id="apps-urgent-n">0</strong><span>Urgent</span></div>
+        <div class="apply-stat"><strong id="apps-action-n">0</strong><span>Action</span></div>
+        <div class="apply-stat"><strong id="apps-stale-n">0</strong><span>Stale</span></div>
+      </div>
+    </section>
+
+    <section class="apply-band">
+      <div class="apply-band-head">
+        <h3>Application Threads</h3>
+        <p id="apps-meta">Sorted by attention priority, then most recent activity</p>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="apps-table" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:8px 12px; border-bottom:1px solid var(--ink-soft);">Att.</th>
+              <th style="text-align:left; padding:8px 12px; border-bottom:1px solid var(--ink-soft);">State</th>
+              <th style="text-align:left; padding:8px 12px; border-bottom:1px solid var(--ink-soft);">Company</th>
+              <th style="text-align:left; padding:8px 12px; border-bottom:1px solid var(--ink-soft);">Role</th>
+              <th style="text-align:right; padding:8px 12px; border-bottom:1px solid var(--ink-soft);">Msgs</th>
+              <th style="text-align:left; padding:8px 12px; border-bottom:1px solid var(--ink-soft);">Last update</th>
+              <th style="text-align:left; padding:8px 12px; border-bottom:1px solid var(--ink-soft);">Reason</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 </section>
 
 <section id="tab-pipeline" class="pane">
@@ -2815,7 +2857,7 @@ function renderApplyNext() {
         generatedApplyDocs[applyDocKey(row.key, type)] = result.doc;
         setApplyDocStatus(row.key, type, `${label} generated: ${result.doc.filename}`);
       } catch (error) {
-        setApplyDocStatus(row.key, type, `${label} failed. Start with bun run dashboard. ${error.message}`);
+        setApplyDocStatus(row.key, type, `${label} failed. Start with npm run dashboard. ${error.message}`);
       }
       renderApplyNext();
     };
@@ -3384,7 +3426,7 @@ function renderFullEvaluationAction(row, decision) {
   const status = fullEvalStatus[key];
   const canRun = decision === 'manual_review' && row.reportPath;
   const disabledReason = !DASHBOARD_TOKEN
-    ? 'Start with bun run server'
+    ? 'Start with npm run server'
     : !row.reportPath
       ? 'No dossier'
       : '';
@@ -3713,19 +3755,78 @@ document.querySelectorAll('#scan-table .sortable').forEach(th => {
 });
 bindFilters(['scan-search', 'scan-portal', 'scan-company', 'scan-status', 'scan-date-from', 'scan-date-to', 'scan-sort'], renderScan, 'scan');
 
+// ===== Applications tab (Phase 2/3) =====
+const ATTENTION_RANK = { urgent: 0, action: 1, stale: 2, info: 3 };
+const APP_STATE_LABELS = {
+  offer: 'Offer',
+  rejected: 'Rejected',
+  interview: 'Interview',
+  online_assessment: 'OA',
+  responded: 'Responded',
+  applied: 'Applied',
+  '': '—',
+};
+
+function renderApplications() {
+  const rows = (D.gmailApplications && D.gmailApplications.rows) || [];
+  const total = rows.length;
+  const counts = { urgent: 0, action: 0, stale: 0, info: 0 };
+  for (const r of rows) {
+    const lvl = (r.attention && r.attention.level) || 'info';
+    if (counts[lvl] != null) counts[lvl] += 1;
+  }
+  $('apps-total-n').textContent = total;
+  $('apps-urgent-n').textContent = counts.urgent;
+  $('apps-action-n').textContent = counts.action;
+  $('apps-stale-n').textContent = counts.stale;
+
+  const sorted = [...rows].sort((a, b) => {
+    const la = (a.attention && a.attention.level) || 'info';
+    const lb = (b.attention && b.attention.level) || 'info';
+    const ra = ATTENTION_RANK[la] ?? 9;
+    const rb = ATTENTION_RANK[lb] ?? 9;
+    if (ra !== rb) return ra - rb;
+    return String(b.lastUpdateAt || '').localeCompare(String(a.lastUpdateAt || ''));
+  });
+
+  const tbody = document.querySelector('#apps-table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = sorted.map((r) => {
+    const lvl = (r.attention && r.attention.level) || 'info';
+    const reason = (r.attention && r.attention.reason) || '';
+    const state = r.currentState || '';
+    const stateLabel = APP_STATE_LABELS[state] ?? state;
+    const lastUpdate = r.lastUpdateAt ? r.lastUpdateAt.slice(0, 10) : '';
+    const company = esc(r.company || '');
+    const role = esc(r.role || '');
+    const msgs = Number(r.messageCount || 0);
+    return `
+      <tr>
+        <td style="padding:8px 12px; border-bottom:1px solid var(--ink-soft);"><span class="badge ${lvl === 'urgent' ? 'gmail_attention' : ''}" style="text-transform:uppercase; font-size:11px;">${esc(lvl)}</span></td>
+        <td style="padding:8px 12px; border-bottom:1px solid var(--ink-soft);"><span class="badge">${esc(stateLabel)}</span></td>
+        <td style="padding:8px 12px; border-bottom:1px solid var(--ink-soft); font-weight:600;">${company}</td>
+        <td style="padding:8px 12px; border-bottom:1px solid var(--ink-soft);">${role}</td>
+        <td style="padding:8px 12px; border-bottom:1px solid var(--ink-soft); text-align:right;">${msgs}</td>
+        <td style="padding:8px 12px; border-bottom:1px solid var(--ink-soft); white-space:nowrap;">${esc(lastUpdate)}</td>
+        <td style="padding:8px 12px; border-bottom:1px solid var(--ink-soft); color:var(--ink-soft); font-size:13px;">${esc(reason)}</td>
+      </tr>`;
+  }).join('') || '<tr><td colspan="7" style="padding:24px; text-align:center; color:var(--ink-soft);">No applications yet — run <code>npm run gmail:scan</code> to populate.</td></tr>';
+}
+
 // Wire toggles AFTER render functions defined
 wireToggles();
 renderApplyNext();
 renderReports();
 renderTracker();
+renderApplications();
 renderPipeline();
 renderScan();
 renderKeywordStats();
 
-// Keyboard navigation for tabs: 1-6
+// Keyboard navigation for tabs: 1-7
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-  const keys = { '1': 'apply-next', '2': 'reports', '3': 'tracker', '4': 'pipeline', '5': 'scan', '6': 'keywords' };
+  const keys = { '1': 'apply-next', '2': 'reports', '3': 'tracker', '4': 'apps', '5': 'pipeline', '6': 'scan', '7': 'keywords' };
   if (keys[e.key]) {
     const btn = document.querySelector(`nav.tabs button[data-tab="${keys[e.key]}"]`);
     if (btn) btn.click();

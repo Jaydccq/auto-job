@@ -39,7 +39,7 @@ Merge the latest `upstream/main` into the current branch and summarize the upstr
 
 - Confirm the merge base and incoming commits before merging.
 - Use `git merge --autostash upstream/main` because the worktree has many local modifications.
-- Run `bun run verify` if dependencies are present and the command is available.
+- Run `npm run verify` if dependencies are present and the command is available.
 
 ## Progress Log
 
@@ -49,7 +49,7 @@ Merge the latest `upstream/main` into the current branch and summarize the upstr
 - 2026-04-18: Merged `upstream/main` with `git merge --autostash upstream/main`; Git created and applied autostash `14f188f` and reported no conflicts.
 - 2026-04-18: Verified no unmerged paths and `git diff --check` passed.
 - 2026-04-18: Ran `go test ./...` in `dashboard`; passed after rerunning outside the sandbox for Go build cache access.
-- 2026-04-18: Ran `bun run verify`; failed on pre-existing tracker entry `#172` in `data/applications.md` with non-canonical status `USA` and invalid score format `Mimir`.
+- 2026-04-18: Ran `npm run verify`; failed on pre-existing tracker entry `#172` in `data/applications.md` with non-canonical status `USA` and invalid score format `Mimir`.
 
 ## Key Decisions
 
@@ -78,4 +78,4 @@ Verification:
 
 - Passed: `git diff --check`
 - Passed: `go test ./...` from `dashboard`
-- Failed: `bun run verify`, due to unrelated tracker row `#172` in `data/applications.md`
+- Failed: `npm run verify`, due to unrelated tracker row `#172` in `data/applications.md`

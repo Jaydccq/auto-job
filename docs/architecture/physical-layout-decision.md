@@ -41,7 +41,7 @@ Any future move must include:
 Run:
 
 ```bash
-bun run --cwd apps/server vitest run src/adapters/command-surface-contract.test.ts
+npm --prefix apps/server run vitest run src/adapters/command-surface-contract.test.ts
 ```
 
 The test locks the current workspace layout as an explicit deferred decision.

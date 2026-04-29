@@ -7,12 +7,12 @@ reuse the local Node/Playwright PDF generators.
 ## Usage
 
 ```bash
-bun run server          # start the bridge (also serves the dashboard)
+npm run server          # start the bridge (also serves the dashboard)
 ```
 
 Then open `http://127.0.0.1:47319/dashboard/`.
 
-The legacy `bun run dashboard` / `bun run dashboard` scripts now just print
+The legacy `npm run dashboard` / `npm run dashboard` scripts now just print
 this URL — there is no separate dashboard server process anymore.
 
 ## What it shows
@@ -41,14 +41,14 @@ this URL — there is no separate dashboard server process anymore.
 4. Tracker rows read quick-screen decisions from report metadata such as
    `**Decision:** manual_review`. `manual_review` rows show a **Full Eval**
    button when the bridge is running. The button queues a default bridge
-   evaluation, so `bun run server` must be running.
+   evaluation, so `npm run server` must be running.
 5. Gmail signals are optional derived facts from read-only mailbox review. If
    `data/gmail-signals.jsonl` exists, Tracker matches records by
    `applicationNum` or exact company+role. Unmatched signals render as
    Gmail-only rows so companies discovered from the inbox still appear in the
    pipeline. Expanded rows show short email evidence, not full raw bodies.
 6. The Gmail refresh hook that used to run on dashboard startup is not yet
-   migrated to the bridge. Run `bun run gmail:scan` (or `bun run gmail:update`)
+   migrated to the bridge. Run `npm run gmail:scan` (or `npm run gmail:update`)
    manually when you want fresh signals; the script writes
    `data/gmail-refresh-status.json` and `data/gmail-signals.jsonl`.
 
@@ -60,8 +60,8 @@ with Application type `Desktop app`, save it as
 `config/gmail-oauth-credentials.json`, and run:
 
 ```bash
-bun run gmail:auth
-bun run gmail:scan
+npm run gmail:auth
+npm run gmail:scan
 ```
 
 Do not use a Google OAuth `Web application` client for this local scanner. The
@@ -70,13 +70,13 @@ with `redirect_uri_mismatch`.
 
 The same Google Cloud project must have Gmail API enabled. If the scan reports
 that Gmail API has not been used or is disabled, enable Gmail API in that
-project, wait for propagation, then run `bun run gmail:scan` again.
+project, wait for propagation, then run `npm run gmail:scan` again.
 
 After `gmail:auth`, run a fresh Gmail API scan manually whenever you want to
 refresh signals:
 
 ```bash
-bun run gmail:scan
+npm run gmail:scan
 ```
 
 The bridge does not auto-run this on startup yet.
@@ -93,11 +93,11 @@ and sanitised through [DOMPurify](https://github.com/cure53/DOMPurify).
 To write a standalone `web/index.html` snapshot:
 
 ```bash
-bun run dashboard:build
+npm run dashboard:build
 ```
 
 Static export intentionally omits local profile email and Gmail signal data.
-Run `bun run server` and open `http://127.0.0.1:47319/dashboard/` for the
+Run `npm run server` and open `http://127.0.0.1:47319/dashboard/` for the
 private, fully enriched local view.
 
 Run it after:

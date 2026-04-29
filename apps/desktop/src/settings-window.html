@@ -70,7 +70,7 @@
       if (!api) {
         document.body.innerHTML =
           "<p>Preload script not loaded — settings UI cannot communicate with the app. " +
-          "Run <code>bun run --cwd apps/desktop build:preload</code> and relaunch.</p>";
+          "Run <code>npm --prefix apps/desktop run build:preload</code> and relaunch.</p>";
         return;
       }
 

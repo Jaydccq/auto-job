@@ -70,7 +70,7 @@ For this prune:
 - targeted `sed`/`rg` reads of routing, package scripts, bridge, scans, and
   profile configuration
 - `du -sh` size checks for major directories
-- run `bun run verify`
+- run `npm run verify`
 - run targeted `node --check` checks for touched JavaScript entry points
 - run `node test-all.mjs --quick` and document unrelated historical failures
 
@@ -106,7 +106,7 @@ For this prune:
 - 2026-04-25: Cleaned live references in repository maps, setup docs, CI/review
   configs, issue templates, and helper scripts.
 - 2026-04-25: Verification after cleanup: `git diff --check`, targeted
-  `node --check` runs, and `bun run verify` passed. `node test-all.mjs --quick`
+  `node --check` runs, and `npm run verify` passed. `node test-all.mjs --quick`
   still fails only on pre-existing absolute paths in older plan/history docs.
 
 ## Key Decisions
@@ -255,7 +255,7 @@ remove local convenience state.
 - `batch/` as a whole: bridge writes logs and tracker additions there.
 - `web/`: the local dashboard server is not the Go TUI. It can generate
   Apply Next PDFs using `generate-pdf.mjs` and `generate-cover-letter.mjs`.
-  Remove only if the user never uses `bun run dashboard` or dashboard PDF
+  Remove only if the user never uses `npm run dashboard` or dashboard PDF
   buttons.
 - `bb-browser/`: browser-backed Built In, Indeed, and LinkedIn scans call the
   `bb-browser` CLI/site adapters.
@@ -285,7 +285,7 @@ Verification status:
 - `git diff --check` passed.
 - `node --check test-all.mjs update-system.mjs doctor.mjs
   generate-cover-letter.mjs` passed.
-- `bun run verify` passed with two existing duplicate warnings in
+- `npm run verify` passed with two existing duplicate warnings in
   `data/applications.md`.
 - `node test-all.mjs --quick` failed on pre-existing absolute paths in older
   execution-plan/history docs. No remaining failures point to the deleted

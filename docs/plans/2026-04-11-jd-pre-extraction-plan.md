@@ -21,7 +21,7 @@
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bun install yaml
+cd /Users/hongxichen/Desktop/auto-job/bridge && npm install yaml
 ```
 
 Expected: `yaml` appears in `dependencies` in `package.json`.
@@ -30,7 +30,7 @@ Expected: `yaml` appears in `dependencies` in `package.json`.
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bun run typecheck
+cd /Users/hongxichen/Desktop/auto-job/bridge && npm run typecheck
 ```
 
 Expected: No errors.
@@ -130,7 +130,7 @@ describe("jdFilename", () => {
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bunx vitest run src/lib/jd-filename.test.ts
+cd /Users/hongxichen/Desktop/auto-job/bridge && npx vitest run src/lib/jd-filename.test.ts
 ```
 
 Expected: FAIL — module `./jd-filename.js` not found.
@@ -184,7 +184,7 @@ export function jdFilename(company: string, url: string): string {
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bunx vitest run src/lib/jd-filename.test.ts
+cd /Users/hongxichen/Desktop/auto-job/bridge && npx vitest run src/lib/jd-filename.test.ts
 ```
 
 Expected: All 12 tests PASS.
@@ -193,7 +193,7 @@ Expected: All 12 tests PASS.
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bun run typecheck
+cd /Users/hongxichen/Desktop/auto-job/bridge && npm run typecheck
 ```
 
 Expected: No errors.
@@ -326,7 +326,7 @@ describe("writeJdFile", () => {
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bunx vitest run src/lib/write-jd-file.test.ts
+cd /Users/hongxichen/Desktop/auto-job/bridge && npx vitest run src/lib/write-jd-file.test.ts
 ```
 
 Expected: FAIL — module `./write-jd-file.js` not found.
@@ -392,7 +392,7 @@ export function writeJdFile(input: WriteJdFileInput): string | null {
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bunx vitest run src/lib/write-jd-file.test.ts
+cd /Users/hongxichen/Desktop/auto-job/bridge && npx vitest run src/lib/write-jd-file.test.ts
 ```
 
 Expected: All 5 tests PASS.
@@ -401,7 +401,7 @@ Expected: All 5 tests PASS.
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bun run typecheck
+cd /Users/hongxichen/Desktop/auto-job/bridge && npm run typecheck
 ```
 
 Expected: No errors.
@@ -506,7 +506,7 @@ const lines = entries.map((e) => {
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bun run typecheck
+cd /Users/hongxichen/Desktop/auto-job/bridge && npm run typecheck
 ```
 
 Expected: No errors.
@@ -515,7 +515,7 @@ Expected: No errors.
 
 Run:
 ```bash
-cd /Users/hongxichen/Desktop/auto-job/bridge && bunx vitest run
+cd /Users/hongxichen/Desktop/auto-job/bridge && npx vitest run
 ```
 
 Expected: All tests PASS.

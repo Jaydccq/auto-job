@@ -36,11 +36,20 @@ const PROTOCOL_VERSION = "1.0.0";
 const DEFAULT_URL = "https://www.newgrad-jobs.com/";
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 47319;
-const DEFAULT_CONCURRENT = 3;
-const DEFAULT_DELAY_MIN_MS = 2000;
-const DEFAULT_DELAY_MAX_MS = 5000;
+const DEFAULT_CONCURRENT = 6;
+const DEFAULT_DELAY_MIN_MS = 250;
+const DEFAULT_DELAY_MAX_MS = 750;
 const DEFAULT_EVALUATION_QUEUE_DELAY_MS = 2100;
 const DEFAULT_EVALUATION_WAIT_TIMEOUT_MS = 20 * 60_000;
+const DETAIL_GOTO_TIMEOUT_MS = 30_000;
+const DETAIL_NETWORK_IDLE_TIMEOUT_MS = 5_000;
+const DETAIL_EXTRACT_TIMEOUT_MS = 20_000;
+const APPLY_FLOW_PROBE_TIMEOUT_MS = 8_000;
+const BLOCKED_RESOURCE_TYPES: ReadonlySet<string> = new Set([
+  "image",
+  "media",
+  "font",
+]);
 const SCORE_CHUNK_SIZE = 50;
 const ENRICH_CHUNK_SIZE = 3;
 
@@ -107,7 +116,7 @@ function usage(): string {
   return `auto-job autonomous newgrad scan
 
 Usage:
-  bun run newgrad-scan -- [options]
+  npm run newgrad-scan -- [options]
 
 Options:
   --url <url>             Source URL. Default: ${DEFAULT_URL}
@@ -508,20 +517,31 @@ async function launchContext(options: Options): Promise<BrowserContext> {
     viewport: { width: 1440, height: 1000 },
   };
 
+  let context: BrowserContext;
   if (!options.useChrome) {
-    return chromium.launchPersistentContext(options.userDataDir, baseOptions);
+    context = await chromium.launchPersistentContext(options.userDataDir, baseOptions);
+  } else {
+    try {
+      context = await chromium.launchPersistentContext(options.userDataDir, {
+        ...baseOptions,
+        channel: "chrome",
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Google Chrome launch failed, falling back to bundled Chromium: ${message}`);
+      context = await chromium.launchPersistentContext(options.userDataDir, baseOptions);
+    }
   }
 
-  try {
-    return await chromium.launchPersistentContext(options.userDataDir, {
-      ...baseOptions,
-      channel: "chrome",
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.warn(`Google Chrome launch failed, falling back to bundled Chromium: ${message}`);
-    return chromium.launchPersistentContext(options.userDataDir, baseOptions);
-  }
+  await context.route("**/*", (route) => {
+    if (BLOCKED_RESOURCE_TYPES.has(route.request().resourceType())) {
+      route.abort().catch(() => undefined);
+    } else {
+      route.continue().catch(() => undefined);
+    }
+  });
+
+  return context;
 }
 
 async function assertBridgeHealthy(base: string, token: string): Promise<void> {
@@ -554,6 +574,13 @@ async function gotoSettled(page: Page, url: string): Promise<void> {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
   await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => undefined);
   await page.waitForTimeout(1_000);
+}
+
+async function gotoDetail(page: Page, url: string): Promise<void> {
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: DETAIL_GOTO_TIMEOUT_MS });
+  await page
+    .waitForLoadState("networkidle", { timeout: DETAIL_NETWORK_IDLE_TIMEOUT_MS })
+    .catch(() => undefined);
 }
 
 async function extractListRows(page: Page, options: Options): Promise<NewGradRow[]> {
@@ -754,9 +781,17 @@ async function enrichDetails(
 async function enrichOneDetail(context: BrowserContext, scored: ScoredRow): Promise<EnrichedRow | null> {
   const page = await context.newPage();
   try {
-    await gotoSettled(page, scored.row.detailUrl);
-    const detail = await evaluateBrowserFunction(page, extractNewGradDetail);
-    const probe = await evaluateBrowserFunction<ApplyFlowProbe>(page, probeApplyFlow).catch((error) => {
+    await gotoDetail(page, scored.row.detailUrl);
+    const detail = await withTimeout(
+      evaluateBrowserFunction(page, extractNewGradDetail),
+      DETAIL_EXTRACT_TIMEOUT_MS,
+      `detail extraction timed out after ${DETAIL_EXTRACT_TIMEOUT_MS}ms`,
+    );
+    const probe = await withTimeout(
+      evaluateBrowserFunction<ApplyFlowProbe>(page, probeApplyFlow),
+      APPLY_FLOW_PROBE_TIMEOUT_MS,
+      `apply-flow probe timed out after ${APPLY_FLOW_PROBE_TIMEOUT_MS}ms`,
+    ).catch((error) => {
       const message = error instanceof Error ? error.message : String(error);
       console.warn(`Apply-flow probe failed for ${scored.row.company} — ${scored.row.title}: ${message}`);
       return null;
@@ -1946,7 +1981,7 @@ async function probeApplyFlow(): Promise<ApplyFlowProbe> {
 
     const trigger = findApplyTrigger();
     if (trigger) trigger.click();
-    await new Promise((resolve) => setTimeout(resolve, 2500));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     for (const candidate of collectDomCandidates()) record(candidate);
   } finally {
@@ -2027,6 +2062,22 @@ async function evaluateBrowserFunction<T, A>(
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timeout);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timeout);
+        reject(error);
+      },
+    );
+  });
 }
 
 main().catch((error) => {
