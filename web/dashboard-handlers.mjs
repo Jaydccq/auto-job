@@ -11,7 +11,7 @@
  * out of the browser bundle.
  */
 
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { copyFile, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -1697,3 +1697,23 @@ export {
   queueFullEvaluation,
   updateApplicationsMarkdownStatus,
 };
+
+export { getScanCatalog, runnerEnv } from './scan-runner.mjs';
+import { buildArgv as _buildArgv, runnerEnv as _runnerEnv } from './scan-runner.mjs';
+
+export function spawnScan(req, hooks) {
+  const argv = _buildArgv(req);
+  const env = { ...process.env, ..._runnerEnv(req.runner) };
+  const child = spawn(argv[0], argv.slice(1), { cwd: ROOT, env });
+  const onLine = (type) => (chunk) => {
+    const text = chunk.toString('utf8');
+    for (const line of text.split(/\r?\n/)) {
+      if (line) hooks.onLog(type, line);
+    }
+  };
+  child.stdout.on('data', onLine('stdout'));
+  child.stderr.on('data', onLine('stderr'));
+  child.on('exit', (code) => hooks.onExit(code ?? 0));
+  child.on('error', (err) => { hooks.onLog('stderr', String(err)); hooks.onExit(1); });
+  return { kill: () => child.kill('SIGTERM') };
+}

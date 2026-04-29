@@ -47,6 +47,31 @@ import {
   isPublicDashboardPath,
   registerDashboardRoutes,
 } from "./routes/dashboard.js";
+import { dirname, resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { createScanJobRegistry } from "./runtime/scan-job-registry.js";
+import { registerScanRoutes } from "./routes/scans.js";
+
+/**
+ * Resolve the directory containing dashboard-handlers.mjs. Mirrors the
+ * lookup order in routes/dashboard.ts so that tests with a tmp repoRoot
+ * fall through to the source-tree fallback.
+ */
+function resolveWebDirForScans(repoRoot: string): string {
+  const envOverride = process.env.AUTO_JOB_WEB_DIR;
+  if (envOverride && existsSync(resolve(envOverride, "dashboard-handlers.mjs"))) {
+    return envOverride;
+  }
+  const fromRepo = resolve(repoRoot, "web");
+  if (existsSync(resolve(fromRepo, "dashboard-handlers.mjs"))) {
+    return fromRepo;
+  }
+  const here = dirname(fileURLToPath(import.meta.url));
+  // src/server.ts  → 3 up = repo root /web
+  // dist/server.js → 3 up = repo root /web (mirror layout)
+  return resolve(here, "..", "..", "..", "web");
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Zod schemas — runtime validation that matches the static contracts        */
@@ -965,6 +990,23 @@ export function buildServer(args: BuildServerArgs) {
       token: config.token,
       repoRoot: config.repoRoot,
       ...(args.dashboardOverrides ?? {}),
+    });
+  });
+
+  /* -- scan launcher routes --------------------------------------------- */
+  const scanRegistry = createScanJobRegistry();
+  void fastify.register(async (instance) => {
+    const handlersUrl = pathToFileURL(
+      resolve(resolveWebDirForScans(config.repoRoot), "dashboard-handlers.mjs"),
+    ).href;
+    const mod = (await import(handlersUrl)) as {
+      spawnScan: (req: import("./routes/scans.js").SpawnRequest, hooks: import("./routes/scans.js").SpawnHooks) => void;
+      getScanCatalog: (opts: { registryLastRunBySkill: Map<string, import("./runtime/scan-job-registry.js").ScanLastRunSummary> }) => Promise<unknown[]>;
+    };
+    await registerScanRoutes(instance, {
+      registry: scanRegistry,
+      getCatalogImpl: mod.getScanCatalog,
+      spawnImpl: mod.spawnScan,
     });
   });
 
