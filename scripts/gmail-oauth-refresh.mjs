@@ -910,11 +910,21 @@ function normalizeEventType(value = '') {
   return normalized;
 }
 
+const HARD_STORED_EVENTS = new Set(['offer', 'rejected', 'interview', 'online_assessment']);
+
 export function isValidStoredSignal(signal = {}) {
   const expectedEvent = normalizeEventType(signal.eventType || signal.type || signal.status || '');
   if (!expectedEvent) return false;
   if (isGenericCompany(signal.company || '') || isGenericRole(signal.role || '')) return false;
   const from = parseEmail(signal.sender || signal.from || '');
+  // Hard-stored events represent past classifier judgment we should trust, EXCEPT when the
+  // current sender policy denies that event type — those are legacy misclassifications
+  // (e.g. LinkedIn 'rejected' rows stored before sender policy gating shipped) that must
+  // be cleaned up rather than trusted.
+  if (HARD_STORED_EVENTS.has(expectedEvent)) {
+    const policy = senderClassificationPolicy(from);
+    return policy.allowedEvents.has(expectedEvent);
+  }
   const subject = signal.subject || '';
   const text = [
     signal.summary,

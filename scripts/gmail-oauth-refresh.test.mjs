@@ -229,3 +229,74 @@ test('extractSignalFromMessage: signal from ATS produces realistic confidence (n
   assert.ok(signal.confidence >= 0.6 && signal.confidence <= 1.0,
     `expected confidence in [0.6, 1.0], got ${signal.confidence}`);
 });
+
+import { isValidStoredSignal } from './gmail-oauth-refresh.mjs';
+
+test('isValidStoredSignal: ATS rejection with truncated snippet (no hard phrase) is retained', () => {
+  // Real Kinstead-style rejection. The 220-char snippet cuts off before "will not be moving forward".
+  // Under strict re-classification this would replay as 'applied' (matches APPLICATION_RECEIPT_PATTERNS,
+  // soft-rejection blocked by receipt-guard), but the stored 'rejected' event should be trusted.
+  const signal = {
+    id: 'abc123:rejected',
+    company: 'Kinstead',
+    role: 'Senior Backend Engineer, Workflow Systems',
+    eventType: 'rejected',
+    sender: 'Kinstead Hiring Team <no-reply@ashbyhq.com>',
+    subject: 'Kinstead Application Update',
+    summary: 'Hi Hongxi, Thank you for applying for the Senior Backend Engineer, Workflow Systems role at Kinstead. After reviewing your application we have determined that there is not an ideal fit at this',
+    snippet: 'Hi Hongxi, Thank you for applying for the Senior Backend Engineer, Workflow Systems role at Kinstead. After reviewing your application we have determined that there is not an ideal fit at this',
+  };
+  assert.equal(isValidStoredSignal(signal), true);
+});
+
+test('isValidStoredSignal: LinkedIn-rejected garbage with role-at-company name is still dropped', () => {
+  // Generic-company gate fires before the hard-event short-circuit.
+  const signal = {
+    id: 'def456:rejected',
+    company: 'AI Engineer at PRI Global',
+    role: 'interest in the AI Engineer',
+    eventType: 'rejected',
+    sender: 'LinkedIn <jobs-noreply@linkedin.com>',
+    subject: 'Your application to AI Engineer at PRI Global',
+    summary: 'Your application to AI Engineer at PRI Global has been received.',
+    snippet: 'Your application to AI Engineer at PRI Global has been received.',
+  };
+  assert.equal(isValidStoredSignal(signal), false);
+});
+
+test('isValidStoredSignal: LinkedIn-rejected with a valid-looking company is still dropped (policy denies)', () => {
+  // LinkedIn cannot produce rejections; legacy mis-classified rows must be cleaned up
+  // even when the company string accidentally passes the generic-company gate.
+  const signal = {
+    id: 'ghi789:rejected',
+    company: 'Cerberus Capital Management',
+    role: 'AI Deployment Strategist',
+    eventType: 'rejected',
+    sender: 'LinkedIn <jobs-noreply@linkedin.com>',
+    subject: 'Your application to AI Deployment Strategist at Cerberus Capital Management',
+    summary: 'Your application has been received.',
+    snippet: 'Your application has been received.',
+  };
+  assert.equal(isValidStoredSignal(signal), false);
+});
+
+test('isValidStoredSignal: stored hard event with empty event still fails', () => {
+  // Defensive: empty/missing event still drops, even for would-be-hard storage.
+  assert.equal(isValidStoredSignal({ eventType: '', company: 'Acme', role: 'Engineer' }), false);
+});
+
+test('isValidStoredSignal: soft event still re-classifies and drops on mismatch', () => {
+  // 'applied' is a soft event — must re-classify. Subject + body produce no hiring signal,
+  // classifier returns '', validator drops.
+  const signal = {
+    id: 'xyz:applied',
+    company: 'Acme',
+    role: 'Software Engineer',
+    eventType: 'applied',
+    sender: 'random@example.com',
+    subject: 'Newsletter subscription confirmed',
+    summary: 'Thanks for subscribing to our weekly newsletter.',
+    snippet: 'Thanks for subscribing to our weekly newsletter.',
+  };
+  assert.equal(isValidStoredSignal(signal), false);
+});
