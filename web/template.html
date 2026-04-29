@@ -1221,6 +1221,33 @@
   #tracker-table col.c-actions { width: 150px; }
   #tracker-table col.c-notes   { width: 250px; }
 
+  /* Scan launcher */
+  #scan-runner { padding: 16px 0; }
+  .scan-runner-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .scan-runner-busy { color: var(--signal); font-size: 12px; }
+  .scan-runner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .scan-runner-card { border: 1px solid var(--rule); padding: 12px; background: var(--paper); }
+  .scan-runner-card h3 { margin: 0 0 6px 0; font-size: 14px; }
+  .scan-runner-card p.desc { margin: 0 0 10px 0; color: var(--ink-2); font-size: 12px; }
+  .scan-runner-card label { display: block; font-size: 11px; margin: 6px 0 2px 0; color: var(--ink-2); }
+  .scan-runner-card input, .scan-runner-card select { width: 100%; padding: 4px 6px; font: inherit; box-sizing: border-box; }
+  .scan-runner-card .runner-row { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+  .scan-runner-card .runner-row button { padding: 2px 6px; font-size: 11px; border: 1px solid var(--rule); background: var(--paper); cursor: pointer; }
+  .scan-runner-card .runner-row button.active { background: var(--ink); color: var(--paper); }
+  .scan-runner-card .runner-row button.secondary { font-style: italic; }
+  .scan-runner-card .runner-advanced { margin-top: 4px; }
+  .scan-runner-card .runner-advanced summary { font-size: 11px; color: var(--ink-2); cursor: pointer; }
+  .scan-runner-card .last-run { font-size: 11px; color: var(--ink-2); margin-top: 6px; }
+  .scan-runner-card .last-run.ok::before { content: '● '; color: var(--signal); }
+  .scan-runner-card .last-run.failed::before { content: '● '; color: #c00; }
+  .scan-runner-card button.run-btn { margin-top: 8px; padding: 4px 8px; cursor: pointer; }
+  .scan-runner-card button.run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .scan-runner-log { margin-top: 16px; border: 1px solid var(--rule); padding: 10px; }
+  .scan-runner-log header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .scan-runner-log pre { max-height: 240px; overflow: auto; font-size: 11px; line-height: 1.4; margin: 0; white-space: pre-wrap; }
+  .scan-runner-divider { margin: 24px 0 12px 0; border: 0; border-top: 1px dashed var(--rule); }
+  .scan-history-h { font-size: 14px; margin: 0 0 8px 0; }
+
   /* Scan column widths */
   #scan-table { min-width: 1040px; }
   #scan-table col.s-date   { width: 108px; }
@@ -1606,7 +1633,7 @@
   <button data-tab="tracker"><span class="idx">03</span>Tracker</button>
   <button data-tab="apps"><span class="idx">04</span>Applications</button>
   <button data-tab="pipeline"><span class="idx">05</span>Pipeline</button>
-  <button data-tab="scan"><span class="idx">06</span>Scan Hist.</button>
+  <button data-tab="scan"><span class="idx">06</span>Scans</button>
   <button data-tab="keywords"><span class="idx">07</span>Keywords</button>
 </nav>
 
@@ -2074,6 +2101,20 @@
 </section>
 
 <section id="tab-scan" class="pane">
+  <section id="scan-runner" aria-labelledby="scan-runner-h">
+    <header class="scan-runner-header">
+      <h2 id="scan-runner-h">Run a scan</h2>
+      <span class="scan-runner-busy" id="scan-runner-busy" hidden>● running</span>
+    </header>
+    <div class="scan-runner-grid" id="scan-runner-grid"></div>
+    <div class="scan-runner-log" id="scan-runner-log" hidden>
+      <header><strong id="scan-runner-log-title">Log</strong>
+        <button type="button" id="scan-runner-log-close">close</button></header>
+      <pre id="scan-runner-log-body"></pre>
+    </div>
+  </section>
+  <hr class="scan-runner-divider">
+  <h2 class="scan-history-h">History</h2>
   <div class="filter-bar">
     <div class="bar-primary">
       <div class="search-wrap">
@@ -3680,6 +3721,158 @@ function renderPipeline() {
   setHtml($('pipeline-list'), html);
 }
 bindFilters(['pipeline-search', 'pipeline-source', 'pipeline-company', 'pipeline-score-min', 'pipeline-score-max', 'pipeline-sort'], renderPipeline, 'pipeline');
+
+// ===== Scan launcher =====
+async function getDashboardApi(path) {
+  const r = await fetch(`/dashboard${path}`, {
+    headers: { 'X-Auto-Job-Token': DASHBOARD_TOKEN },
+  });
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok || body.ok === false) {
+    throw new Error(body.error || `Dashboard API returned ${r.status}`);
+  }
+  return body;
+}
+
+async function loadScanCatalog() {
+  try {
+    const { catalog } = await getDashboardApi('/api/scans/catalog');
+    renderScanCards(catalog);
+  } catch (err) {
+    const grid = document.getElementById('scan-runner-grid');
+    if (grid) grid.textContent = `Failed to load scan catalog: ${err.message}`;
+  }
+}
+
+function renderScanCards(catalog) {
+  const grid = document.getElementById('scan-runner-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (const s of catalog) {
+    const card = document.createElement('div');
+    card.className = 'scan-runner-card';
+    card.dataset.skill = s.id;
+    card.innerHTML = `
+      <h3>${escapeScanHtml(s.label)}</h3>
+      <p class="desc">${escapeScanHtml(s.description)}</p>
+      <label>Runner</label>
+      <div class="runner-row" role="radiogroup">
+        ${(s.runners || []).map(r => `<button type="button" data-runner="${escapeScanAttr(r)}" class="${r === s.defaultRunner ? 'active' : ''}">${escapeScanHtml(scanRunnerLabel(r))}</button>`).join('')}
+      </div>
+      ${(s.advancedRunners?.length ?? 0) > 0 ? `
+      <details class="runner-advanced">
+        <summary>Advanced</summary>
+        <div class="runner-row" role="radiogroup">
+          ${s.advancedRunners.map(r => `<button type="button" data-runner="${escapeScanAttr(r)}" class="secondary">${escapeScanHtml(scanRunnerLabel(r))}</button>`).join('')}
+        </div>
+      </details>` : ''}
+      <div class="inputs">
+        ${(s.inputs || []).map(f => renderScanField(s.id, f)).join('')}
+      </div>
+      ${s.lastRun ? `<div class="last-run ${escapeScanAttr(s.lastRun.status)}">last: ${escapeScanHtml(humanScanTime(s.lastRun.finishedAt ?? s.lastRun.startedAt))}</div>` : ''}
+      <button type="button" class="run-btn">Run</button>
+    `;
+    // One radio group across both primary and advanced rows.
+    card.querySelectorAll('.runner-row button').forEach(b => {
+      b.addEventListener('click', () => {
+        card.querySelectorAll('.runner-row button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+    card.querySelector('.run-btn').addEventListener('click', () => runScan(card, s));
+    grid.appendChild(card);
+  }
+}
+
+function renderScanField(skillId, f) {
+  const id = `f-${skillId}-${f.id}`;
+  const def = f.default ?? '';
+  if (f.type === 'checkbox') {
+    return `<label><input id="${escapeScanAttr(id)}" type="checkbox" data-field="${escapeScanAttr(f.id)}" ${def ? 'checked' : ''}> ${escapeScanHtml(f.label)}</label>`;
+  }
+  return `<label for="${escapeScanAttr(id)}">${escapeScanHtml(f.label)}${f.required ? ' *' : ''}</label>
+    <input id="${escapeScanAttr(id)}" data-field="${escapeScanAttr(f.id)}" type="${escapeScanAttr(f.type)}" value="${escapeScanAttr(String(def))}" ${f.required ? 'required' : ''}>`;
+}
+
+function scanRunnerLabel(r) {
+  return ({
+    'real-claude': 'Claude SDK',
+    'real-codex': 'Codex CLI',
+    'real-openrouter': 'OpenRouter',
+    'fake': 'Fake (offline)',
+    'discovery-only': 'Discovery only',
+  })[r] || r;
+}
+
+async function runScan(card, skill) {
+  const runner = card.querySelector('.runner-row button.active')?.dataset.runner ?? skill.defaultRunner;
+  const inputs = {};
+  card.querySelectorAll('[data-field]').forEach(el => {
+    const f = el.dataset.field;
+    if (el.type === 'checkbox') inputs[f] = el.checked;
+    else if (el.type === 'number') inputs[f] = el.value === '' ? undefined : Number(el.value);
+    else inputs[f] = el.value;
+  });
+  const btn = card.querySelector('.run-btn');
+  btn.disabled = true;
+  btn.textContent = 'Starting…';
+  try {
+    const { jobId } = await postDashboardApi('/api/scans/run', { skillId: skill.id, runner, inputs });
+    attachScanJobStream(jobId, skill.label, () => {
+      btn.disabled = false;
+      btn.textContent = 'Run';
+      loadScanCatalog();
+    });
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Run';
+    alert(err.message || String(err));
+  }
+}
+
+function attachScanJobStream(jobId, label, onEnd) {
+  document.getElementById('scan-runner-busy').hidden = false;
+  const logBox = document.getElementById('scan-runner-log');
+  const body = document.getElementById('scan-runner-log-body');
+  document.getElementById('scan-runner-log-title').textContent = `${label} — ${jobId.slice(0, 8)}`;
+  body.textContent = '';
+  logBox.hidden = false;
+  // EventSource cannot send headers; the SSE endpoint accepts ?token= via the
+  // narrow whitelist added in Task 6.
+  const es = new EventSource(`/dashboard/api/scans/jobs/${encodeURIComponent(jobId)}/stream?token=${encodeURIComponent(DASHBOARD_TOKEN)}`);
+  es.onmessage = (ev) => {
+    let data;
+    try { data = JSON.parse(ev.data); } catch { return; }
+    if (data.type === 'end') {
+      body.textContent += `\n[exit ${data.exitCode}]`;
+      es.close();
+      document.getElementById('scan-runner-busy').hidden = true;
+      onEnd?.();
+      return;
+    }
+    body.textContent += `${data.line ?? ''}\n`;
+    body.scrollTop = body.scrollHeight;
+  };
+  es.onerror = () => {
+    es.close();
+    document.getElementById('scan-runner-busy').hidden = true;
+    onEnd?.();
+  };
+  document.getElementById('scan-runner-log-close').onclick = () => { logBox.hidden = true; };
+}
+
+function escapeScanHtml(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+function escapeScanAttr(s) { return escapeScanHtml(s); }
+function humanScanTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const m = (Date.now() - d.getTime()) / 60000;
+  return m < 1 ? 'just now' : m < 60 ? `${Math.round(m)}m ago` : d.toLocaleString();
+}
+
+document.addEventListener('DOMContentLoaded', loadScanCatalog);
 
 // ===== Scan History =====
 const portals = unique(D.scanHistory.rows.map(r => r.portal));
