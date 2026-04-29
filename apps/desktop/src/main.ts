@@ -33,17 +33,30 @@ function flog(msg: string): void {
     // ignore — logger failures should never crash the app
   }
 }
+function formatLogArg(arg: unknown): string {
+  if (arg instanceof Error) {
+    const cause =
+      arg.cause === undefined
+        ? ""
+        : `\nCaused by: ${arg.cause instanceof Error ? (arg.cause.stack ?? arg.cause.message) : String(arg.cause)}`;
+    return arg.stack ?? `${arg.name}: ${arg.message}${cause}`;
+  }
+  if (typeof arg === "string") return arg;
+  try {
+    return JSON.stringify(arg);
+  } catch {
+    return String(arg);
+  }
+}
 const origLog = console.log.bind(console);
 const origErr = console.error.bind(console);
 console.log = (...args: unknown[]) => {
   origLog(...args);
-  flog(args.map((a) => (typeof a === "string" ? a : JSON.stringify(a))).join(" "));
+  flog(args.map(formatLogArg).join(" "));
 };
 console.error = (...args: unknown[]) => {
   origErr(...args);
-  flog(
-    "[error] " + args.map((a) => (typeof a === "string" ? a : JSON.stringify(a))).join(" "),
-  );
+  flog("[error] " + args.map(formatLogArg).join(" "));
 };
 process.on("uncaughtException", (err) => {
   flog(`[uncaughtException] ${err.stack ?? err.message ?? String(err)}`);
@@ -52,13 +65,12 @@ process.on("unhandledRejection", (reason) => {
   flog(`[unhandledRejection] ${String(reason)}`);
 });
 
-// When running from a packaged .app, the server source lives inside the
-// bundle's resources, so the server's repo-root walk-up won't find the
-// user's auto-job checkout. Honor an explicit env override, otherwise
-// guess the conventional location at ~/Desktop/auto-job.
+// The bundled server code lives in the desktop main bundle, so the
+// server's repo-root walk-up cannot rely on @auto-job/server's package
+// directory. Honor an explicit env override, otherwise guess the
+// conventional checkout at ~/Desktop/auto-job.
 function ensureRepoRoot(): void {
   if (process.env.AUTO_JOB_REPO_ROOT) return;
-  if (!app.isPackaged) return;
   const guess = join(homedir(), "Desktop/auto-job");
   if (
     existsSync(join(guess, "cv.md")) &&
@@ -69,7 +81,7 @@ function ensureRepoRoot(): void {
     console.log(`[auto-job] using repo root: ${guess}`);
   } else {
     console.warn(
-      `[auto-job] AUTO_JOB_REPO_ROOT not set and ${guess} doesn't look like a auto-job checkout. ` +
+      `[auto-job] AUTO_JOB_REPO_ROOT not set and ${guess} doesn't look like an auto-job checkout. ` +
         `Set AUTO_JOB_REPO_ROOT before launching for the in-process server to find your data.`,
     );
   }
@@ -87,6 +99,14 @@ function ensureRepoRoot(): void {
 function ensureWebDirFallback(): void {
   if (process.env.AUTO_JOB_WEB_DIR) return;
   if (!app.isPackaged) return;
+  const repoRoot = process.env.AUTO_JOB_REPO_ROOT;
+  if (
+    repoRoot &&
+    existsSync(join(repoRoot, "web", "build-dashboard.mjs")) &&
+    existsSync(join(repoRoot, "web", "dashboard-handlers.mjs"))
+  ) {
+    return;
+  }
   const bundledWebDir = join(process.resourcesPath, "web");
   if (existsSync(join(bundledWebDir, "dashboard-handlers.mjs"))) {
     process.env.AUTO_JOB_WEB_DIR = bundledWebDir;

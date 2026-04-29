@@ -37,19 +37,27 @@ export interface TrayController {
   rebuild: () => void;
 }
 
+const TRAY_ICON_SIZE = 18;
+
+function fitTrayIcon(image: Electron.NativeImage, template: boolean): Electron.NativeImage {
+  if (image.isEmpty()) return image;
+  const fitted = image.resize({ width: TRAY_ICON_SIZE, height: TRAY_ICON_SIZE });
+  if (process.platform === "darwin") {
+    fitted.setTemplateImage(template);
+  }
+  return fitted;
+}
+
 function loadTrayIcon(): Electron.NativeImage {
   const colorPath = join(ICON_DIR, "tray.png");
   const templatePath = join(ICON_DIR, "trayTemplate.png");
   const image = nativeImage.createFromPath(colorPath);
   if (!image.isEmpty()) {
-    return image;
+    return fitTrayIcon(image, false);
   }
 
   const fallback = nativeImage.createFromPath(templatePath);
-  if (process.platform === "darwin" && !fallback.isEmpty()) {
-    fallback.setTemplateImage(true);
-  }
-  return fallback;
+  return fitTrayIcon(fallback, true);
 }
 
 export function createTray(hooks: TrayHooks): TrayController {

@@ -9,7 +9,7 @@
   "main": "dist/main.js",
   "scripts": {
     "build:server": "bun run --cwd ../../packages/shared build && bun run --cwd ../server build",
-    "build:main": "esbuild src/main.ts --bundle --platform=node --target=node20 --packages=external --outfile=dist/main.js --format=esm --sourcemap",
+    "build:main": "esbuild src/main.ts --bundle --platform=node --target=node20 --external:electron --outfile=dist/main.js --format=esm --sourcemap",
     "build:preload": "esbuild src/settings-preload.ts --bundle --platform=node --target=node20 --external:electron --outfile=dist/settings-preload.js --format=cjs --sourcemap",
     "build": "bun run build:server && bun run build:preload && bun run build:main",
     "dev": "bun run build && electron dist/main.js",
