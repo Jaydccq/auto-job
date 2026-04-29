@@ -1075,7 +1075,7 @@ async function openBbTab(url: string): Promise<string> {
   if (!data.tabId) {
     throw new Error(`bb-browser open did not return a tab id for ${url}`);
   }
-  await sleep(2_000);
+  await sleep(1_000);
   return data.tabId;
 }
 
@@ -1396,8 +1396,12 @@ async function readLinkedInGuestJobDetail(url: string): Promise<ExternalAtsDetai
 async function readExternalAtsDetail(url: string): Promise<ExternalAtsDetail | null> {
   const tabId = await openBbTab(url);
   try {
-    await sleep(3_500);
-    const detail = await evaluateBrowserJson<ExternalAtsDetail>(tabId, extractExternalAtsJobDetail);
+    await sleep(1_500);
+    let detail = await evaluateBrowserJson<ExternalAtsDetail>(tabId, extractExternalAtsJobDetail);
+    if (detail.description.trim().length < 200) {
+      await sleep(1_500);
+      detail = await evaluateBrowserJson<ExternalAtsDetail>(tabId, extractExternalAtsJobDetail);
+    }
     return detail.description.trim().length >= 200 ? detail : null;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -1803,7 +1807,7 @@ async function clickLinkedInExternalApplyButton(): Promise<ApplyClickResult> {
     candidate.el.scrollIntoView({ block: "center", inline: "center" });
     await new Promise((resolve) => window.setTimeout(resolve, 250));
     candidate.el.click();
-    await new Promise((resolve) => window.setTimeout(resolve, 2500));
+    await new Promise((resolve) => window.setTimeout(resolve, 800));
     return {
       status: "external_href",
       label: candidate.label,
