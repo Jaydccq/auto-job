@@ -85,6 +85,40 @@ Do not store OAuth tokens, raw mailbox exports, or full email bodies in this fil
 `data/gmail-signals.jsonl` is gitignored because it contains user-specific
 mailbox-derived facts.
 
+## Applications layer
+
+`data/gmail-applications.jsonl` is a derived per-thread aggregate of the
+per-message signals. The scanner regenerates it on every scan; do not edit by
+hand. The signals file remains the source of truth for raw email facts; the
+applications file is the source of truth for tracker / dashboard consumers.
+
+Schema:
+
+```json
+{"applicationKey":"whatnot|software-engineer-fraud","threadId":"...","company":"Whatnot","role":"Software Engineer, Fraud","currentState":"interview","firstSeenAt":"2026-04-10T10:00:00Z","lastUpdateAt":"2026-04-20T14:00:00Z","messageCount":2,"humanContact":"Sarah K. <sarah@whatnot.com>","timeline":[{"event":"applied","at":"2026-04-10T10:00:00Z","messageId":"...","subject":"...","summary":"..."}],"attention":{"level":"action","reason":"interview active","since":"2026-04-20T14:00:00Z","dueAt":""},"confidence":0.95}
+```
+
+State machine priority (highest first):
+`offer > rejected > interview > online_assessment > responded > applied`.
+Terminal states (`offer`, `rejected`) latch — once an application reaches a
+terminal state, later non-terminal events do not change it. A higher-priority
+terminal can supersede a lower one (an `offer` arriving after a `rejected`
+overrides it).
+
+Attention levels:
+
+| Level | Trigger |
+|-------|---------|
+| `urgent` | `currentState ∈ {offer, rejected}` (action required immediately) |
+| `action` | `currentState ∈ {interview, online_assessment, responded, action_required}` |
+| `stale` | `currentState === 'applied'` AND `now − lastUpdateAt ≥ 14 days` |
+| `info` | everything else |
+
+Defaults `STALE_DAYS_THRESHOLD = 14` and `URGENT_DEADLINE_HOURS = 48` are
+exported from `scripts/gmail-applications.mjs` for downstream consumers.
+
+`data/gmail-applications.jsonl` is gitignored alongside the signals file.
+
 ## Dashboard Refresh
 
 Run the connector-assisted scan inside Codex with:
