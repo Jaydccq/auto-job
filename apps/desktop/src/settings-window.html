@@ -51,24 +51,51 @@
     <input id="openrouter-key" type="password" placeholder="sk-or-...">
     <div class="key-status" id="key-status">Not set</div>
 
-    <label for="openrouter-model">OpenRouter Model</label>
-    <input id="openrouter-model" type="text" list="openrouter-model-list"
-           placeholder="anthropic/claude-3.5-sonnet" autocomplete="off">
-    <datalist id="openrouter-model-list">
-      <option value="anthropic/claude-3.5-sonnet"></option>
-      <option value="anthropic/claude-3.5-haiku"></option>
-      <option value="openai/gpt-4o"></option>
-      <option value="openai/gpt-4o-mini"></option>
-      <option value="openai/gpt-4-turbo"></option>
-      <option value="google/gemini-2.0-flash-exp:free"></option>
-      <option value="google/gemini-pro-1.5"></option>
-      <option value="meta-llama/llama-3.1-70b-instruct"></option>
-      <option value="meta-llama/llama-3.3-70b-instruct"></option>
-      <option value="deepseek/deepseek-chat"></option>
-      <option value="qwen/qwq-32b-preview"></option>
-      <option value="x-ai/grok-2-1212"></option>
-    </datalist>
-    <div class="key-status">Pick from the list or type any slug from openrouter.ai/models</div>
+    <label for="openrouter-model-select">OpenRouter Model</label>
+    <select id="openrouter-model-select">
+      <optgroup label="Anthropic — Claude">
+        <option value="anthropic/claude-opus-4.7">Opus 4.7 — best quality · $5/M</option>
+        <option value="anthropic/claude-opus-4.6">Opus 4.6 — strong · $5/M</option>
+        <option value="anthropic/claude-sonnet-4.6">Sonnet 4.6 — balanced (default) · $3/M</option>
+        <option value="anthropic/claude-sonnet-latest">Sonnet (latest, auto-tracking) · $3/M</option>
+        <option value="anthropic/claude-haiku-latest">Haiku (latest) — fast &amp; cheap · $1/M</option>
+        <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet — legacy</option>
+      </optgroup>
+      <optgroup label="OpenAI — GPT">
+        <option value="openai/gpt-5.5-pro">GPT-5.5 Pro — best · $30/M</option>
+        <option value="openai/gpt-5.5">GPT-5.5 — strong · $5/M</option>
+        <option value="openai/gpt-5.4-pro">GPT-5.4 Pro · $30/M</option>
+        <option value="openai/gpt-5.4">GPT-5.4 — balanced · $2.50/M</option>
+        <option value="openai/gpt-5.4-mini">GPT-5.4 Mini — cheap · $0.75/M</option>
+        <option value="openai/gpt-5.4-nano">GPT-5.4 Nano — cheapest · $0.20/M</option>
+        <option value="openai/gpt-5.3-codex">GPT-5.3 Codex — coding · $1.75/M</option>
+      </optgroup>
+      <optgroup label="Google — Gemini &amp; Gemma">
+        <option value="google/gemini-3.1-pro-preview">Gemini 3.1 Pro Preview · $2/M</option>
+        <option value="google/gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite — cheap · $0.25/M</option>
+        <option value="google/gemini-pro-latest">Gemini Pro (latest) · $2/M</option>
+        <option value="google/gemini-flash-latest">Gemini Flash (latest) · $0.50/M</option>
+        <option value="google/gemma-4-31b-it:free">Gemma 4 31B — free</option>
+      </optgroup>
+      <optgroup label="DeepSeek">
+        <option value="deepseek/deepseek-v4-pro">DeepSeek V4 Pro — reasoning · $0.44/M</option>
+        <option value="deepseek/deepseek-v4-flash">DeepSeek V4 Flash — cheap · $0.14/M</option>
+      </optgroup>
+      <optgroup label="Qwen (Alibaba)">
+        <option value="qwen/qwen3-coder-next">Qwen3 Coder Next — coding · $0.14/M</option>
+        <option value="qwen/qwen3.6-max-preview">Qwen3.6 Max — strong · $1.04/M</option>
+        <option value="qwen/qwen3.6-flash">Qwen3.6 Flash — fast · $0.25/M</option>
+      </optgroup>
+      <optgroup label="xAI — Grok">
+        <option value="x-ai/grok-4.20">Grok 4.20 · $2/M</option>
+      </optgroup>
+      <optgroup label="Other">
+        <option value="__custom__">Custom slug…</option>
+      </optgroup>
+    </select>
+    <input id="openrouter-model-custom" type="text" placeholder="provider/model-name"
+           autocomplete="off" class="hidden" style="margin-top:8px">
+    <div class="key-status">Prices are per 1M prompt tokens. Pick "Custom slug…" to type any model from openrouter.ai/models.</div>
   </div>
 
   <div class="checkbox-row">
@@ -97,8 +124,45 @@
       const openrouterSection = document.getElementById("openrouter-section");
       const keyStatus = document.getElementById("key-status");
       const keyInput = document.getElementById("openrouter-key");
-      const modelInput = document.getElementById("openrouter-model");
+      const modelSelect = document.getElementById("openrouter-model-select");
+      const modelCustom = document.getElementById("openrouter-model-custom");
       const startAtLogin = document.getElementById("start-at-login");
+
+      function knownModelSlugs() {
+        return Array.from(modelSelect.querySelectorAll('option'))
+          .map(o => o.value)
+          .filter(v => v && v !== "__custom__");
+      }
+
+      function applyModelToUI(slug) {
+        const known = new Set(knownModelSlugs());
+        if (slug && known.has(slug)) {
+          modelSelect.value = slug;
+          modelCustom.classList.add("hidden");
+          modelCustom.value = "";
+        } else {
+          // Saved value is custom (or empty) — show the input prefilled.
+          modelSelect.value = "__custom__";
+          modelCustom.classList.remove("hidden");
+          modelCustom.value = slug || "";
+        }
+      }
+
+      function selectedModelSlug() {
+        if (modelSelect.value === "__custom__") {
+          return modelCustom.value.trim();
+        }
+        return modelSelect.value;
+      }
+
+      modelSelect.addEventListener("change", () => {
+        if (modelSelect.value === "__custom__") {
+          modelCustom.classList.remove("hidden");
+          modelCustom.focus();
+        } else {
+          modelCustom.classList.add("hidden");
+        }
+      });
       const saveBtn = document.getElementById("save");
       const cancelBtn = document.getElementById("cancel");
       const errEl = document.getElementById("error");
@@ -122,7 +186,7 @@
         keyStatus.textContent = state.hasKey
           ? "Key is set (paste a new key to overwrite)"
           : "Not set";
-        modelInput.value = state.openrouterModel || "";
+        applyModelToUI(state.openrouterModel || "");
         toggleOpenRouterSection();
       });
 
@@ -139,7 +203,7 @@
             backend: backendSel.value,
             startAtLogin: startAtLogin.checked,
             openrouterKey: keyInput.value.trim() || null,
-            openrouterModel: modelInput.value.trim() || null,
+            openrouterModel: selectedModelSlug() || null,
           });
           api.close();
         } catch (err) {

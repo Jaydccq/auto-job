@@ -220,7 +220,7 @@ test("runEvaluation streams content, writes report, emits phases (default model)
     messages: Array<{ role: string; content: string }>;
     stream: boolean;
   };
-  expect(body.model).toBe("anthropic/claude-3.5-sonnet");
+  expect(body.model).toBe("anthropic/claude-sonnet-4.6");
   expect(body.stream).toBe(true);
   expect(Array.isArray(body.messages)).toBe(true);
   expect(body.messages.length).toBeGreaterThanOrEqual(1);

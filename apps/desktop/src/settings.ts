@@ -31,7 +31,7 @@ export interface Settings {
   openrouterModel: string;
 }
 
-export const DEFAULT_OPENROUTER_MODEL = "anthropic/claude-3.5-sonnet";
+export const DEFAULT_OPENROUTER_MODEL = "anthropic/claude-sonnet-4.6";
 
 export const DEFAULT_SETTINGS: Settings = {
   backend: "real-codex",

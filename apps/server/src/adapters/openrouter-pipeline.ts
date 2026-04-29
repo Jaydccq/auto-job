@@ -51,7 +51,7 @@ import { bridgeError } from "../runtime/errors.js";
 import { __internal as claudeInternal } from "./claude-pipeline.js";
 
 const DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
-const DEFAULT_MODEL = "anthropic/claude-3.5-sonnet";
+const DEFAULT_MODEL = "anthropic/claude-sonnet-4.6";
 const DEFAULT_TIMEOUT_MS = 600_000;
 const DEFAULT_HTTP_REFERER = "https://auto-job.local";
 const DEFAULT_X_TITLE = "Auto Job";
@@ -65,7 +65,7 @@ const KEY_FILE_RELATIVE = ".config/auto-job/openrouter.key";
 export interface OpenRouterConfig {
   /** Required. Will be sent verbatim as `Authorization: Bearer <key>`. */
   apiKey: string;
-  /** Override OpenRouter model slug. Default: `anthropic/claude-3.5-sonnet`. */
+  /** Override OpenRouter model slug. Default: `anthropic/claude-sonnet-4.6`. */
   model?: string;
   /** Override the API base URL. Default: `https://openrouter.ai/api/v1`. */
   baseUrl?: string;
