@@ -118,7 +118,16 @@ export function computeApplicationAttention(app = {}, now = new Date()) {
     return { level: 'urgent', reason: `${state} on the table`, since, dueAt: '' };
   }
   if (ACTION_STATES.has(state)) {
-    return { level: 'action', reason: `${state.replace(/_/g, ' ')} active`, since, dueAt: '' };
+    const upcoming = (Array.isArray(app.timeline) ? app.timeline : [])
+      .map((t) => t?.dueAt)
+      .filter(Boolean)
+      .map((iso) => ({ iso, ms: new Date(iso).getTime() }))
+      .filter((d) => Number.isFinite(d.ms) && d.ms >= now.getTime())
+      .sort((a, b) => a.ms - b.ms)[0];
+    if (upcoming && upcoming.ms - now.getTime() <= URGENT_DEADLINE_HOURS * 3_600_000) {
+      return { level: 'urgent', reason: `deadline within ${URGENT_DEADLINE_HOURS}h`, since, dueAt: upcoming.iso };
+    }
+    return { level: 'action', reason: `${state.replace(/_/g, ' ')} active`, since, dueAt: upcoming ? upcoming.iso : '' };
   }
   if (state === 'applied') {
     const days = daysBetween(since, nowIso);
@@ -145,19 +154,30 @@ function applicationKeyFor(company, role, fallback) {
   return fallback || '';
 }
 
+const DEADLINE_EVENTS = new Set(['interview', 'online_assessment', 'action_required']);
+
 export function buildApplicationRecord(threadKey, signals, now = new Date()) {
   const sorted = [...signals].sort((a, b) =>
     String(a.receivedAt || a.eventDate || '').localeCompare(String(b.receivedAt || b.eventDate || ''))
   );
   const timeline = sorted
     .filter((s) => s.eventType)
-    .map((s) => ({
-      event: s.eventType,
-      at: s.receivedAt || s.eventDate || '',
-      messageId: s.messageId,
-      subject: s.subject,
-      summary: s.summary || s.snippet || '',
-    }));
+    .map((s) => {
+      const entry = {
+        event: s.eventType,
+        at: s.receivedAt || s.eventDate || '',
+        messageId: s.messageId,
+        subject: s.subject,
+        summary: s.summary || s.snippet || '',
+      };
+      if (DEADLINE_EVENTS.has(s.eventType)) {
+        const text = `${s.subject || ''}\n${s.summary || s.snippet || ''}`;
+        const ref = entry.at ? new Date(entry.at) : now;
+        const due = parseDeadline(text, ref);
+        if (due) entry.dueAt = due;
+      }
+      return entry;
+    });
   const currentState = applyStateMachine(timeline);
   const { company, role, humanContact, confidence } = selectBestCompanyAndRole(sorted);
   const firstSeenAt = sorted[0]?.receivedAt || sorted[0]?.eventDate || '';
@@ -188,6 +208,52 @@ export function buildApplications(signals = [], now = new Date()) {
   return apps.sort((a, b) =>
     String(b.lastUpdateAt || '').localeCompare(String(a.lastUpdateAt || ''))
   );
+}
+
+const MONTH_NAMES = [
+  'january', 'february', 'march', 'april', 'may', 'june',
+  'july', 'august', 'september', 'october', 'november', 'december',
+];
+
+function monthIndex(name) {
+  const needle = String(name || '').toLowerCase().replace(/\.$/, '');
+  return MONTH_NAMES.findIndex((full) => full === needle || full.startsWith(needle));
+}
+
+export function parseDeadline(text, referenceDate = new Date()) {
+  if (typeof text !== 'string' || !text) return '';
+  const ref = referenceDate instanceof Date ? referenceDate : new Date(referenceDate);
+  if (!Number.isFinite(ref.getTime())) return '';
+
+  const iso = text.match(/\b(20\d{2})[-/](\d{1,2})[-/](\d{1,2})\b/);
+  if (iso) {
+    const d = new Date(Date.UTC(+iso[1], +iso[2] - 1, +iso[3]));
+    return Number.isFinite(d.getTime()) ? d.toISOString() : '';
+  }
+
+  const inDays = text.match(/\b(?:due|complete|finish|submit|respond)\s+(?:[a-z]+\s+){0,2}?(\d+)\s+(day|days|week|weeks)\b/i);
+  if (inDays) {
+    const n = parseInt(inDays[1], 10);
+    const unit = inDays[2].toLowerCase();
+    const ms = (unit.startsWith('week') ? n * 7 : n) * 86_400_000;
+    return new Date(ref.getTime() + ms).toISOString();
+  }
+
+  const monthDay = text.match(/\b(?:by|before|until|due|complete)\s+(?:end\s+of\s+)?([A-Za-z]+\.?)\s+(\d{1,2})(?:,?\s+(20\d{2}))?\b/i);
+  if (monthDay) {
+    const monthIdx = monthIndex(monthDay[1]);
+    if (monthIdx >= 0) {
+      const day = parseInt(monthDay[2], 10);
+      const year = monthDay[3] ? parseInt(monthDay[3], 10) : ref.getUTCFullYear();
+      let date = new Date(Date.UTC(year, monthIdx, day));
+      if (!monthDay[3] && date.getTime() < ref.getTime() - 30 * 86_400_000) {
+        date = new Date(Date.UTC(year + 1, monthIdx, day));
+      }
+      return date.toISOString();
+    }
+  }
+
+  return '';
 }
 
 export function writeApplications(apps, path) {

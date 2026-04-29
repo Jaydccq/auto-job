@@ -351,3 +351,97 @@ test('writeApplications + parseApplications: round-trips JSONL', () => {
 test('parseApplications: missing file returns empty array', () => {
   assert.deepEqual(parseApplications('/nonexistent/path/apps.jsonl'), []);
 });
+
+import { parseDeadline } from './gmail-applications.mjs';
+
+const REF_DATE = new Date('2026-04-29T12:00:00Z');
+
+test('parseDeadline: ISO date in text returns ISO string', () => {
+  assert.equal(parseDeadline('Please complete the OA by 2026-05-05.', REF_DATE).slice(0, 10), '2026-05-05');
+});
+
+test('parseDeadline: "in N days" returns ref + N days', () => {
+  const out = parseDeadline('Please complete this within 5 days.', REF_DATE);
+  assert.equal(out.slice(0, 10), '2026-05-04');
+});
+
+test('parseDeadline: "by Month Day, Year" returns the named date', () => {
+  const out = parseDeadline('Please respond by May 5, 2026.', REF_DATE);
+  assert.equal(out.slice(0, 10), '2026-05-05');
+});
+
+test('parseDeadline: "by Month Day" without year defaults to ref year', () => {
+  const out = parseDeadline('Please respond by May 5.', REF_DATE);
+  assert.equal(out.slice(0, 10), '2026-05-05');
+});
+
+test('parseDeadline: text with no deadline returns empty string', () => {
+  assert.equal(parseDeadline('Thanks for applying. We will reach out soon.', REF_DATE), '');
+});
+
+test('parseDeadline: empty / non-string input returns empty string', () => {
+  assert.equal(parseDeadline('', REF_DATE), '');
+  assert.equal(parseDeadline(undefined, REF_DATE), '');
+});
+
+test('parseDeadline: month name past relative to ref is shifted to next year', () => {
+  // Reference is April 29, 2026 — "by January 5" with no year should land in Jan 2027
+  const out = parseDeadline('Please complete by January 5.', REF_DATE);
+  assert.equal(out.slice(0, 10), '2027-01-05');
+});
+
+test('parseDeadline: "before April 30" parses correctly', () => {
+  const out = parseDeadline('Submit your assessment before April 30.', REF_DATE);
+  assert.equal(out.slice(0, 10), '2026-04-30');
+});
+
+test('buildApplicationRecord: interview signal with deadline gets dueAt on timeline', () => {
+  const signals = [{
+    messageId: 'm1', threadId: 't1', company: 'Acme', role: 'SE',
+    eventType: 'interview',
+    receivedAt: '2026-04-29T10:00:00Z',
+    subject: 'Interview scheduled',
+    summary: 'Please complete the assessment by 2026-05-05.',
+    confidence: 0.9,
+  }];
+  const app = buildApplicationRecord('t1', signals, new Date('2026-04-29T12:00:00Z'));
+  assert.equal(app.timeline[0].dueAt?.slice(0, 10), '2026-05-05');
+});
+
+test('computeApplicationAttention: interview state with deadline ≤ 48h is promoted to urgent', () => {
+  const REF = new Date('2026-04-29T12:00:00Z');
+  const app = {
+    currentState: 'interview',
+    lastUpdateAt: '2026-04-29T10:00:00Z',
+    timeline: [
+      { event: 'interview', at: '2026-04-29T10:00:00Z', dueAt: '2026-04-30T08:00:00Z' },
+    ],
+  };
+  const attention = computeApplicationAttention(app, REF);
+  assert.equal(attention.level, 'urgent');
+  assert.equal(attention.dueAt, '2026-04-30T08:00:00Z');
+});
+
+test('computeApplicationAttention: interview deadline >48h stays at action', () => {
+  const REF = new Date('2026-04-29T12:00:00Z');
+  const app = {
+    currentState: 'interview',
+    lastUpdateAt: '2026-04-29T10:00:00Z',
+    timeline: [
+      { event: 'interview', at: '2026-04-29T10:00:00Z', dueAt: '2026-05-05T08:00:00Z' },
+    ],
+  };
+  assert.equal(computeApplicationAttention(app, REF).level, 'action');
+});
+
+test('computeApplicationAttention: past deadlines are ignored (no urgent promotion for stale dueAt)', () => {
+  const REF = new Date('2026-04-29T12:00:00Z');
+  const app = {
+    currentState: 'online_assessment',
+    lastUpdateAt: '2026-04-15T00:00:00Z',
+    timeline: [
+      { event: 'online_assessment', at: '2026-04-15T00:00:00Z', dueAt: '2026-04-20T00:00:00Z' },
+    ],
+  };
+  assert.equal(computeApplicationAttention(app, REF).level, 'action');
+});
