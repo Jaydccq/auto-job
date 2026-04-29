@@ -109,13 +109,26 @@ Attention levels:
 
 | Level | Trigger |
 |-------|---------|
-| `urgent` | `currentState ∈ {offer, rejected}` (action required immediately) |
+| `urgent` | `currentState ∈ {offer, rejected}` OR (`currentState ∈ action set` AND any timeline `dueAt` within 48h) |
 | `action` | `currentState ∈ {interview, online_assessment, responded, action_required}` |
 | `stale` | `currentState === 'applied'` AND `now − lastUpdateAt ≥ 14 days` |
 | `info` | everything else |
 
 Defaults `STALE_DAYS_THRESHOLD = 14` and `URGENT_DEADLINE_HOURS = 48` are
 exported from `scripts/gmail-applications.mjs` for downstream consumers.
+
+Deadlines are extracted by `parseDeadline(text, referenceDate)` from the full
+message body during signal extraction (not from the 220-char stored snippet).
+Supported phrasings:
+
+- ISO date: `2026-05-05`, `2026/05/05`
+- Relative: `complete within 5 days`, `due in 2 weeks`, `submit in 3 days`
+- Named: `by May 5`, `before April 30`, `until June 1, 2026` (year defaults to
+  reference year; if the resulting date is more than 30 days in the past, it
+  rolls to the next year)
+
+Signals on `interview` / `online_assessment` / `action_required` events carry
+a `dueAt` ISO field when extraction succeeds.
 
 `data/gmail-applications.jsonl` is gitignored alongside the signals file.
 
