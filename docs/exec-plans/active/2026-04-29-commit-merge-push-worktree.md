@@ -61,6 +61,15 @@ itself is still safe.
 - 2026-04-29: Full `npm run verify` passed repo guard, skill mirrors,
   typecheck, and extension build, but the full parallel server test run timed
   out three tests that passed in targeted reruns.
+- 2026-04-29: Committed and pushed local worktree as `134fa9f chore: sync
+  auto-job worktree`.
+- 2026-04-29: Merged open PRs #1, #2, #3, #4, and #5. PR #4 required a local
+  conflict resolution in `apps/extension/package.json` to keep both `esbuild`
+  `^0.28.0` and `typescript` `^6.0.3`; extension typecheck and build passed
+  before pushing the resolved branch.
+- 2026-04-29: Fast-forwarded local `main` to `origin/main` after all merges.
+  Final `npm run verify` passed with `0` errors and the known duplicate
+  Anduril tracker warning.
 
 ## Key Decisions
 
@@ -76,4 +85,5 @@ itself is still safe.
 
 ## Final Outcome
 
-Pending commit, merge, and push.
+Local changes were committed and pushed, all open PRs were merged, local
+`main` matches `origin/main`, and final repo verification passed.
