@@ -21,7 +21,7 @@
 | `apps/server/src/runtime/scan-job-registry.test.ts` | **new** | Unit tests for registry. |
 | `apps/server/src/server.ts` | modify (one register line) | Wire the new route module after existing dashboard routes. |
 | `web/scan-runner.mjs` | **new** | Catalog table + `spawnScan()` helper that builds argv from a request and starts the child process. |
-| `web/scan-runner.test.mjs` | **new** | Test that `spawnScan()` resolves argv correctly per skill + runner combo. |
+| `apps/server/src/runtime/scan-runner.test.ts` | **new** | Vitest tests that import `../../../../web/scan-runner.mjs` and exercise catalog + argv mapping per skill/runner combo. Lives under `apps/server/src/` because vitest's `include` is `src/**/*.test.ts`. |
 | `web/dashboard-handlers.mjs` | modify (re-export only) | Re-export `getScanCatalog` and `spawnScan` so `dashboard.ts` can resolve them via the existing dynamic-import path. |
 | `web/template.html` | modify | Rename Scan Hist. tab → Scans. Add `<section id="scan-runner">` block above the existing filter bar. Append JS that fetches `/api/scans/catalog`, renders cards, wires Run buttons, opens SSE on click. |
 | `docs/exec-plans/active/2026-04-29-dashboard-scan-launcher.md` | this file | Living plan + progress log. |
@@ -1304,10 +1304,36 @@ git commit -m "feat(scan-launcher): allow ?token= on SSE stream endpoint only"
 
 - 2026-04-29 — Plan drafted.
 - 2026-04-29 — Plan-eng review pass complete; A1a/advanced/v2-defer/SSE-test decisions locked in. No code changes yet.
+- 2026-04-29 — Task 1 complete (commit `134500e`). `apps/server/src/contracts/scan-launch.ts` created, typecheck passes.
+- 2026-04-29 — Task 2 complete (commit `758f2f5`). `web/scan-runner.mjs` + `apps/server/src/runtime/scan-runner.test.ts`. 9/9 tests pass.
+- 2026-04-29 — Task 3 complete (commit `1e7d1c6`). `apps/server/src/runtime/scan-job-registry.{ts,test.ts}`. 5/5 tests pass.
+- 2026-04-29 — Task 4 complete (commit `4c7fee9`). Routes + SSE + spawn integration. 6 new tests, 298 total green. **Tech debt:** `resolveWebDirForScans` in `server.ts` duplicates `resolveWebDir` from `routes/dashboard.ts` — extract to `lib/web-dir.ts` if the dashboard route system grows another consumer.
+- 2026-04-29 — Task 5 complete (commit `a239f20`). UI added to `template.html`; `dashboard:build` regenerates `index.html`. `index.html` and `template.html` are NOT byte-identical (build injects DATA into index.html); template.html is canonical. 298/298 server tests still green.
+- 2026-04-29 — Task 6 complete (commit `9bc67c4`). `tokenFromRequest` exported from `routes/dashboard.ts` allows `?token=` only on the SSE stream URL. 3 new auth tests, 301 total green.
+- 2026-04-29 — Task 7 (verify) complete. `npm run verify` returns 0 errors / 1 unrelated tracker-dup warning. Tech debt logged: live-UI-badge-during-run + duplicated-resolveWebDir.
 
 ## Final Outcome
 
-(filled in after Task 7 verification)
+**Shipped on `main`** in 6 commits (Tasks 1–6) plus the verify gate (Task 7):
+
+| Commit | Task | Summary |
+|---|---|---|
+| `134500e` | 1 | `apps/server/src/contracts/scan-launch.ts` — wire types. |
+| `758f2f5` | 2 | `web/scan-runner.mjs` + `apps/server/src/runtime/scan-runner.test.ts` — catalog + argv builder. 9 tests. |
+| `1e7d1c6` | 3 | `apps/server/src/runtime/scan-job-registry.{ts,test.ts}` — mutex + ring buffer + `lastRunBySkill`. 5 tests. |
+| `4c7fee9` | 4 | `apps/server/src/routes/scans.{ts,test.ts}` + `web/dashboard-handlers.mjs` + `apps/server/src/server.ts` — `/dashboard/api/scans/*` routes, SSE stream, spawn integration. 6 tests. |
+| `a239f20` | 5 | `web/template.html` (regenerated `web/index.html` via `npm run dashboard:build`) — launcher UI: card grid, runner picker, advanced disclosure, live log. |
+| `9bc67c4` | 6 | `tokenFromRequest` helper + narrow SSE `?token=` whitelist. 3 auth tests. |
+
+**Test impact:** 298 → 301 server tests green. Full `npm run verify` passes (0 errors, 1 pre-existing unrelated tracker warning).
+
+**User-visible result:** the dashboard's renamed "Scans" tab now shows a 6-card launcher above the history table. Each card has a runner row (LLM SDK pickers as primary buttons; `discovery-only` tucked under `<details>Advanced</details>`), per-skill input fields, a Run button, and a last-result badge that survives a script crash via the in-memory registry. Running a scan opens a live log pane streaming stdout/stderr over SSE; concurrent runs are blocked at 409 with a clear error.
+
+**Out of scope (kept as written):** kill-running-job button, multi-user auth, job persistence across restarts, scraper changes.
+
+**Tech debt logged in `docs/exec-plans/tech-debt-tracker.md`:**
+- Live UI badge during an in-flight run (post-end refresh is correct; mid-run feels stale).
+- Duplicated `resolveWebDir` in `server.ts` vs. `routes/dashboard.ts`.
 
 ---
 
