@@ -219,9 +219,25 @@ const MONTH_NAMES = [
   'july', 'august', 'september', 'october', 'november', 'december',
 ];
 
+const WEEKDAY_NAMES = [
+  'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
+];
+
 function monthIndex(name) {
   const needle = String(name || '').toLowerCase().replace(/\.$/, '');
   return MONTH_NAMES.findIndex((full) => full === needle || full.startsWith(needle));
+}
+
+function weekdayIndex(name) {
+  const needle = String(name || '').toLowerCase().replace(/\.$/, '');
+  return WEEKDAY_NAMES.findIndex((full) => full === needle || full.startsWith(needle));
+}
+
+function nextWeekdayDate(ref, targetDow, { advanceWeek = false } = {}) {
+  const refDow = ref.getUTCDay();
+  let delta = (targetDow - refDow + 7) % 7;
+  if (advanceWeek) delta += 7;
+  return new Date(Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth(), ref.getUTCDate() + delta));
 }
 
 export function parseDeadline(text, referenceDate = new Date()) {
@@ -254,6 +270,25 @@ export function parseDeadline(text, referenceDate = new Date()) {
         date = new Date(Date.UTC(year + 1, monthIdx, day));
       }
       return date.toISOString();
+    }
+  }
+
+  const tomorrow = text.match(/\b(?:by|before|until|due|complete|respond|submit)\s+(?:[a-z]+\s+){0,2}?tomorrow\b/i);
+  if (tomorrow) {
+    return new Date(Date.UTC(ref.getUTCFullYear(), ref.getUTCMonth(), ref.getUTCDate() + 1)).toISOString();
+  }
+
+  const endOfWeek = /\b(?:by|before|until|due|complete)\s+(?:the\s+)?end\s+of\s+(?:the\s+)?week\b/i;
+  if (endOfWeek.test(text)) {
+    return nextWeekdayDate(ref, 5).toISOString(); // Friday (UTC dow = 5)
+  }
+
+  const weekday = text.match(/\b(?:by|before|until|due|complete|respond|submit)\s+(?:[a-z]+\s+){0,3}?(?:end\s+of\s+(?:the\s+)?day\s+|eod\s+|cob\s+)?(this\s+|next\s+)?([A-Za-z]+day)\b/i);
+  if (weekday) {
+    const wIdx = weekdayIndex(weekday[2]);
+    if (wIdx >= 0) {
+      const advanceWeek = !!(weekday[1] && /^next/i.test(weekday[1].trim()));
+      return nextWeekdayDate(ref, wIdx, { advanceWeek }).toISOString();
     }
   }
 

@@ -445,3 +445,43 @@ test('computeApplicationAttention: past deadlines are ignored (no urgent promoti
   };
   assert.equal(computeApplicationAttention(app, REF).level, 'action');
 });
+
+test('parseDeadline: "by next Friday" returns the Friday after the reference Friday', () => {
+  // Reference: Wednesday April 29, 2026. Next Friday = May 8 (NOT May 1, "next" means the one after this week).
+  const out = parseDeadline('Please complete by next Friday.', new Date('2026-04-29T12:00:00Z'));
+  assert.equal(out.slice(0, 10), '2026-05-08');
+});
+
+test('parseDeadline: "by Friday" (no "next") returns the upcoming Friday', () => {
+  // Reference: Wednesday April 29, 2026. Upcoming Friday = May 1.
+  const out = parseDeadline('Submit by Friday.', new Date('2026-04-29T12:00:00Z'));
+  assert.equal(out.slice(0, 10), '2026-05-01');
+});
+
+test('parseDeadline: "by EOD Monday" returns the upcoming Monday', () => {
+  // Reference: Wednesday April 29, 2026. Upcoming Monday = May 4.
+  const out = parseDeadline('Please respond by EOD Monday.', new Date('2026-04-29T12:00:00Z'));
+  assert.equal(out.slice(0, 10), '2026-05-04');
+});
+
+test('parseDeadline: "tomorrow" returns ref + 1 day', () => {
+  const out = parseDeadline('Please respond by tomorrow.', new Date('2026-04-29T12:00:00Z'));
+  assert.equal(out.slice(0, 10), '2026-04-30');
+});
+
+test('parseDeadline: "end of week" returns the upcoming Friday', () => {
+  const out = parseDeadline('Please complete by end of week.', new Date('2026-04-29T12:00:00Z'));
+  assert.equal(out.slice(0, 10), '2026-05-01');
+});
+
+test('parseDeadline: weekday in the past relative to reference rolls to next occurrence', () => {
+  // Reference: Wednesday April 29. "by Monday" should yield Monday May 4 (NOT April 27).
+  const out = parseDeadline('Submit by Monday.', new Date('2026-04-29T12:00:00Z'));
+  assert.equal(out.slice(0, 10), '2026-05-04');
+});
+
+test('parseDeadline: "by Friday" when ref IS Friday returns same-day', () => {
+  // Reference: Friday May 1, 2026. "by Friday" at noon = same day end.
+  const out = parseDeadline('Submit by Friday.', new Date('2026-05-01T12:00:00Z'));
+  assert.equal(out.slice(0, 10), '2026-05-01');
+});
