@@ -11,13 +11,13 @@ phase uses the bridge's selected backend (Codex / Claude / OpenRouter / fake).
 
 ```bash
 # Start the bridge first.
-bun run server
+npm run server
 
 # In a second shell:
-bun run scan
+npm run scan
 ```
 
-`bun run scan` discovers via APIs, dedupes against `data/scan-history.tsv`,
+`npm run scan` discovers via APIs, dedupes against `data/scan-history.tsv`,
 appends new rows to `data/pipeline.md`, queues current-run jobs through
 `/v1/evaluate` with `evaluationMode: newgrad_quick`, and waits for tracker
 and report completion before exiting.
@@ -26,11 +26,11 @@ and report completion before exiting.
 
 | Command | Behavior |
 |---------|----------|
-| `bun run scan -- --no-evaluate` | Discovery only; do not evaluate |
-| `bun run scan -- --evaluate-limit 5` | Cap the evaluation batch |
-| `bun run scan -- --builtin-only` | Restrict to Built In adapters |
-| `bun run scan -- --evaluate-only` | Re-evaluate already-pending Built In rows |
-| `bun run scan -- --dry-run` | Discover and log, queue nothing |
+| `npm run scan -- --no-evaluate` | Discovery only; do not evaluate |
+| `npm run scan -- --evaluate-limit 5` | Cap the evaluation batch |
+| `npm run scan -- --builtin-only` | Restrict to Built In adapters |
+| `npm run scan -- --evaluate-only` | Re-evaluate already-pending Built In rows |
+| `npm run scan -- --dry-run` | Discover and log, queue nothing |
 
 `--evaluate` is accepted for compatibility but redundant — direct evaluation
 is the default.
@@ -48,7 +48,7 @@ manually:
    wall). Use site-scoped queries first.
 
 Append discovered rows to `data/pipeline.md` with the same shape the API
-adapters use, then run `bun run scan -- --evaluate-only` to push them
+adapters use, then run `npm run scan -- --evaluate-only` to push them
 through the bridge.
 
 ## Run artifacts
@@ -63,7 +63,7 @@ The dashboard reads these to show the most recent scan health.
 
 ## Liveness verification (post-evaluate)
 
-Reports with score ≥ 4.5 should also pass `bun run liveness <url>` before
+Reports with score ≥ 4.5 should also pass `npm run liveness <url>` before
 the user invests time on a tailored CV. The liveness check uses Playwright
 and the rules in `liveness-core.mjs` to decide active / expired /
 uncertain.

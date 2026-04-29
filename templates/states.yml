@@ -2,8 +2,8 @@
 #
 # The `status` column in data/applications.md must contain exactly one of the
 # `label` values below. The matcher is case-insensitive and accepts any value
-# in `aliases`. Anything else is rejected by `bun run normalize` and flagged by
-# `bun run verify`.
+# in `aliases`. Anything else is rejected by `npm run normalize` and flagged by
+# `npm run verify`.
 #
 # Do not encode dates, scores, or notes in the status column — those have their
 # own columns.

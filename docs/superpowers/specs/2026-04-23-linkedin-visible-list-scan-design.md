@@ -52,6 +52,6 @@ visible buttons, selecting them, and reading the selected detail state.
 
 - Unit test visible-row parsing with current LinkedIn row text samples.
 - Typecheck the bridge and scanner script.
-- Run `bun run linkedin-scan -- --url "<LinkedIn URL>" --score-only --limit 20`
+- Run `npm run linkedin-scan -- --url "<LinkedIn URL>" --score-only --limit 20`
   and verify it extracts all currently visible results instead of only one.
 - Run the write path with `--no-evaluate` after the preview succeeds.

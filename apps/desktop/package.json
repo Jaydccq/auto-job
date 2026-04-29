@@ -8,15 +8,15 @@
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
-    "build:server": "bun run --cwd ../../packages/shared build && bun run --cwd ../server build",
+    "build:server": "npm --prefix ../../packages/shared run build && npm --prefix ../server run build",
     "build:main": "esbuild src/main.ts --bundle --platform=node --target=node20 --external:electron --outfile=dist/main.js --format=esm --sourcemap",
     "build:preload": "esbuild src/settings-preload.ts --bundle --platform=node --target=node20 --external:electron --outfile=dist/settings-preload.js --format=cjs --sourcemap",
-    "build": "bun run build:server && bun run build:preload && bun run build:main",
-    "dev": "bun run build && electron dist/main.js",
-    "start": "bun run build && electron dist/main.js",
+    "build": "npm run build:server && npm run build:preload && npm run build:main",
+    "dev": "npm run build && electron dist/main.js",
+    "start": "npm run build && electron dist/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "package": "bun run build && electron-builder --mac --config electron-builder.yml",
-    "package:dir": "bun run build && electron-builder --mac --dir --config electron-builder.yml"
+    "package": "npm run build && electron-builder --mac --config electron-builder.yml",
+    "package:dir": "npm run build && electron-builder --mac --dir --config electron-builder.yml"
   },
   "dependencies": {
     "@auto-job/server": "workspace:*",

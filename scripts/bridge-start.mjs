@@ -77,12 +77,12 @@ const env = {
   ...process.env,
   ...mode.env,
 };
-const bunBin = process.platform === "win32" ? "bun.cmd" : "bun";
-const bunArgs = ["run", "--cwd", "apps/server", "start"];
+const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
+const npmArgs = ["--prefix", "apps/server", "run", "start"];
 
 if (dryRun) {
   console.log(`Mode: ${mode.label}`);
-  console.log(`Command: ${bunBin} ${bunArgs.join(" ")}`);
+  console.log(`Command: ${npmBin} ${npmArgs.join(" ")}`);
   console.log("Env:");
   for (const [key, value] of Object.entries(mode.env)) {
     console.log(`  ${key}=${value}`);
@@ -90,7 +90,7 @@ if (dryRun) {
   process.exit(0);
 }
 
-const child = spawn(bunBin, bunArgs, {
+const child = spawn(npmBin, npmArgs, {
   cwd: repoRoot,
   env,
   stdio: "inherit",

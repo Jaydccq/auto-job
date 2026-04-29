@@ -35,9 +35,9 @@ Each reviewer issue is addressed by a specific task below.
 Run: `git worktree add ../auto-job-latency -b feat/latency-phase1-2 main`
 Expected: new worktree at `../auto-job-latency`, on branch `feat/latency-phase1-2`.
 
-**Step 2:** `cd ../auto-job-latency && bun install` (runs in root). Verify tests pass on clean baseline.
+**Step 2:** `cd ../auto-job-latency && npm install` (runs in root). Verify tests pass on clean baseline.
 
-Run: `bun test`
+Run: `node --test`
 Expected: all existing tests pass (green baseline).
 
 **Step 3:** Commit the (empty-diff) starting point to anchor the branch.
@@ -170,7 +170,7 @@ This makes it impossible to hide a latency improvement that came purely from dro
 
 **Step 3: Write unit tests** for the result parser (not the Codex call) — parse a synthetic report, assert scores extracted correctly.
 
-Run: `bunx vitest run scripts/run-eval-harness.test.mjs`
+Run: `npx vitest run scripts/run-eval-harness.test.mjs`
 Expected: PASS.
 
 **Step 4: Commit**
@@ -207,7 +207,7 @@ describe("JD_MIN_CHARS wiring", () => {
 
 **Step 2: Run it — expect fail or pass depending on import path**
 
-Run: `bunx vitest run extension/src/background/index.test.ts`
+Run: `npx vitest run extension/src/background/index.test.ts`
 Expected: may fail due to missing import resolution. Fix by configuring a path alias or copying the export into a shared module referenced by both sides (preferred: tsconfig path alias `@contracts/*` → `bridge/src/contracts/*`).
 
 **Step 3: Replace the hardcoded 400**
@@ -224,7 +224,7 @@ import { JD_MIN_CHARS } from "@contracts/jobs";
 
 **Step 4: Re-run tests**
 
-Run: `bunx vitest run`
+Run: `npx vitest run`
 Expected: all pass.
 
 **Step 5: Commit**
@@ -268,7 +268,7 @@ describe("CODEX_BRIDGE_REASONING", () => {
 });
 ```
 
-**Step 2:** `bunx vitest run bridge/src/runtime/config.test.ts` — expect FAIL (field doesn't exist).
+**Step 2:** `npx vitest run bridge/src/runtime/config.test.ts` — expect FAIL (field doesn't exist).
 
 **Step 3: Implement**
 
@@ -289,7 +289,7 @@ args: [
 
 Note: `--search` and `-c model_reasoning_effort=...` are both global flags; per Codex CLI conventions they go **before** `exec`. Verify by running `codex --help` once — if they go after, swap. The test in Task 7 will catch wiring mistakes.
 
-**Step 4:** `bunx vitest run` — expect PASS.
+**Step 4:** `npx vitest run` — expect PASS.
 
 **Step 5: Commit**
 

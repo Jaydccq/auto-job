@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript, Fastify, zod (bridge); TypeScript, plain DOM (extension); esbuild (build)
 
-**Verification gate:** `bridge/ tsc --noEmit` clean, `extension/ tsc --noEmit` clean, `bun run build` in extension clean, 15+ bridge smoke tests passing including the new endpoints.
+**Verification gate:** `bridge/ tsc --noEmit` clean, `extension/ tsc --noEmit` clean, `npm run build` in extension clean, 15+ bridge smoke tests passing including the new endpoints.
 
 ---
 
@@ -115,7 +115,7 @@ fastify.get("/v1/jobs", async (_req, reply) => {
 
 **Step 6: Typecheck**
 
-Run: `cd bridge && bunx tsc --noEmit`
+Run: `cd bridge && npx tsc --noEmit`
 Expected: exit 0
 
 **Step 7: Smoke test new routes**
@@ -200,7 +200,7 @@ The simplest path: add a `MergeReport` type to `messages.ts` that mirrors the br
 
 **Step 4: Typecheck extension**
 
-Run: `cd extension && bunx tsc --noEmit`
+Run: `cd extension && npx tsc --noEmit`
 Expected: exit 0
 
 **Step 5: Commit**
@@ -240,7 +240,7 @@ Follow the exact pattern of `handleGetHealth` — load state, create client, cal
 
 **Step 3: Typecheck extension**
 
-Run: `cd extension && bunx tsc --noEmit`
+Run: `cd extension && npx tsc --noEmit`
 Expected: exit 0
 
 **Step 4: Commit**
@@ -304,7 +304,7 @@ Key: build each row using DOM methods (`createElement`, `textContent`), no `inne
 **Step 4: Typecheck and build**
 
 ```bash
-cd extension && bunx tsc --noEmit && bun run build
+cd extension && npx tsc --noEmit && npm run build
 ```
 
 **Step 5: Commit**
@@ -356,7 +356,7 @@ mergeTrackerBtn.addEventListener("click", () => void onMergeTrackerClick());
 **Step 3: Typecheck and build**
 
 ```bash
-cd extension && bunx tsc --noEmit && bun run build
+cd extension && npx tsc --noEmit && npm run build
 ```
 
 **Step 4: Commit**
@@ -398,7 +398,7 @@ This makes the popup feel instant on reopen — the health dot is already green.
 **Step 3: Typecheck and build**
 
 ```bash
-cd extension && bunx tsc --noEmit && bun run build
+cd extension && npx tsc --noEmit && npm run build
 ```
 
 **Step 4: Commit**
@@ -419,13 +419,13 @@ git commit -m "feat(extension): add 15s health polling with cached state on popu
 
 **Step 1: Bridge-offline state**
 
-When health check fails, the popup currently shows `bad` health dot + the error panel. Improve: show a dedicated "bridge offline" banner at the top of the popup that persists across state changes, with a hint to run `cd bridge && bun run start`.
+When health check fails, the popup currently shows `bad` health dot + the error panel. Improve: show a dedicated "bridge offline" banner at the top of the popup that persists across state changes, with a hint to run `cd bridge && npm run start`.
 
 Add an HTML element:
 
 ```html
 <div id="offline-banner" class="offline-banner hidden">
-  Bridge not reachable. Run: <code>cd bridge && bun run start</code>
+  Bridge not reachable. Run: <code>cd bridge && npm run start</code>
 </div>
 ```
 
@@ -463,7 +463,7 @@ Simpler for Phase 3: just check the job status once from the bridge. If `complet
 **Step 3: Typecheck and build**
 
 ```bash
-cd extension && bunx tsc --noEmit && bun run build
+cd extension && npx tsc --noEmit && npm run build
 ```
 
 **Step 4: Commit**
@@ -483,14 +483,14 @@ git commit -m "feat(extension): add offline banner and evaluating-on-reopen stat
 **Step 1: Typecheck both projects**
 
 ```bash
-cd auto-job/bridge && bunx tsc --noEmit && echo "bridge OK"
-cd ../extension && bunx tsc --noEmit && echo "extension OK"
+cd auto-job/bridge && npx tsc --noEmit && echo "bridge OK"
+cd ../extension && npx tsc --noEmit && echo "extension OK"
 ```
 
 **Step 2: Build the extension**
 
 ```bash
-cd extension && bun run build
+cd extension && npm run build
 ```
 
 **Step 3: Run the expanded bridge smoke test**

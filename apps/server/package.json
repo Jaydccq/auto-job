@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
     "build:js": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js --sourcemap --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
-    "build": "bun run build:types && bun run build:js",
+    "build": "npm run build:types && npm run build:js",
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts"
   },

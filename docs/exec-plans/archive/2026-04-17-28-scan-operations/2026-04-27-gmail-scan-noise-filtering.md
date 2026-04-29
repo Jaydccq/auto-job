@@ -64,7 +64,7 @@ Out of scope:
 - Existing `test-all.mjs` Gmail parser block, extended with false-positive
   fixtures.
 - A targeted Node assertion script for the new classifier behavior.
-- `bun run gmail:update` for live refresh if the OAuth environment allows it.
+- `npm run gmail:update` for live refresh if the OAuth environment allows it.
 
 ## Progress Log
 
@@ -86,7 +86,7 @@ Out of scope:
 - 2026-04-27: Verification run:
   `node --check scripts/gmail-oauth-refresh.mjs`, `node --check test-all.mjs`,
   `node --check web/build-dashboard.mjs`, targeted classifier assertions,
-  `bun run gmail:update`, `node verify-pipeline.mjs`, and scoped
+  `npm run gmail:update`, `node verify-pipeline.mjs`, and scoped
   `git diff --check` passed. `node test-all.mjs --quick` still fails on the
   repository's existing absolute-path findings outside this Gmail change; its
   Gmail regression block passes.

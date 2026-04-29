@@ -25,7 +25,7 @@ them; nothing in CI ships them. The user is the only writer.
 | `output/*` | Generated PDFs, cover letters, HTML drafts |
 | `jds/*` | Pasted JD captures |
 | `interview-prep/{company}-{role}.md` | Per-company interview intel |
-| `batch/tracker-additions/*.tsv` | Pending tracker rows (merged by `bun run merge`) |
+| `batch/tracker-additions/*.tsv` | Pending tracker rows (merged by `npm run merge`) |
 
 If the user asks the runtime to "remember", "tune", "personalize", or
 "customize" anything, the change goes into one of `cv.md`,
@@ -78,7 +78,7 @@ Tab-separated, 9 columns, status **before** score:
 {num}\t{date}\t{company}\t{role}\t{status}\t{score}/5\t{pdf}\t{report-link}\t{notes}
 ```
 
-`bun run merge` reads these, swaps the column order to match the tracker,
+`npm run merge` reads these, swaps the column order to match the tracker,
 deduplicates by report number → company+role, and moves the file to
 `batch/tracker-additions/merged/`.
 
@@ -106,7 +106,7 @@ shape matches `packages/shared`. If you change a field, change all three.
 
 ## Verification
 
-`bun run verify` runs the integrity gate over the user-data layer (canonical
+`npm run verify` runs the integrity gate over the user-data layer (canonical
 statuses, score format, no duplicates, report links resolve), the
 ownership-guard over the owned-runtime layer, and the workspace
 test/typecheck/build steps.

@@ -6,8 +6,8 @@ evaluations for enrich survivors.
 
 ## Prerequisites
 
-- Bridge server running in real Codex mode (`bun run server`)
-- Playwright browser installed (`bunx playwright install chromium` if missing)
+- Bridge server running in real Codex mode (`npm run server`)
+- Playwright browser installed (`npx playwright install chromium` if missing)
 - Google Chrome installed when a manual Jobright login is needed
 
 ## Execution
@@ -19,7 +19,7 @@ Chrome extension and sends results through the existing bridge endpoints.
 
 Check `/v1/health`. If not reachable, tell the user:
 
-> "Start the bridge first: `bun run server`"
+> "Start the bridge first: `npm run server`"
 
 The health response should show `execution.mode=real` and
 `execution.realExecutor=codex` before queueing evaluations.
@@ -30,7 +30,7 @@ If Jobright requires login, open the dedicated non-automated Chrome login
 window:
 
 ```bash
-bun run newgrad-scan:login
+npm run newgrad-scan:login
 ```
 
 This opens top-level `https://jobright.ai/` with the same persistent profile
@@ -44,7 +44,7 @@ the profile is not locked.
 Run:
 
 ```bash
-bun run newgrad-scan
+npm run newgrad-scan
 ```
 
 This opens `https://www.newgrad-jobs.com/` in a headless bundled Chromium scan
@@ -63,16 +63,16 @@ waits for direct evaluation jobs.
 Useful options:
 
 ```bash
-bun run newgrad-scan -- --headless
-bun run newgrad-scan -- --headed
-bun run newgrad-scan -- --chrome
-bun run newgrad-scan -- --score-only
-bun run newgrad-scan -- --no-evaluate
-bun run newgrad-scan -- --evaluate-limit 3
-bun run newgrad-scan -- --enrich-limit 10
-bun run newgrad-scan -- --list-source api --score-only
-bun run newgrad-scan -- --list-source initial-jobs --limit 20 --score-only
-bun run newgrad-scan -- --user-data-dir data/browser-profiles/newgrad-scan
+npm run newgrad-scan -- --headless
+npm run newgrad-scan -- --headed
+npm run newgrad-scan -- --chrome
+npm run newgrad-scan -- --score-only
+npm run newgrad-scan -- --no-evaluate
+npm run newgrad-scan -- --evaluate-limit 3
+npm run newgrad-scan -- --enrich-limit 10
+npm run newgrad-scan -- --list-source api --score-only
+npm run newgrad-scan -- --list-source initial-jobs --limit 20 --score-only
+npm run newgrad-scan -- --user-data-dir data/browser-profiles/newgrad-scan
 ```
 
 List source behavior:

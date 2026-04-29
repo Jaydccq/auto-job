@@ -193,7 +193,7 @@ are clickable buttons and only the selected row exposes a job-view URL.
   --limit 20` reported bridge health OK, extracted 25 raw rows, deduped to 20
   unique rows, promoted 16, filtered 4, and called no bridge write endpoints.
 - 2026-04-23: The package script currently points `linkedin-scan` at
-  `bun --cwd bridge ...`, but `bun` is not installed on PATH. To avoid editing
+  `npm --prefix bridge ...`, but `npm` is not installed on PATH. To avoid editing
   unrelated dirty worktree changes, this run used the same scanner target
   directly via `npm --prefix bridge exec -- tsx`.
 - 2026-04-23: A separate long-running bridge tool session was terminated before

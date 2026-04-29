@@ -12,7 +12,7 @@ Run the autonomous newgrad scan from the local checkout and let the default
 
 ## Scope
 
-- Use the checked-in `bun run newgrad-scan` command.
+- Use the checked-in `npm run newgrad-scan` command.
 - Preserve unrelated worktree changes.
 - Record scan artifacts and blockers in this plan.
 
@@ -48,7 +48,7 @@ also inspect the summary for queue and completion counts.
 - 2026-04-29: Required user-layer files exist.
 - 2026-04-29: Unauthenticated bridge health returned `UNAUTHORIZED`, confirming
   the bridge is listening and token-protected.
-- 2026-04-29: First sandboxed `bun run newgrad-scan` failed before scanning
+- 2026-04-29: First sandboxed `npm run newgrad-scan` failed before scanning
   with `listen EPERM` on the `tsx` IPC pipe.
 - 2026-04-29: Approved rerun outside the sandbox reached bridge health, scanned
   156 rows, promoted 88, then stopped advancing during detail enrichment. The

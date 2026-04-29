@@ -7,7 +7,7 @@ install the macOS LaunchAgent:
 ## One-time install
 
 ```bash
-bun run app:install
+npm run app:install
 ```
 
 This creates `~/Library/LaunchAgents/io.hongxi.auto-job.plist` and loads
@@ -16,11 +16,11 @@ it via `launchctl`. The server starts immediately and re-launches at login.
 ## Day-to-day commands
 
 ```bash
-bun run app:status       # Is it running? Show PID
-bun run app:logs         # Tail stdout + stderr
-bun run app:logs:err     # Tail stderr only
-bun run app:restart      # Restart the running server
-bun run app:uninstall    # Remove the LaunchAgent (stops it now + at next login)
+npm run app:status       # Is it running? Show PID
+npm run app:logs         # Tail stdout + stderr
+npm run app:logs:err     # Tail stderr only
+npm run app:restart      # Restart the running server
+npm run app:uninstall    # Remove the LaunchAgent (stops it now + at next login)
 ```
 
 ## Where things live
@@ -35,26 +35,26 @@ bun run app:uninstall    # Remove the LaunchAgent (stops it now + at next login)
 
 The LaunchAgent runs with `AUTO_JOB_BACKEND=real-codex` (Codex CLI).
 Switch to OpenRouter or Claude CLI by editing the plist's
-`EnvironmentVariables` block, then `bun run app:restart`.
+`EnvironmentVariables` block, then `npm run app:restart`.
 
 ## Crash recovery
 
 The plist sets `KeepAlive: { Crashed: true, SuccessfulExit: false }`,
 so the server is auto-restarted only after a crash, never after a clean
-exit (so `bun run app:uninstall` actually stops it).
+exit (so `npm run app:uninstall` actually stops it).
 
 ## Verifying the install
 
 ```bash
-bun run app:status
+npm run app:status
 # Status: RUNNING (pid 12345)
 
 curl -s http://127.0.0.1:47319/dashboard/ | head -5
 # (should print HTML)
 ```
 
-If `app:status` says NOT INSTALLED, run `bun run app:install`. If it
-says LOADED but not running, check logs with `bun run app:logs:err`.
+If `app:status` says NOT INSTALLED, run `npm run app:install`. If it
+says LOADED but not running, check logs with `npm run app:logs:err`.
 
 ## Building the .app bundle (Electron desktop app)
 
@@ -63,7 +63,7 @@ embeds the bridge server in-process and surfaces a menu-bar tray plus a
 settings window. For personal use (no codesigning), build it with:
 
 ```bash
-bun run --cwd apps/desktop package
+npm --prefix apps/desktop run package
 ```
 
 This produces:
@@ -73,7 +73,7 @@ This produces:
 For a faster iteration loop (skip DMG, just the .app):
 
 ```bash
-bun run --cwd apps/desktop package:dir
+npm --prefix apps/desktop run package:dir
 ```
 
 Drag `Auto Job.app` to `/Applications/`. The bundle is unsigned, so
@@ -126,14 +126,14 @@ hard to read.
 ### Desktop dev mode
 
 The packaged app path is the supported desktop path right now:
-`bun run --cwd apps/desktop package` and `package:dir` build
+`npm --prefix apps/desktop run package` and `package:dir` build
 compiled server/shared output and launch without relying on runtime
 `tsx` transforms.
 
 For local desktop iteration, run:
 
 ```bash
-bun run --cwd apps/desktop dev
+npm --prefix apps/desktop run dev
 ```
 
 The command now compiles server/shared/desktop output first, then runs

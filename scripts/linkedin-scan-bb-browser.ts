@@ -206,7 +206,7 @@ function usage(): string {
   return `auto-job LinkedIn scan via bb-browser
 
 Usage:
-  bun run linkedin-scan -- --url "<LinkedIn Jobs search URL>" [options]
+  npm run linkedin-scan -- --url "<LinkedIn Jobs search URL>" [options]
 
 Options:
   --url <url>                    LinkedIn Jobs search URL. If omitted, reads config/profile.yml -> linkedin_scan.search_url.

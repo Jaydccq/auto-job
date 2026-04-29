@@ -21,7 +21,7 @@ Merge `jd-extension-work` into local `main`, replace the upstream-style README w
 - "My own main branch" means the fork remote branch `origin/main`, not `upstream/main`.
 - The README should be a concise map for this fork, not an upstream marketing page.
 - Private data files remain gitignored and should not be exposed in README.
-- Existing duplicate warnings from `bun run verify` are acceptable if there are no errors.
+- Existing duplicate warnings from `npm run verify` are acceptable if there are no errors.
 
 ## Implementation Steps
 
@@ -34,7 +34,7 @@ Merge `jd-extension-work` into local `main`, replace the upstream-style README w
 4. Rewrite root `README.md`.
    Verify: README is concise, personal to the fork, and links to detailed docs.
 5. Run verification.
-   Verify: `git diff --check`, `bun run verify`, and extension/web smoke checks as needed.
+   Verify: `git diff --check`, `npm run verify`, and extension/web smoke checks as needed.
 6. Commit and push directly to `origin/main`.
    Verify: `git status --short --branch` is clean and `origin/main` points at the new commit.
 
@@ -51,7 +51,7 @@ Merge `jd-extension-work` into local `main`, replace the upstream-style README w
 - 2026-04-19: Merged `jd-extension-work` into `main` with conflicts in `.claude/skills/auto-job/SKILL.md`, `README.md`, `modes/auto-pipeline.md`, and `package.json`.
 - 2026-04-19: Resolved non-README conflicts by keeping the tested feature-branch behavior, including explicit cover-letter confirmation and extension/bridge scripts.
 - 2026-04-19: Rewrote `README.md` as a concise personal fork map.
-- 2026-04-19: Ran `git diff --check`, `bun run verify`, `bun run ext:build`, and `bun run dashboard`.
+- 2026-04-19: Ran `git diff --check`, `npm run verify`, `npm run ext:build`, and `npm run dashboard`.
 
 ## Key Decisions
 
@@ -62,7 +62,7 @@ Merge `jd-extension-work` into local `main`, replace the upstream-style README w
 
 - Merge may conflict because `main` is behind the tested feature branch and upstream merge history.
 - Reapplying the safety stash after merge may conflict with now-tracked files; leave it stashed unless the user asks to restore.
-- `bun run verify` still reports the existing duplicate warnings for PayPal, Vast.ai, and Anduril, but reports 0 errors.
+- `npm run verify` still reports the existing duplicate warnings for PayPal, Vast.ai, and Anduril, but reports 0 errors.
 
 ## Final Outcome
 

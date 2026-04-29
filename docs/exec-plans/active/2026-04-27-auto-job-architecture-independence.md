@@ -47,14 +47,14 @@ Success means:
   upstream author's project.
 - No default command fetches, merges, applies, or advertises upstream updates.
 - Core behavior remains intact:
-  - `bun run verify`
-  - `bun run newgrad-scan`
-  - `bun run linkedin-scan`
-  - `bun run builtin-scan`
-  - `bun run indeed-scan`
-  - `bun run ext:build`
-  - `bun run server`
-  - `bun run dashboard:build`
+  - `npm run verify`
+  - `npm run newgrad-scan`
+  - `npm run linkedin-scan`
+  - `npm run builtin-scan`
+  - `npm run indeed-scan`
+  - `npm run ext:build`
+  - `npm run server`
+  - `npm run dashboard:build`
 - Scan/evaluate/dashboard/extension modules have explicit boundaries and tests.
 - Old upstream surfaces are either removed, archived, or deliberately kept with
   a documented reason.
@@ -305,7 +305,7 @@ spend migration effort on import churn instead of reducing fork coupling.
 5. Distribution check:
    - No new distributable artifact is required for the first migration.
    - If later packaging the extension or bridge as release artifacts, add a
-     separate release plan for Chrome extension packaging and bridge binary/Bun scripts
+     separate release plan for Chrome extension packaging and bridge binary/npm scripts
      distribution.
 
 Recommendation: proceed with phased ownership migration, not a rewrite.
@@ -470,13 +470,13 @@ exceptions are reviewed rather than accidental.
 
 | Phase | Exit criteria | Required verification | Stop condition |
 |-------|---------------|-----------------------|----------------|
-| 1. Ownership/guards | live upstream updater removed or disabled, metadata owned by Hongxi, attribution preserved | `node --check` for changed scripts, upstream guard, `bun run verify` if guard is wired into verify | any default command can still fetch from `santifer/auto-job` |
+| 1. Ownership/guards | live upstream updater removed or disabled, metadata owned by Hongxi, attribution preserved | `node --check` for changed scripts, upstream guard, `npm run verify` if guard is wired into verify | any default command can still fetch from `santifer/auto-job` |
 | 2. Plan consolidation | active plans reduced to current workstreams, summaries preserve decisions and verification | plan inventory before/after, spot-check summaries, `git diff --check` | uncertain whether a completed plan contains unresolved work |
 | 3. Scanner boundary | lifecycle doc exists, provider fixtures cover NewGrad/JobRight/LinkedIn/Built In/Indeed identities | focused bridge adapter tests, score-only smoke for touched scanner when feasible | extraction changes alter default evaluate behavior without tests |
 | 4. Evaluation contract | input/report/tracker schemas documented and fixture-tested | bridge tests, malformed-output fixtures, fake bridge evaluation smoke | prompt/template edits happen before parser fixtures exist |
 | 5. Extension contract | bridge wire schema drift caught by type/test checks, autofill safety still enforced | extension typecheck/build/tests, bridge typecheck/tests | any path can submit/click next/apply/upload without explicit user action |
-| 6. Command prune | retained/removed frontends documented, routing tables consistent | command table grep, `bun run` review, mode file checks | deleting `.gemini`/`.opencode` before confirming the user does not need them |
-| 7. Physical moves | only if imports remain painful after earlier phases | full `bun run verify`, extension build, dashboard build, targeted scanner checks | diff becomes mostly import churn with no boundary improvement |
+| 6. Command prune | retained/removed frontends documented, routing tables consistent | command table grep, `npm run` review, mode file checks | deleting `.gemini`/`.opencode` before confirming the user does not need them |
+| 7. Physical moves | only if imports remain painful after earlier phases | full `npm run verify`, extension build, dashboard build, targeted scanner checks | diff becomes mostly import churn with no boundary improvement |
 
 ## First Implementation PR: Minimal Diff
 
@@ -495,7 +495,7 @@ change scanner/evaluator behavior.
      to "Owned Runtime Layer is changed only by this repo"
    - remove `update`, `update:check`, and `rollback` from default `package.json`
      scripts or replace them with an archive/error command
-   Verify: `bun run` no longer advertises upstream update as a normal workflow.
+   Verify: `npm run` no longer advertises upstream update as a normal workflow.
 3. Preserve attribution:
    - keep `LICENSE`
    - document original fork/source in `docs/architecture/origin-and-ownership.md`
@@ -522,9 +522,9 @@ Detected test framework:
 
 - Node root scripts.
 - Bridge: Vitest + TypeScript (`bridge/vitest.config.ts`,
-  `bun run --cwd apps/server test`, `bun run --cwd apps/server typecheck`).
-- Extension: TypeScript + esbuild build (`bun run --cwd apps/extension typecheck`,
-  `bun run ext:build`).
+  `npm --prefix apps/server run test`, `npm --prefix apps/server run typecheck`).
+- Extension: TypeScript + esbuild build (`npm --prefix apps/extension run typecheck`,
+  `npm run ext:build`).
 - No Playwright test config, but Playwright is used by scan/PDF scripts.
 
 ### Coverage Diagram For This Migration
@@ -576,25 +576,25 @@ USER FLOW COVERAGE
 ==================
 [+] Daily scan flow
     |
-    +-- [GAP] bun run newgrad-scan -- --score-only smoke
-    +-- [GAP] bun run linkedin-scan -- --score-only bounded smoke
-    +-- [GAP] bun run builtin-scan -- --score-only bounded smoke
-    +-- [GAP] bun run indeed-scan -- --score-only bounded smoke
+    +-- [GAP] npm run newgrad-scan -- --score-only smoke
+    +-- [GAP] npm run linkedin-scan -- --score-only bounded smoke
+    +-- [GAP] npm run builtin-scan -- --score-only bounded smoke
+    +-- [GAP] npm run indeed-scan -- --score-only bounded smoke
 
 [+] Evaluate from extension
     |
-    +-- [GAP] bun run ext:build
+    +-- [GAP] npm run ext:build
     +-- [GAP] bridge /v1/health works in fake mode
     +-- [GAP] fake evaluation returns expected report/tracker shape
 
 [+] Dashboard review flow
     |
-    +-- [GAP] bun run dashboard:build
+    +-- [GAP] npm run dashboard:build
     +-- [GAP] generated web/index.html still includes priority/action surfaces
 
 [+] Document generation
     |
-    +-- [GAP] bun run pdf or equivalent targeted PDF smoke when touched
+    +-- [GAP] npm run pdf or equivalent targeted PDF smoke when touched
     +-- [GAP] LaTeX retained/removed decision verified by command table
 ```
 
@@ -657,11 +657,11 @@ Recommendations:
    - remove `update`, `update:check`, and `rollback` daily scripts, or replace
      with a local explanatory command
    - update `CLAUDE.md` so agents do not run upstream checks on session start
-   Verify: `bun run` no longer advertises upstream update commands.
+   Verify: `npm run` no longer advertises upstream update commands.
 4. Add a mechanical guard:
    - a small Node script or verify step that fails on forbidden live upstream
      references outside allowlisted attribution/archive files
-   Verify: `bun run verify` includes or calls the guard.
+   Verify: `npm run verify` includes or calls the guard.
 
 ### Phase 2: Execution-plan consolidation
 
@@ -763,7 +763,7 @@ from ownership, contracts, docs, and tests first.
 
 | Question | Default recommendation | Why | When to revisit |
 |----------|------------------------|-----|-----------------|
-| Keep `.gemini/` and `.opencode/`? | Defer deletion until Phase 6 | They are command surfaces, not runtime blockers; removing early may break fallback workflows | after Codex/Bun routes are complete and verified |
+| Keep `.gemini/` and `.opencode/`? | Defer deletion until Phase 6 | They are command surfaces, not runtime blockers; removing early may break fallback workflows | after Codex/npm routes are complete and verified |
 | Keep LaTeX export? | Keep for now | It is adjacent document functionality and not a fork-coupling source by itself | after PDF/document workflow is audited |
 | Rename project? | Defer product naming | Independence does not require a new name; premature rename creates broad docs/scripts churn | after Phase 1 proves owned metadata and update behavior |
 | Remove `upstream` remote? | Keep temporarily, remove later | Useful for provenance checks during migration, dangerous only if commands use it | after guard proves no active upstream update path remains |
@@ -777,27 +777,27 @@ Run after each phase when touched files justify it:
 
 ```bash
 git diff --check
-bun run verify
-bun run --cwd apps/server test
-bun run --cwd apps/server typecheck
-bun run --cwd apps/extension typecheck
-bun run ext:build
-bun run dashboard:build
+npm run verify
+npm --prefix apps/server run test
+npm --prefix apps/server run typecheck
+npm --prefix apps/extension run typecheck
+npm run ext:build
+npm run dashboard:build
 ```
 
 Targeted scan checks when scanner code changes:
 
 ```bash
-bun run newgrad-scan -- --score-only --limit 20
-bun run linkedin-scan -- --score-only --limit 10
-bun run builtin-scan -- --score-only --limit 10 --pages 1
-bun run indeed-scan -- --score-only --limit 10 --pages 1
+npm run newgrad-scan -- --score-only --limit 20
+npm run linkedin-scan -- --score-only --limit 10
+npm run builtin-scan -- --score-only --limit 10 --pages 1
+npm run indeed-scan -- --score-only --limit 10 --pages 1
 ```
 
 Targeted bridge checks when evaluation code changes:
 
 ```bash
-AUTO_JOB_BACKEND=fake bun run server
+AUTO_JOB_BACKEND=fake npm run server
 curl -s -H "x-auto-job-token: $(cat bridge/.bridge-token)" \
   http://127.0.0.1:47319/v1/health
 ```
@@ -809,7 +809,7 @@ for final phase acceptance or when prompt/report behavior changes.
 
 | Flow | Realistic failure | Test exists? | Handling exists? | User-visible? | Gap |
 |------|-------------------|--------------|------------------|---------------|-----|
-| Upstream severing | `bun run update` still fetches upstream | No | Yes, currently live updater | Yes, if run | Critical until disabled |
+| Upstream severing | `npm run update` still fetches upstream | No | Yes, currently live updater | Yes, if run | Critical until disabled |
 | Scanner refactor | provider emits duplicate or unstable URL | Partial | Dedupe helpers exist | Maybe silent | Add identity fixture tests |
 | Scanner bridge queue | bridge unavailable during evaluate | Partial | script errors exist | Should be visible | Add clear no-partial-write test |
 | Evaluation prompt ownership | prompt output no longer parses | Partial | adapter returns bridge error | Visible in bridge | Add report/tracker fixture tests |
@@ -831,7 +831,7 @@ Critical gaps:
 - Preserve scan/evaluate/extension/dashboard/PDF behavior ahead of repo cleanup.
 - Separate legal attribution from product ownership.
 - Make upstream-reference prevention mechanical, not only prose.
-- Use existing `bun run verify` as the main health gate and extend it where
+- Use existing `npm run verify` as the main health gate and extend it where
   needed.
 
 ## Risks And Blockers
@@ -938,41 +938,41 @@ handled in this plan:
 - 2026-04-28: Audited current completion state. Phase 2-7 evidence is present
   and targeted checks still pass, but full migration is not done because Phase 1
   still has live upstream update scripts/docs, missing ownership architecture
-  docs, no upstream-reference guard wired into `bun run verify`, and stale
+  docs, no upstream-reference guard wired into `npm run verify`, and stale
   legacy bridge-launcher guidance after the runtime entrypoint moved to
-  `bun run server`.
-  Verification run: `bun run verify` passed with 0 errors and 1 existing
+  `npm run server`.
+  Verification run: `npm run verify` passed with 0 errors and 1 existing
   duplicate warning; the extension Vitest suite passed 66 tests; dashboard build
   passed and the generated `web/index.html` output was restored afterward.
 - 2026-04-28: Fixed the audit findings by disabling the legacy updater entry
-  points, replacing stale bridge launcher guidance with `bun run server`,
-  adding `scripts/verify-repo-guard.mjs` to `bun run verify`, creating the Phase
+  points, replacing stale bridge launcher guidance with `npm run server`,
+  adding `scripts/verify-repo-guard.mjs` to `npm run verify`, creating the Phase
   1 ownership architecture docs, and strengthening the full terminal JSON
   parser/fixture contract.
-- 2026-04-28: Verified the fixes with `bun run verify:repo-guard`, targeted
+- 2026-04-28: Verified the fixes with `npm run verify:repo-guard`, targeted
   server contract tests for evaluation/command/scanner boundaries, extension
-  Vitest tests, server typecheck, `bun run verify`, and `git diff --check`.
-  `bun run verify` passed with 0 errors and 1 existing duplicate warning for
+  Vitest tests, server typecheck, `npm run verify`, and `git diff --check`.
+  `npm run verify` passed with 0 errors and 1 existing duplicate warning for
   Anduril tracker rows.
 - 2026-04-28: Completed a follow-up command-doc sweep so live operator docs,
   scan recovery instructions, extension launcher text, dashboard deprecation
   text, and the development compatibility alias all point operators to
-  `bun run server`. Verification: `bun run verify:repo-guard` passed; `rg` for
+  `npm run server`. Verification: `npm run verify:repo-guard` passed; `rg` for
   stale server/build launcher strings found only the repo-guard's deliberate
-  old-bridge rejection pattern; `git diff --check` passed; `bun run verify`
+  old-bridge rejection pattern; `git diff --check` passed; `npm run verify`
   passed with 0 errors and the existing Anduril duplicate warning.
-- 2026-04-28: Unified active docs and package entry points around Bun commands:
-  docs now use `bun run ...`, `bunx`, and `bun run --cwd ...`; root
+- 2026-04-28: Unified active docs and package entry points around npm commands:
+  docs now use `npm run ...`, `npx`, and `npm run --cwd ...`; root
   `ext:build`, `server`, `verify`, desktop package scripts, hourly scan
   launchers, doctor/setup hints, and extension offline recovery text no longer
   point operators through stale package-manager commands. Verification: `rg`
   for stale executable command forms returned no matches outside
-  generated/archive or nested `bb-browser` surfaces; `bun run ext:build`, the
-  server dry-run, `bun run verify`, `bun run --cwd apps/desktop build:server`,
-  `bun run verify:repo-guard`, syntax checks, and `git diff --check` passed.
+  generated/archive or nested `bb-browser` surfaces; `npm run ext:build`, the
+  server dry-run, `npm run verify`, `npm --prefix apps/desktop run build:server`,
+  `npm run verify:repo-guard`, syntax checks, and `git diff --check` passed.
 - 2026-04-28: Added repository-local portable skills under `skills/`, kept
   `.claude/skills/` as a byte-for-byte runtime mirror, and wired
-  `bun run verify:skills` into the default verification pipeline. This closes
+  `npm run verify:skills` into the default verification pipeline. This closes
   the remaining command-map coupling to Claude-specific paths while preserving
   Claude Code compatibility.
 
@@ -1003,7 +1003,7 @@ only until the branch is landed or the workstream is summarized.
 Definition of done for the full migration:
 
 - Phase 1-6 complete, with Phase 7 either completed or explicitly deferred.
-- `bun run verify`, bridge tests/typecheck, extension typecheck/build, and
+- `npm run verify`, bridge tests/typecheck, extension typecheck/build, and
   dashboard build pass.
 - Retained scan commands pass targeted score-only or fake-mode checks.
 - `rg` confirms upstream references exist only in attribution/archive contexts.

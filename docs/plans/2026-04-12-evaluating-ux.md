@@ -59,7 +59,7 @@ Expected: worktree at `../auto-job-eval-ux` on `feat/evaluating-ux`.
 
 **Step 2:** Install + green baseline.
 
-Run: `cd ../auto-job-eval-ux && bun install && bun test`
+Run: `cd ../auto-job-eval-ux && npm install && node --test`
 Expected: all existing tests pass.
 
 **Step 3:** Anchor the branch.
@@ -111,7 +111,7 @@ describe("evaluating sub-phases", () => {
 });
 ```
 
-Run: `bunx vitest run extension/src/shared/utils.test.ts`
+Run: `npx vitest run extension/src/shared/utils.test.ts`
 Expected: FAIL — `reading_context` not in `JobPhase` union.
 
 **Step 3: Wire the new phases**
@@ -291,7 +291,7 @@ In `extension/src/popup/index.ts`, after `show("running")` on line 383, start a 
 
 **Step 6:** Manual smoke test.
 
-Run: `bun run ext:build && load unpacked in Chrome`
+Run: `npm run ext:build && load unpacked in Chrome`
 Expected: after clicking Evaluate on a real JD, elapsed counter ticks every second; ETA hint appears during the long phase.
 
 **Step 7: Commit**
@@ -466,7 +466,7 @@ git commit -am "feat: cancel in-flight evaluation via DELETE /v1/jobs/:id"
 
 Current error screen is generic. Add 3 distinct recovery paths keyed on error code:
 - `JD_TOO_SHORT` → "Only {N} chars captured — try scrolling the JD into view and retry."
-- `BRIDGE_UNREACHABLE` → "Bridge not running. Start it with `bun run server` then reopen this popup."
+- `BRIDGE_UNREACHABLE` → "Bridge not running. Start it with `npm run server` then reopen this popup."
 - `CODEX_TIMEOUT` → "Evaluation exceeded 5 min — try again, or run `CODEX_BRIDGE_REASONING=medium` for a faster retry."
 
 **Step 1-4:** TDD on `classifyError` (pure function, easy to test). 

@@ -116,7 +116,7 @@ function usage(): string {
   return `auto-job autonomous newgrad scan
 
 Usage:
-  bun run newgrad-scan -- [options]
+  npm run newgrad-scan -- [options]
 
 Options:
   --url <url>             Source URL. Default: ${DEFAULT_URL}

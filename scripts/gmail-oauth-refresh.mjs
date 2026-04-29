@@ -225,15 +225,15 @@ function usage() {
   return `auto-job Gmail OAuth scanner
 
 Usage:
-  bun run gmail:auth
-  bun run gmail:scan [--max-messages 250] [--query "..."] [--dry-run]
+  npm run gmail:auth
+  npm run gmail:scan [--max-messages 250] [--query "..."] [--dry-run]
   node scripts/gmail-oauth-refresh.mjs auth
   node scripts/gmail-oauth-refresh.mjs scan
 
 Setup:
   1. Create a Google Cloud OAuth client with Application type "Desktop app".
   2. Save the downloaded client JSON to config/gmail-oauth-credentials.json.
-  3. Run bun run gmail:auth and approve gmail.readonly access.
+  3. Run npm run gmail:auth and approve gmail.readonly access.
 
 The scanner writes derived hiring facts to data/gmail-signals.jsonl.
 `;
@@ -295,12 +295,12 @@ export function readOAuthClient(path = CREDENTIALS_PATH) {
   const raw = readJson(path);
   if (!raw) {
     throw setupRequired(
-      `Missing ${path}. Save a Google OAuth Desktop client JSON there, then run bun run gmail:auth.`
+      `Missing ${path}. Save a Google OAuth Desktop client JSON there, then run npm run gmail:auth.`
     );
   }
   if (raw.web && !raw.installed) {
     throw setupRequired(
-      `Invalid OAuth client in ${path}: found a Web application client. Create an OAuth client with Application type "Desktop app", download that JSON, replace this file, then run bun run gmail:auth again.`
+      `Invalid OAuth client in ${path}: found a Web application client. Create an OAuth client with Application type "Desktop app", download that JSON, replace this file, then run npm run gmail:auth again.`
     );
   }
   const client = raw.installed || raw;
@@ -449,7 +449,7 @@ function readToken() {
   const token = readJson(TOKEN_PATH);
   if (!token?.refresh_token) {
     throw setupRequired(
-      `Missing Gmail OAuth token. Run bun run gmail:auth first; token path: ${TOKEN_PATH}`
+      `Missing Gmail OAuth token. Run npm run gmail:auth first; token path: ${TOKEN_PATH}`
     );
   }
   return token;
@@ -493,7 +493,7 @@ async function gmailFetch(path, token, params = {}) {
   if (!response.ok) {
     const message = json.error?.message || json.error || `Gmail API HTTP ${response.status}`;
     if (isGmailApiSetupError(message)) {
-      throw setupRequired(`${message}\nEnable Gmail API for the same Google Cloud project as config/gmail-oauth-credentials.json, then retry bun run gmail:scan.`);
+      throw setupRequired(`${message}\nEnable Gmail API for the same Google Cloud project as config/gmail-oauth-credentials.json, then retry npm run gmail:scan.`);
     }
     throw new Error(message);
   }

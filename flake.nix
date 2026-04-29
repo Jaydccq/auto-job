@@ -16,7 +16,6 @@
         pkgs: with pkgs; [
 
           nodejs
-          bun
 
           coreutils
 

@@ -76,7 +76,7 @@ type RenderDashboardHtmlFn = (opts: {
  *      must be present; user repos that predate the dashboard-handlers
  *      split fail this check and fall through.
  *   3. Source-tree fallback relative to this module's file URL. Used
- *      by tests that pass a tmp repoRoot and by Bun package test commands.
+ *      by tests that pass a tmp repoRoot and by npm package test commands.
  */
 function resolveWebDir(repoRoot: string): string {
   const envOverride = process.env.AUTO_JOB_WEB_DIR;

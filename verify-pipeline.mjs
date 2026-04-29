@@ -22,9 +22,9 @@ const log = {
   err: (m) => { console.log(`FAIL ${m}`); errors++; },
 };
 
-function runBunStep(label, cwd, args) {
+function runNpmStep(label, cwd, args) {
   try {
-    execFileSync(process.platform === "win32" ? "bun.cmd" : "bun", args, {
+    execFileSync(process.platform === "win32" ? "npm.cmd" : "npm", args, {
       cwd, stdio: "pipe", encoding: "utf-8",
     });
     log.ok(label);
@@ -113,15 +113,15 @@ function checkTracker() {
 checkTracker();
 
 console.log("\nChecking workspaces.\n");
-runBunStep("repo ownership guard", repoRoot, ["run", "verify:repo-guard"]);
-runBunStep("skill mirrors", repoRoot, ["run", "verify:skills"]);
+runNpmStep("repo ownership guard", repoRoot, ["run", "verify:repo-guard"]);
+runNpmStep("skill mirrors", repoRoot, ["run", "verify:skills"]);
 if (existsSync(join(repoRoot, "apps/server/package.json"))) {
-  runBunStep("server tests", join(repoRoot, "apps/server"), ["run", "test"]);
-  runBunStep("server typecheck", join(repoRoot, "apps/server"), ["run", "typecheck"]);
+  runNpmStep("server tests", join(repoRoot, "apps/server"), ["run", "test"]);
+  runNpmStep("server typecheck", join(repoRoot, "apps/server"), ["run", "typecheck"]);
 }
 if (existsSync(join(repoRoot, "apps/extension/package.json"))) {
-  runBunStep("extension typecheck", join(repoRoot, "apps/extension"), ["run", "typecheck"]);
-  runBunStep("extension build", join(repoRoot, "apps/extension"), ["run", "build"]);
+  runNpmStep("extension typecheck", join(repoRoot, "apps/extension"), ["run", "typecheck"]);
+  runNpmStep("extension build", join(repoRoot, "apps/extension"), ["run", "build"]);
 }
 
 console.log(`\n${"=".repeat(50)}`);

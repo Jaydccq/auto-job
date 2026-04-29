@@ -52,10 +52,10 @@ bridge client must derive HTTP paths from the shared `ENDPOINTS` registry.
 
 Run these checks when extension or bridge contracts change:
 
-- `bun run --cwd apps/extension typecheck`
-- `bun run ext:build`
+- `npm --prefix apps/extension run typecheck`
+- `npm run ext:build`
 - `./node_modules/.bin/vitest run apps/extension/test`
-- `bun run --cwd apps/server test`
+- `npm --prefix apps/server run test`
 
 The extension safety tests must keep rejecting submit/next/continue/apply
 controls before any future autofill behavior is expanded.

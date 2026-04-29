@@ -51,8 +51,8 @@ report prose into the final document.
 ## Verification Approach
 
 - `node --check web/dashboard-server.mjs`
-- `bun run dashboard:build`
-- Start `bun run dashboard`, call the apply-doc API for Aurora CV and cover
+- `npm run dashboard:build`
+- Start `npm run dashboard`, call the apply-doc API for Aurora CV and cover
   letter, and inspect the generated HTML/JSON/PDF outputs.
 - Use `rg` checks against generated artifacts to confirm forbidden internal
   report phrases are absent.

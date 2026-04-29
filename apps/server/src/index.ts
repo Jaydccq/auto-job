@@ -2,7 +2,7 @@
  * index.ts — bridge entrypoint + embeddable factory.
  *
  * Two consumers:
- *   1. The CLI (scripts/bridge-start.mjs -> bun run start) imports this
+ *   1. The CLI (scripts/bridge-start.mjs -> npm run start) imports this
  *      module via `tsx` and runs main() at the bottom. It prints the
  *      banner and listens.
  *   2. The Electron main process (apps/desktop) imports `createServer()`

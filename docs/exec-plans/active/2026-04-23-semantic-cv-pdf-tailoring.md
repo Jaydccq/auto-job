@@ -65,8 +65,8 @@ projects, reorder evidence, and render ATS-friendly semantic blocks.
 ## Verification Approach
 
 - `node --check web/dashboard-server.mjs`
-- `bun run dashboard:build`
-- Start `bun run dashboard`, call the Apply Docs API for a known report, and
+- `npm run dashboard:build`
+- Start `npm run dashboard`, call the Apply Docs API for a known report, and
   verify a CV PDF is produced.
 - Inspect generated work HTML for:
   - `Professional Summary`
@@ -101,7 +101,7 @@ projects, reorder evidence, and render ATS-friendly semantic blocks.
 - 2026-04-23: Verified the dashboard download endpoint copied the tailored CV
   PDF to `/Users/hongxichen/Downloads/cv-gumloop-software-engineer-2026-04-23-7.pdf`.
 - 2026-04-23: Ran `node --check web/dashboard-server.mjs`,
-  `bun run dashboard:build`, and `git diff --check` for the changed CV
+  `npm run dashboard:build`, and `git diff --check` for the changed CV
   generation/template files.
 
 ## Key Decisions

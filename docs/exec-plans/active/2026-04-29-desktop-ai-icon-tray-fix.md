@@ -37,8 +37,8 @@ Regenerate the desktop app icon so it reads more like a high-tech AI company, an
 
 - `file apps/desktop/icons/*`
 - `sips -g pixelWidth -g pixelHeight apps/desktop/icons/*.png`
-- `bun run --cwd apps/desktop typecheck`
-- `bun run --cwd apps/desktop build`
+- `npm --prefix apps/desktop run typecheck`
+- `npm --prefix apps/desktop run build`
 
 ## Progress Log
 
@@ -47,7 +47,7 @@ Regenerate the desktop app icon so it reads more like a high-tech AI company, an
 - 2026-04-29: Gemini image generation was unavailable because `GEMINI_API_KEY` is not set in the shell, so generated a deterministic local high-tech AI icon instead.
 - 2026-04-29: Rebuilt `icon.png`, `icon.icns`, `tray.png`, and `trayTemplate.png`; tray assets are now 18x18.
 - 2026-04-29: Updated `apps/desktop/src/tray.ts` to resize tray native images to 18x18 before creating the `Tray`.
-- 2026-04-29: Verification passed: asset dimension check, `bun run --cwd apps/desktop typecheck`, `bun run --cwd apps/desktop build`, and `bun run --cwd apps/desktop package:dir`.
+- 2026-04-29: Verification passed: asset dimension check, `npm --prefix apps/desktop run typecheck`, `npm --prefix apps/desktop run build`, and `npm --prefix apps/desktop run package:dir`.
 
 ## Key Decisions
 

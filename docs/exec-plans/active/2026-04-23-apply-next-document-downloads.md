@@ -37,9 +37,9 @@ Users should be able to click Apply Next buttons for each recommended role:
 
 - Add a local PDF companion server under `web/`.
 - Modify `web/template.html` to add generation and download controls.
-- Make `bun run dashboard` start the local dynamic dashboard.
-- Keep static export available as `bun run dashboard:build`.
-- Regenerate `web/index.html` with `bun run dashboard`.
+- Make `npm run dashboard` start the local dynamic dashboard.
+- Keep static export available as `npm run dashboard:build`.
+- Regenerate `web/index.html` with `npm run dashboard`.
 - Let the dynamic local dashboard update existing application tracker status
   rows when the user explicitly marks a role as applied.
 - Do not replace existing PDF generation scripts; call them.
@@ -65,8 +65,8 @@ Users should be able to click Apply Next buttons for each recommended role:
   corresponding PDF download button on that card.
 - Download filenames include document type, company, role, and date.
 - Download buttons save PDFs to `~/Downloads`.
-- `bun run dashboard` starts a local dynamic server.
-- `bun run dashboard:build` completes and updates `web/index.html`.
+- `npm run dashboard` starts a local dynamic server.
+- `npm run dashboard:build` completes and updates `web/index.html`.
 - Browser verification confirms the buttons render, PDF generation succeeds,
   and the download action reports the saved Downloads path.
 - Clicking `Mark applied` on the dynamic dashboard persists the existing tracker
@@ -99,7 +99,7 @@ Users should be able to click Apply Next buttons for each recommended role:
   - Verify: the UI shows PDF generation/download state, not Markdown controls.
 
 - [x] **Step 5: Regenerate dashboard**
-  - Run `bun run dashboard`.
+  - Run `npm run dashboard`.
   - Verify: command exits successfully and writes `web/index.html`.
 
 - [x] **Step 6: Browser smoke test**
@@ -113,22 +113,22 @@ Users should be able to click Apply Next buttons for each recommended role:
 - [x] **Step 7: Convert primary dashboard to dynamic server**
   - Rename the PDF companion to `web/dashboard-server.mjs`.
   - Export shared parser/renderer functions from `web/build-dashboard.mjs`.
-  - Change `bun run dashboard` to start the dynamic server and move static
-    snapshot generation to `bun run dashboard:build`.
+  - Change `npm run dashboard` to start the dynamic server and move static
+    snapshot generation to `npm run dashboard:build`.
   - Verify: served dashboard renders fresh data and PDF actions still work.
 
 - [x] **Step 8: Persist Mark Applied through the dynamic server**
   - Add an authenticated local dashboard API that updates only existing
     `data/applications.md` status cells.
   - Update the Apply Next button to call that API when served from
-    `bun run dashboard`, with localStorage retained as the static fallback.
+    `npm run dashboard`, with localStorage retained as the static fallback.
   - Verify: a mark/unmark smoke test leaves the tracker restored and Apply Now
     filtering respects persisted `Applied` status.
 
 ## Verification Approach
 
-- `bun run dashboard`
-- `bun run dashboard:build`
+- `npm run dashboard`
+- `npm run dashboard:build`
 - Direct local API smoke test for PDF generation and download copy.
 - Node/Playwright smoke test against the local PDF dashboard server.
 - Direct local API smoke test for marking and restoring a tracker row.
@@ -142,7 +142,7 @@ Users should be able to click Apply Next buttons for each recommended role:
 - 2026-04-23: Added `cvMarkdown` to generated dashboard data, then added
   browser-side CV and cover-letter Markdown draft generation to Apply Next
   cards.
-- 2026-04-23: Regenerated `web/index.html` with `bun run dashboard`.
+- 2026-04-23: Regenerated `web/index.html` with `npm run dashboard`.
 - 2026-04-23: Verified template script parsing, diff whitespace, button
   presence, and Playwright download smoke behavior.
 - 2026-04-23: Playwright confirmed generated filenames:
@@ -160,7 +160,7 @@ Users should be able to click Apply Next buttons for each recommended role:
   `Download Cover Letter PDF` controls.
 - 2026-04-23: Added a PDF-capable dashboard server and documented the flow in
   `web/README.md`.
-- 2026-04-23: Regenerated `web/index.html` with `bun run dashboard`.
+- 2026-04-23: Regenerated `web/index.html` with `npm run dashboard`.
 - 2026-04-23: Verified direct API behavior: unauthenticated generation returns
   401; authenticated generation creates
   `output/cv-gumloop-software-engineer-2026-04-23.pdf` and copies it to
@@ -174,7 +174,7 @@ Users should be able to click Apply Next buttons for each recommended role:
   CV PDF version 1.4 with 3 pages; cover-letter PDF version 1.4 with 1 page.
 - 2026-04-23: User asked to make the dashboard non-static. Converted the
   primary interface to a dynamic local server, moved static snapshot generation
-  to `bun run dashboard:build`, and made `bun run dashboard` the only dynamic
+  to `npm run dashboard:build`, and made `npm run dashboard` the only dynamic
   dashboard entry point.
 - 2026-04-23: Verified the dynamic server with Playwright: `/api/health`
   returned the Downloads directory, `/reports/301-gumloop-2026-04-22.md`
@@ -186,12 +186,12 @@ Users should be able to click Apply Next buttons for each recommended role:
   repository-backed tracker update.
 - 2026-04-24: Added authenticated `/api/apply-status` to the dynamic dashboard
   server and updated Apply Next so `Mark applied` writes the existing tracker
-  row status to `Applied` when served from `bun run dashboard`; static
+  row status to `Applied` when served from `npm run dashboard`; static
   `web/index.html` still falls back to localStorage.
 - 2026-04-24: Verified the markdown rewrite helper, regenerated
-  `web/index.html` with `bun run dashboard:build`, API-smoked mark/restore on
+  `web/index.html` with `npm run dashboard:build`, API-smoked mark/restore on
   tracker row 317 with exact file restoration, and browser-smoked the Figma
-  card disappearing from Apply Now after refresh. `bun run verify` passed with
+  card disappearing from Apply Now after refresh. `npm run verify` passed with
   0 errors and the existing 2 duplicate warnings.
 
 ## Key Decisions
@@ -219,8 +219,8 @@ Users should be able to click Apply Next buttons for each recommended role:
 
 ## Final Outcome
 
-The dashboard primary interface is now non-static. `bun run dashboard` starts a
-local dynamic server at `http://127.0.0.1:47329/`; `bun run dashboard:build`
+The dashboard primary interface is now non-static. `npm run dashboard` starts a
+local dynamic server at `http://127.0.0.1:47329/`; `npm run dashboard:build`
 remains available only for standalone static snapshots. Apply Next generates
 real PDFs through the dynamic server, writes them under `output/`, and copies
 them into `~/Downloads`. Apply Next also persists `Mark applied` to

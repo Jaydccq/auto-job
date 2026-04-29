@@ -62,7 +62,7 @@ the runtime layer for user-specific content.
 | `templates/portals.example.yml` | Starter portal config |
 | `generate-pdf.mjs` | Playwright HTML → PDF |
 | `merge-tracker.mjs` | Apply pending TSVs to the tracker |
-| `verify-pipeline.mjs` | Full health gate (`bun run verify`) |
+| `verify-pipeline.mjs` | Full health gate (`npm run verify`) |
 | `scripts/verify-repo-guard.mjs` | Ownership guard (no upstream surfaces) |
 
 ## Run flow
@@ -71,22 +71,22 @@ Three valid setups:
 
 **Desktop app** (visual):
 ```bash
-bun run --cwd apps/desktop package
+npm --prefix apps/desktop run package
 open "apps/desktop/release/mac-arm64/Auto Job.app"
 ```
 
 **LaunchAgent** (headless, macOS, runs at login):
 ```bash
-bun run app:install
-bun run app:logs
-bun run app:restart
+npm run app:install
+npm run app:logs
+npm run app:restart
 ```
 
 **Manual** (development):
 ```bash
-bun run server                                       # Codex
-AUTO_JOB_BACKEND=fake bun run server               # tests
-AUTO_JOB_BACKEND=real-openrouter bun run server    # OpenRouter
+npm run server                                       # Codex
+AUTO_JOB_BACKEND=fake npm run server               # tests
+AUTO_JOB_BACKEND=real-openrouter npm run server    # OpenRouter
 ```
 
 Dashboard at `http://127.0.0.1:47319/dashboard/`.
@@ -128,14 +128,14 @@ rewrite).
 
 ## Quality gates
 
-- `bun run verify` — runs ownership guard + tracker integrity + workspace
+- `npm run verify` — runs ownership guard + tracker integrity + workspace
   test/typecheck/build.
-- `bun run verify:repo-guard` — ownership-only, fast.
+- `npm run verify:repo-guard` — ownership-only, fast.
 - Branch protection: `main` rejects direct pushes; status checks must pass.
 
 ## Stack
 
-- Bun for package commands inside `apps/*` and `packages/*`.
+- npm for package commands inside `apps/*` and `packages/*`.
 - Node 20 for root `*.mjs` scripts.
 - Playwright for live posting verification, PDF rendering, and scrape
   fallbacks.
@@ -146,14 +146,14 @@ rewrite).
 
 - **Never edit `data/applications.md` to add a new row.** Write a TSV at
   `batch/tracker-additions/{NNN}-{slug}.tsv` (9 columns, status before score)
-  and run `bun run merge`.
+  and run `npm run merge`.
 - Status promotions / note edits **on existing rows** can edit
   `data/applications.md` directly.
 - Reports: `reports/{NNN}-{slug}-{YYYY-MM-DD}.md`. Header must include
   `**URL:**` and `**Legitimacy:**`.
-- Verify after batches: `bun run verify`.
-- Normalize statuses: `bun run normalize`.
-- Dedup: `bun run dedup`.
+- Verify after batches: `npm run verify`.
+- Normalize statuses: `npm run normalize`.
+- Dedup: `npm run dedup`.
 
 ## Canonical statuses
 

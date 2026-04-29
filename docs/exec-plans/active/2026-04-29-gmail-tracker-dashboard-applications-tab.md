@@ -4,7 +4,7 @@
 
 **Architecture:** A new tab `Applications` is inserted between `Tracker` and `Pipeline`. `web/build-dashboard.mjs` adds `parseGmailApplications` and injects the result as `D.gmailApplications`. `web/template.html` adds the pane and a `renderApplications()` JS function that sorts rows by attention priority then last-update descending and renders them in a table with state badge, attention level, company, role, message count, and reason.
 
-**Scope:** Additive. No existing function changed semantically. `parseGmailRefreshStatus`, `parseGmailSignals`, `parseGmailApplications` all gated behind the same `includeGmailSignals` flag — when the local server passes that flag, all three load. CLI builds (`bun run dashboard:build`) leave Gmail data unloaded as before.
+**Scope:** Additive. No existing function changed semantically. `parseGmailRefreshStatus`, `parseGmailSignals`, `parseGmailApplications` all gated behind the same `includeGmailSignals` flag — when the local server passes that flag, all three load. CLI builds (`npm run dashboard:build`) leave Gmail data unloaded as before.
 
 ## Files Modified
 
@@ -14,8 +14,8 @@
 
 ## Verification
 
-- `bun run test:gmail` 30/30 passes (no scanner change).
-- `bun run test:gmail-apps` 37/37 passes (no aggregator change).
+- `npm run test:gmail` 30/30 passes (no scanner change).
+- `npm run test:gmail-apps` 37/37 passes (no aggregator change).
 - Replay test: rebuilt dashboard with `includeGmailSignals: true` against the user's 295-signal corpus → embedded 271 applications. First app rendered as `Kinstead | rejected | urgent`, matching Phase 2's replay output.
 - Empty-state test: rebuilt with `data/` empty → table renders the "No applications yet" placeholder.
 

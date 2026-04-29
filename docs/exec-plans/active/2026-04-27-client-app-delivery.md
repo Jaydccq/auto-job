@@ -6,7 +6,7 @@
 
 **Architecture:** Six-stage migration. (0) Reorganize `bridge/` + `web/` into one `server/` directory. (1) Drop the SDK adapter, keep CLI + fake adapters. (2) Add an OpenRouter API adapter. (3) Merge bridge and dashboard into one Fastify process on port 47319. (4) Optional one-day LaunchAgent quick win so the bridge auto-starts during the desktop-app build. (5) Build an Electron desktop app that embeds the server, exposes a menu-bar icon, and opens the dashboard as a native window. (6) Retire the LaunchAgent once the desktop app handles auto-launch.
 
-**Tech Stack:** TypeScript (existing), Fastify (existing), Chrome MV3 extension (unchanged), Bun-first workspace packages for the apps/ + packages/ split, Electron 33+ with electron-builder, OpenRouter API for the new adapter, Node 20+.
+**Tech Stack:** TypeScript (existing), Fastify (existing), Chrome MV3 extension (unchanged), npm-first workspace packages for the apps/ + packages/ split, Electron 33+ with electron-builder, OpenRouter API for the new adapter, Node 20+.
 
 **Relationship to existing plans:** Complementary to `docs/exec-plans/active/2026-04-27-auto-job-architecture-independence.md`, which owns rebrand / fork severing / module boundaries. This plan owns runtime delivery format. The two share `package.json` edits — coordinate via separate commits but no semantic conflicts.
 
@@ -16,14 +16,14 @@
 
 **Problem:** To use the Chrome extension or dashboard today, the user must:
 
-1. `cd` into the repo, `bun run server` — foreground Node process
-2. `bun run dashboard` in a second terminal — another foreground Node process
+1. `cd` into the repo, `npm run server` — foreground Node process
+2. `npm run dashboard` in a second terminal — another foreground Node process
 3. Manually `Ctrl-C` both when done
 
-Plus the codebase has fork-inherited cruft: 4 evaluation adapters where 2 are unused (`fake` for tests, `sdk` was a Phase 4 placeholder that never shipped); two separate Node servers (`bridge/` on 47319, `web/dashboard-server.mjs` on 47329) duplicating concerns; nine `bun run ext:*` scripts that are mode permutations.
+Plus the codebase has fork-inherited cruft: 4 evaluation adapters where 2 are unused (`fake` for tests, `sdk` was a Phase 4 placeholder that never shipped); two separate Node servers (`bridge/` on 47319, `web/dashboard-server.mjs` on 47329) duplicating concerns; nine `npm run ext:*` scripts that are mode permutations.
 
 **What this plan delivers:**
-- Stage 0: One `server/` directory replaces `bridge/` + `web/`. Bun package commands wire it up.
+- Stage 0: One `server/` directory replaces `bridge/` + `web/`. npm package commands wire it up.
 - Stage 1: Adapter set is `fake | real-claude | real-codex` (default). `sdk-pipeline.ts` deleted.
 - Stage 2: `real-openrouter` adapter added — uses OpenRouter's OpenAI-compatible HTTP API with an API key (no CLI auth needed).
 - Stage 3: One server process on `127.0.0.1:47319` serves `/evaluate`, `/jobs/:id/subscribe`, `/dashboard/`, `/dashboard/api/*`. Dashboard reads token from a server-rendered meta tag.
@@ -35,7 +35,7 @@ Plus the codebase has fork-inherited cruft: 4 evaluation adapters where 2 are un
 
 **Done = all of the following:**
 
-- After Stage 3: `bun run server` starts one Node process; `http://127.0.0.1:47319/dashboard/` works; extension popup connects to the same port.
+- After Stage 3: `npm run server` starts one Node process; `http://127.0.0.1:47319/dashboard/` works; extension popup connects to the same port.
 - After Stage 5: Double-clicking `Auto Job.app` (built via `electron-builder`) launches the desktop app. Menu-bar icon shows status. "Open Dashboard" opens the embedded dashboard. The app auto-launches at login. Quitting stops the embedded server cleanly.
 - All existing scan / evaluate / batch / extension / Gmail / dashboard flows still work. `verify-pipeline.mjs`, server tests, extension build all pass.
 - Default evaluation runner is Codex CLI (`real-codex`). Claude CLI and OpenRouter are switchable via menu-bar setting or env var.
@@ -66,7 +66,7 @@ Plus the codebase has fork-inherited cruft: 4 evaluation adapters where 2 are un
 ## Assumptions
 
 1. **macOS-only verification**, Darwin 25.2+. Electron supports Win/Linux but we don't sign / test those here.
-2. **Bun-first package commands** — use Bun for documented installs and script execution while keeping the Node-compatible toolchain required by `bb-browser`, Playwright, Fastify, Electron, and TypeScript.
+2. **npm-first package commands** — use npm for documented installs and script execution while keeping the Node-compatible toolchain required by `bb-browser`, Playwright, Fastify, Electron, and TypeScript.
 3. **Codex CLI is the default backend.** It needs to be on `$PATH` and authenticated. The desktop app surfaces backend errors clearly (e.g. "codex not on PATH") rather than silently falling back.
 4. **OpenRouter API key** lives in `~/.config/auto-job/openrouter.key` (mode 0600) or `OPENROUTER_API_KEY` env var. Desktop app's settings panel lets the user paste it once.
 5. **Server-as-module in Electron** — the Electron main process imports `server/index.ts`'s `createServer()` and runs it in-process. No child process. Means: server crash = app crash (visible to user, easy to restart). Acceptable.
@@ -200,10 +200,10 @@ auto-job/
 - Create: `apps/.gitkeep`, `packages/.gitkeep`
 - Modify: `package.json` (add `"private": true`, remove dependencies that move into workspaces)
 
-- [ ] **Step 1: Install Bun if not present**
+- [ ] **Step 1: Check npm is present**
 
-Run: `which bun || curl -fsSL https://bun.sh/install | bash`
-Expected: Bun version printed after shell reload.
+Run: `npm --version`
+Expected: npm version printed after shell reload.
 
 - [ ] **Step 2: Create the workspace file**
 
@@ -228,11 +228,11 @@ In `package.json`, add `"private": true` (top-level — workspaces require this)
 }
 ```
 
-- [ ] **Step 4: Verify Bun can inspect the workspace**
+- [ ] **Step 4: Verify npm can inspect the workspace**
 
 ```bash
-bun install
-bun pm ls
+npm install
+npm ls --workspaces=false
 ```
 
 Expected: lists root only (no apps/packages yet). No errors.
@@ -249,7 +249,7 @@ git commit -m "chore(workspace): initialize package workspace skeleton"
 **Files:**
 - Rename: `bridge/` → `apps/server/`
 - Modify: `apps/server/package.json` (rename + scope)
-- Modify: `package.json` (delete legacy bridge prefix references; replace with Bun package commands)
+- Modify: `package.json` (delete legacy bridge prefix references; replace with npm package commands)
 
 - [ ] **Step 1: Move the directory with git**
 
@@ -289,7 +289,7 @@ Key root-script changes:
 - [ ] **Step 4: Reinstall**
 
 ```bash
-bun install
+npm install
 ```
 
 Expected: `apps/server/node_modules` populated; no errors.
@@ -297,8 +297,8 @@ Expected: `apps/server/node_modules` populated; no errors.
 - [ ] **Step 5: Verify the server still builds and tests pass**
 
 ```bash
-bun run --cwd apps/server typecheck
-bun run --cwd apps/server test
+npm --prefix apps/server run typecheck
+npm --prefix apps/server run test
 ```
 
 Expected: green.
@@ -306,7 +306,7 @@ Expected: green.
 - [ ] **Step 6: Verify scanners still find the tsx binary**
 
 ```bash
-bun run linkedin-scan -- --score-only --limit 1 --dry-run
+npm run linkedin-scan -- --score-only --limit 1 --dry-run
 ```
 
 Expected: scanner runs (or fails on missing site auth, which is environmental — not a code problem).
@@ -346,16 +346,16 @@ Edit `apps/extension/package.json`:
 In root `package.json`:
 
 ```diff
--"ext:build": "bun run ext:build",
-+"ext:build": "bun run ext:build",
+-"ext:build": "npm run ext:build",
++"ext:build": "npm run ext:build",
 ```
 
 - [ ] **Step 4: Reinstall, build, typecheck**
 
 ```bash
-bun install
-bun run --cwd apps/extension typecheck
-bun run ext:build
+npm install
+npm --prefix apps/extension run typecheck
+npm run ext:build
 ```
 
 Expected: green.
@@ -479,8 +479,8 @@ In server and extension code, change `from "./contracts"` to `from "@auto-job/sh
 - [ ] **Step 5: Reinstall + typecheck both apps**
 
 ```bash
-bun install
-bun run --cwd packages/shared typecheck && bun run --cwd apps/server typecheck && bun run --cwd apps/extension typecheck && bun run --cwd apps/desktop typecheck
+npm install
+npm --prefix packages/shared run typecheck && npm --prefix apps/server run typecheck && npm --prefix apps/extension run typecheck && npm --prefix apps/desktop run typecheck
 ```
 
 Expected: green.
@@ -492,7 +492,7 @@ git add -A
 git commit -m "refactor(workspace): extract @auto-job/shared for cross-app types"
 ```
 
-**Stage 0 exit criteria:** `bun run --cwd packages/shared typecheck && bun run --cwd apps/server typecheck && bun run --cwd apps/extension typecheck && bun run --cwd apps/desktop typecheck` green; extension builds; server tests pass; `bun run linkedin-scan` (and other scanners) still resolve `tsx` correctly.
+**Stage 0 exit criteria:** `npm --prefix packages/shared run typecheck && npm --prefix apps/server run typecheck && npm --prefix apps/extension run typecheck && npm --prefix apps/desktop run typecheck` green; extension builds; server tests pass; `npm run linkedin-scan` (and other scanners) still resolve `tsx` correctly.
 
 ---
 
@@ -559,8 +559,8 @@ Delete these scripts:
 - [ ] **Step 5: Run typecheck and tests**
 
 ```bash
-bun run --cwd packages/shared typecheck && bun run --cwd apps/server typecheck && bun run --cwd apps/extension typecheck && bun run --cwd apps/desktop typecheck
-bun run --cwd apps/server test
+npm --prefix packages/shared run typecheck && npm --prefix apps/server run typecheck && npm --prefix apps/extension run typecheck && npm --prefix apps/desktop run typecheck
+npm --prefix apps/server run test
 ```
 
 Expected: green.
@@ -593,14 +593,14 @@ The remaining scripts are `legacy bridge script`, `legacy-bridge:claude`, `legac
 -"legacy bridge script":         "node scripts/bridge-start.mjs real-codex",
 -"legacy-bridge:claude":  "node scripts/bridge-start.mjs real-claude",
 -"legacy-bridge:fake":    "node scripts/bridge-start.mjs fake",
--"legacy start script":          "bun run ext:build && node scripts/bridge-start.mjs real-codex",
--"legacy-start:claude":   "bun run ext:build && node scripts/bridge-start.mjs real-claude",
--"legacy-start:fake":     "bun run ext:build && node scripts/bridge-start.mjs fake",
+-"legacy start script":          "npm run ext:build && node scripts/bridge-start.mjs real-codex",
+-"legacy-start:claude":   "npm run ext:build && node scripts/bridge-start.mjs real-claude",
+-"legacy-start:fake":     "npm run ext:build && node scripts/bridge-start.mjs fake",
 +"server":             "node scripts/bridge-start.mjs ${AUTO_JOB_BACKEND:-real-codex}",
-+"ext:build":          "bun run --cwd apps/extension build"
++"ext:build":          "npm --prefix apps/extension run build"
 ```
 
-Run the extension build separately with `bun run ext:build` when the unpacked extension needs to be refreshed.
+Run the extension build separately with `npm run ext:build` when the unpacked extension needs to be refreshed.
 
 - [ ] **Step 2: Update `bridge-start.mjs` to read the env var**
 
@@ -609,15 +609,15 @@ Change the arg parsing to fall back to `process.env.AUTO_JOB_BACKEND` if no posi
 - [ ] **Step 3: Search and update callers**
 
 ```bash
-grep -rn "bun run server" --include="*.md" --include="*.mjs" --include="*.ts" .
+grep -rn "npm run server" --include="*.md" --include="*.mjs" --include="*.ts" .
 ```
 
-For each match, update to `bun run server` or `AUTO_JOB_BACKEND=fake bun run server`.
+For each match, update to `npm run server` or `AUTO_JOB_BACKEND=fake npm run server`.
 
 - [ ] **Step 4: Sanity smoke**
 
 ```bash
-AUTO_JOB_BACKEND=fake bun run server &
+AUTO_JOB_BACKEND=fake npm run server &
 sleep 3
 curl -s -H "X-Auto-Job-Token: $(cat apps/server/.bridge-token)" http://127.0.0.1:47319/health
 kill %1
@@ -752,7 +752,7 @@ describe("OpenRouterPipeline", () => {
 - [ ] **Step 2: Run, watch fail**
 
 ```bash
-bun run --cwd apps/server test -- openrouter-pipeline.test.ts
+npm --prefix apps/server run test -- openrouter-pipeline.test.ts
 ```
 
 Expected: `Cannot find module ./openrouter-pipeline`.
@@ -879,7 +879,7 @@ export class OpenRouterPipeline implements PipelineAdapter {
 - [ ] **Step 3: Re-run the test**
 
 ```bash
-bun run --cwd apps/server test -- openrouter-pipeline.test.ts
+npm --prefix apps/server run test -- openrouter-pipeline.test.ts
 ```
 
 Expected: green.
@@ -942,7 +942,7 @@ Or set `OPENROUTER_API_KEY` in your environment.
 3. Run the server with the OpenRouter backend:
 
 ```bash
-AUTO_JOB_BACKEND=real-openrouter bun run server
+AUTO_JOB_BACKEND=real-openrouter npm run server
 ```
 
 Or pick it from the desktop app's menu-bar settings.
@@ -954,9 +954,9 @@ Default model: `anthropic/claude-3.5-sonnet`.
 Override:
 
 ```bash
-OPENROUTER_MODEL=anthropic/claude-3.5-sonnet bun run server
-OPENROUTER_MODEL=openai/gpt-4o              bun run server
-OPENROUTER_MODEL=google/gemini-2.0-flash    bun run server
+OPENROUTER_MODEL=anthropic/claude-3.5-sonnet npm run server
+OPENROUTER_MODEL=openai/gpt-4o              npm run server
+OPENROUTER_MODEL=google/gemini-2.0-flash    npm run server
 ```
 
 See https://openrouter.ai/models for the full catalog.
@@ -1013,7 +1013,7 @@ git commit -m "refactor(server): move dashboard HTML into apps/server/src/public
 - [ ] **Step 1: Install `@fastify/static`**
 
 ```bash
-bun add --cwd apps/server @fastify/static
+npm --prefix apps/server install @fastify/static
 ```
 
 - [ ] **Step 2: Write the failing test**
@@ -1055,7 +1055,7 @@ describe("dashboard route", () => {
 - [ ] **Step 3: Run, watch fail**
 
 ```bash
-bun run --cwd apps/server test -- dashboard.test.ts
+npm --prefix apps/server run test -- dashboard.test.ts
 ```
 
 Expected: 404 because route doesn't exist yet.
@@ -1107,7 +1107,7 @@ await registerDashboard(app, { token: serverToken });
 - [ ] **Step 5: Re-run the test**
 
 ```bash
-bun run --cwd apps/server test -- dashboard.test.ts
+npm --prefix apps/server run test -- dashboard.test.ts
 ```
 
 Expected: green.
@@ -1137,7 +1137,7 @@ For each endpoint, a test that calls it through the server and checks the shape.
 - [ ] **Step 3: Run, watch them all fail**
 
 ```bash
-bun run --cwd apps/server test -- dashboard-api.test.ts
+npm --prefix apps/server run test -- dashboard-api.test.ts
 ```
 
 Expected: every test fails with 404.
@@ -1149,7 +1149,7 @@ For each, copy the handler body from `web/dashboard-server.mjs`, rewrite from Ex
 - [ ] **Step 5: Run tests after each port**
 
 ```bash
-bun run --cwd apps/server test -- dashboard-api.test.ts
+npm --prefix apps/server run test -- dashboard-api.test.ts
 ```
 
 Expected: tests turn green one by one.
@@ -1197,7 +1197,7 @@ Update each.
 - [ ] **Step 3: Smoke test**
 
 ```bash
-bun run server   # default real-codex
+npm run server   # default real-codex
 # in browser:
 open http://127.0.0.1:47319/dashboard/
 ```
@@ -1223,7 +1223,7 @@ git commit -m "refactor(dashboard): use server-injected token and unified API en
 console.error(
     "web/dashboard-server.mjs is deprecated. The dashboard is now served by the\n" +
     "main server at http://127.0.0.1:47319/dashboard/.\n\n" +
-    "Run `bun run server` and open the URL above.\n"
+    "Run `npm run server` and open the URL above.\n"
 );
 process.exit(1);
 ```
@@ -1259,10 +1259,10 @@ git commit -m "refactor(web): deprecate standalone dashboard-server.mjs"
 - [ ] **Step 1: Run all checks**
 
 ```bash
-bun run --cwd packages/shared typecheck && bun run --cwd apps/server typecheck && bun run --cwd apps/extension typecheck && bun run --cwd apps/desktop typecheck
-bun run --cwd apps/server test
-bun run ext:build
-bun run verify
+npm --prefix packages/shared run typecheck && npm --prefix apps/server run typecheck && npm --prefix apps/extension run typecheck && npm --prefix apps/desktop run typecheck
+npm --prefix apps/server run test
+npm run ext:build
+npm run verify
 ```
 
 Expected: all green.
@@ -1362,7 +1362,7 @@ console.log(`Installed: ${TARGET}\nLogs:      ${LOG_DIR}/server.{out,err}.log`);
 
 (Same as previous plan revision — see git history if needed.)
 
-- [ ] **Step 4: Wire up `bun run app:*`**
+- [ ] **Step 4: Wire up `npm run app:*`**
 
 ```json
 "app:install":   "node scripts/install-launch-agent.mjs",
@@ -1375,10 +1375,10 @@ console.log(`Installed: ${TARGET}\nLogs:      ${LOG_DIR}/server.{out,err}.log`);
 - [ ] **Step 5: Install + reboot test**
 
 ```bash
-bun run app:install
-bun run app:status   # RUNNING
+npm run app:install
+npm run app:status   # RUNNING
 # reboot, log back in
-bun run app:status   # still RUNNING
+npm run app:status   # still RUNNING
 ```
 
 - [ ] **Step 6: Commit (one commit per file or one batch)**
@@ -1407,7 +1407,7 @@ This is the largest stage (~5-7 days). Sub-divided into 5 tasks.
 ```bash
 mkdir -p apps/desktop/src apps/desktop/icons
 cd apps/desktop
-bun init
+npm init -y
 ```
 
 `apps/desktop/package.json`:
@@ -1421,7 +1421,7 @@ bun init
   "scripts": {
     "dev": "tsx src/main.ts",
     "build": "esbuild src/main.ts --bundle --platform=node --target=node20 --external:electron --outfile=dist/main.js",
-    "package": "bun run build && electron-builder --mac"
+    "package": "npm run build && electron-builder --mac"
   },
   "dependencies": {
     "@auto-job/server": "workspace:*",
@@ -1440,7 +1440,7 @@ bun init
 - [ ] **Step 2: Install**
 
 ```bash
-bun install
+npm install
 ```
 
 - [ ] **Step 3: Minimal main.ts that just opens an empty window**
@@ -1462,7 +1462,7 @@ app.on("window-all-closed", () => {
 - [ ] **Step 4: Smoke**
 
 ```bash
-bun run --cwd apps/desktop dev
+npm --prefix apps/desktop run dev
 ```
 
 Expected: blank Electron window appears.
@@ -1508,7 +1508,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 - [ ] **Step 2: Verify CLI server still works after the refactor**
 
 ```bash
-bun run server &
+npm run server &
 curl http://127.0.0.1:47319/health
 kill %1
 ```
@@ -1542,7 +1542,7 @@ app.on("window-all-closed", () => {
 - [ ] **Step 4: Smoke**
 
 ```bash
-bun run --cwd apps/desktop dev
+npm --prefix apps/desktop run dev
 ```
 
 Expected: window opens, dashboard loads inside it. Server accessible at 127.0.0.1:47319 from Chrome too.
@@ -1605,7 +1605,7 @@ const tray = createTray(win, {
 - [ ] **Step 3: Smoke**
 
 ```bash
-bun run --cwd apps/desktop dev
+npm --prefix apps/desktop run dev
 ```
 
 Expected: menu-bar icon appears. Each menu item works.
@@ -1684,7 +1684,7 @@ extraResources:
 - [ ] **Step 2: Build**
 
 ```bash
-bun run --cwd apps/desktop package
+npm --prefix apps/desktop run package
 ```
 
 Expected: `apps/desktop/dist/Auto Job-0.1.0.dmg` created.
@@ -1719,7 +1719,7 @@ If Stage 4 was done, the LaunchAgent now overlaps with the desktop app's auto-la
 - [ ] **Step 1: Run uninstaller**
 
 ```bash
-bun run app:uninstall
+npm run app:uninstall
 ```
 
 - [ ] **Step 2: Remove the install/uninstall scripts**
@@ -1761,7 +1761,7 @@ Most should resolve to `apps/server/` or `apps/server/src/public/`.
 
 - [ ] **Step 3: Update `CLAUDE.md`**
 
-Reflect the new directory structure and entry points (one `bun run server` or just "open the app").
+Reflect the new directory structure and entry points (one `npm run server` or just "open the app").
 
 - [ ] **Step 4: Commit**
 
@@ -1779,21 +1779,21 @@ git commit -m "refactor: clean up references to retired bridge/ and web/ paths"
 **After each stage:**
 
 ```bash
-bun run --cwd packages/shared typecheck && bun run --cwd apps/server typecheck && bun run --cwd apps/extension typecheck && bun run --cwd apps/desktop typecheck
-bun run --cwd apps/server test
-bun run ext:build
-bun run verify
+npm --prefix packages/shared run typecheck && npm --prefix apps/server run typecheck && npm --prefix apps/extension run typecheck && npm --prefix apps/desktop run typecheck
+npm --prefix apps/server run test
+npm run ext:build
+npm run verify
 ```
 
 **Stage-specific smokes:**
 
 | Stage | Smoke |
 |-------|-------|
-| 0 | `bun pm ls` shows workspace packages; existing scanners run |
-| 1 | `AUTO_JOB_BACKEND=fake bun run server` starts; `/health` returns ok |
-| 2 | `OPENROUTER_API_KEY=... AUTO_JOB_BACKEND=real-openrouter bun run server` evaluates a real JD |
+| 0 | `npm ls --workspaces=false` shows workspace packages; existing scanners run |
+| 1 | `AUTO_JOB_BACKEND=fake npm run server` starts; `/health` returns ok |
+| 2 | `OPENROUTER_API_KEY=... AUTO_JOB_BACKEND=real-openrouter npm run server` evaluates a real JD |
 | 3 | `http://127.0.0.1:47319/dashboard/` loads tracker + reports tabs |
-| 4 | Reboot → `bun run app:status` shows RUNNING |
+| 4 | Reboot → `npm run app:status` shows RUNNING |
 | 5 | Open `Auto Job.app` → tray icon → "Open Dashboard" → window with embedded dashboard |
 | 6 | No `bridge/` or `web/dashboard-server.mjs` referenced anywhere live |
 
@@ -1802,7 +1802,7 @@ bun run verify
 | Risk | Mitigation |
 |------|-----------|
 | Large `git mv` diff makes review hard | Each move is its own commit (Tasks 0.2, 0.3, 3.1) so reviewers see structure-only changes separately |
-| Bun workspace layout breaks `tsx` resolution in scanners | Stage 0 Task 0.2 Step 6 explicitly verifies scanners still work; root-level `tsx` install in Stage 6 polish if needed |
+| npm workspace layout breaks `tsx` resolution in scanners | Stage 0 Task 0.2 Step 6 explicitly verifies scanners still work; root-level `tsx` install in Stage 6 polish if needed |
 | OpenRouter SSE format diverges from OpenAI's | Adapter test (Task 2.2) covers the contract; if OpenRouter changes its format, the test fails first, not the user |
 | Codex CLI auth state not visible from Electron app | Settings panel "Test Backend" button (defer to Stage 5 polish) calls `/health` and reports per-adapter readiness |
 | Embedding server in Electron main process means crash = app crash | Acceptable: user sees crash dialog, restarts app. Alternative (child process) adds complexity for marginal gain |
@@ -1814,7 +1814,7 @@ bun run verify
 
 - 2026-04-27: User feedback — extension not merged into desktop app; only Claude/Codex CLI + OpenRouter API adapters; bridge/extension/web can be restructured; Electron or Tauri (recommend Electron); single port; codex default.
 - 2026-04-27: Chose **Electron** over Tauri because (a) bridge is TypeScript and Electron's main process is Node — no sidecar needed, (b) avoids Rust learning curve and Tauri sidecar codesign complexity, (c) personal use makes bundle size irrelevant.
-- 2026-04-27: Chose **Bun-first package commands** for the apps/ + packages/ split — no concept-rewrite needed.
+- 2026-04-27: Chose **npm-first package commands** for the apps/ + packages/ split — no concept-rewrite needed.
 - 2026-04-27: Chose **server-as-module in Electron main process** (not child process) — simpler, no IPC, and any crash is visible to the user.
 - 2026-04-27: Default OpenRouter model is `anthropic/claude-3.5-sonnet` to mirror Claude CLI behavior.
 - 2026-04-27: LaunchAgent stage is **optional and transitional** — gives a 1-day quick win during the ~1 week of Stage 5 development.
@@ -1833,7 +1833,7 @@ bun run verify
 - 2026-04-27 (Stage 0 Tasks 0.1-0.4 implemented on `feat/client-app-restructure`):
   - Task 0.1 commit `4ffde92`: workspace manifest + apps/.gitkeep + packages/.gitkeep + `"private": true`.
   - Task 0.2 commit `becfa28`: `git mv bridge apps/server`, package renamed to `@auto-job/server`, root scripts updated to workspace package commands, server tests 244/244 green.
-  - Task 0.3 commit `4204a22`: `git mv extension apps/extension`, package renamed to `@auto-job/extension`, ext:build switched to the Bun-documented command, typecheck + build green.
+  - Task 0.3 commit `4204a22`: `git mv extension apps/extension`, package renamed to `@auto-job/extension`, ext:build switched to the npm-documented command, typecheck + build green.
   - Task 0.4 commit `b1e811c`: web/ inventory recorded (this entry — Stage 3 will absorb dashboard-server.mjs).
 - Stage 0 Task 0.4 — `web/dashboard-server.mjs` route inventory (for Stage 3 reference):
   - Port 47329 loopback (env override `AUTO_JOB_PDF_PORT`, host `AUTO_JOB_PDF_HOST` default `127.0.0.1`).
@@ -1858,7 +1858,7 @@ bun run verify
 - Stage 0 Task 0.2 follow-on observations (worth noting for later stages):
   - `apps/server/src/runtime/config.ts` `findRepoRoot()` rewritten to walk up looking for `cv.md` + `modes/` + `data/` (was hard-coded to `..` from old `bridge/`). Robust but worth Stage 1 spot-check.
   - Two test files (`merge-tracker.test.ts`, `batch-runner.e2e.test.ts`) had `REPO_ROOT = resolve(import.meta.dirname, "../../..")` updated to `"../../../.."` due to extra dir-depth from the move.
-  - `verify-pipeline.mjs` and `scripts/bridge-start.mjs` switched away from legacy bridge prefix commands. Any CI without Bun would break — sweep in Stage 6.
+  - `verify-pipeline.mjs` and `scripts/bridge-start.mjs` switched away from legacy bridge prefix commands. Any CI without npm would break — sweep in Stage 6.
   - `web/dashboard-server.mjs` line 31 still references `bridge/.bridge-token` — intentionally left for Stage 3 to absorb.
 - 2026-04-27 (Stage 3 complete on `feat/client-app-restructure`):
   - Commit 1 `7fe6375`: pure refactor — added 7 named exports + DI parameterization to web/dashboard-server.mjs.
@@ -1872,8 +1872,8 @@ bun run verify
 - 2026-04-27 (Stage 4 complete): macOS LaunchAgent infrastructure landed
   on `feat/client-app-restructure`. Commits 711843f + 5335aea added
   `templates/io.hongxi.auto-job.plist.template`, install/uninstall/
-  status/logs scripts, and `bun run app:*` targets. Not actually loaded
-  yet — user runs `bun run app:install` when ready.
+  status/logs scripts, and `npm run app:*` targets. Not actually loaded
+  yet — user runs `npm run app:install` when ready.
 
 - 2026-04-27 (Stage 5 complete): Electron desktop app on
   `feat/client-app-restructure`.
@@ -1911,7 +1911,7 @@ bun run verify
   bundle launches and serves dashboard. Branch ready for review on
   `feat/client-app-restructure`.
 - 2026-04-28 (`/plan-eng-review` desktop handoff): captured two
-  non-blocking concerns. `bun run --cwd apps/desktop dev`
+  non-blocking concerns. `npm --prefix apps/desktop run dev`
   still fails in the tsx dev path with `ERR_INTERNAL_ASSERTION`, but this
   was already present in parent desktop commit `b691a3f` and the
   packaged app path remains the supported verification path. Tray/app
@@ -1928,14 +1928,14 @@ Stages 0-6 are implemented and merged to `main`. The current supported
 desktop path is the packaged Electron app:
 
 ```bash
-bun run --cwd apps/desktop package:dir
+npm --prefix apps/desktop run package:dir
 open "apps/desktop/release/mac-arm64/Auto Job.app"
 ```
 
 The desktop dev loop is now repaired by compiling before launch:
 
 ```bash
-bun run --cwd apps/desktop dev
+npm --prefix apps/desktop run dev
 ```
 
 This avoids the `NODE_OPTIONS="--import tsx"` Electron loader path that

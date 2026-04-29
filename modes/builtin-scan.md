@@ -14,10 +14,10 @@ company source.
 
 ## What Already Exists
 
-- `bun run builtin-scan` calls `scripts/job-board-scan-bb-browser.ts --source builtin`.
+- `npm run builtin-scan` calls `scripts/job-board-scan-bb-browser.ts --source builtin`.
 - `bb-browser site builtin/jobs` reads Built In search pages without clicking
   Apply, Save, alerts, login, or resume upload controls.
-- `bun run builtin-scan:legacy` preserves the old `scan.mjs --builtin-only`
+- `npm run builtin-scan:legacy` preserves the old `scan.mjs --builtin-only`
   configured-keyword scanner.
 - `templates/portals.example.yml -> builtin_searches` defines versioned default
   keywords for the legacy scanner.
@@ -38,9 +38,9 @@ enrich, pipeline, history, and evaluation flow.
 Run:
 
 ```bash
-bun run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --score-only --limit 20
-bun run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --dry-run --pages 2 --limit 50
-bun run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=new+grad+software+engineer&city=&state=&country=USA&allLocations=true" --score-only --include-older --pages 2 --limit 50
+npm run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --score-only --limit 20
+npm run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --dry-run --pages 2 --limit 50
+npm run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=new+grad+software+engineer&city=&state=&country=USA&allLocations=true" --score-only --include-older --pages 2 --limit 50
 ```
 
 Expected behavior:
@@ -59,8 +59,8 @@ Expected behavior:
 Run:
 
 ```bash
-bun run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --no-evaluate --enrich-limit 5
-bun run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --pages 2 --no-evaluate
+npm run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --no-evaluate --enrich-limit 5
+npm run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --pages 2 --no-evaluate
 ```
 
 Expected behavior:
@@ -76,16 +76,16 @@ Default behavior without `--no-evaluate` queues `newgrad_quick` evaluations for
 enrich survivors and waits for tracker merge:
 
 ```bash
-bun run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --evaluate-limit 5
+npm run builtin-scan -- --url "https://builtin.com/jobs/hybrid/office?search=Software+Engineering&" --evaluate-limit 5
 ```
 
 To evaluate already-saved legacy Built In rows directly:
 
 ```bash
-bun run builtin-scan -- --evaluate-only --evaluate-limit 5
+npm run builtin-scan -- --evaluate-only --evaluate-limit 5
 ```
 
-`--evaluate-only` delegates to `bun run builtin-scan:legacy` behavior: it reads
+`--evaluate-only` delegates to `npm run builtin-scan:legacy` behavior: it reads
 `/v1/builtin-scan/pending`, captures Built In detail page text, queues
 `/v1/evaluate` using `newgrad_quick`, and waits for tracker merge by default.
 Completed rows enter Apply Next only when the tracker status is `Evaluated` and
@@ -113,7 +113,7 @@ filters to be the source of truth.
 2. Start the local bridge if needed:
 
 ```bash
-bun run server
+npm run server
 ```
 
 3. Open the Auto-Job extension panel.
@@ -191,8 +191,8 @@ In live tests on 2026-04-21, the first page behaved as follows:
 | Denver, CO | 25 | 25 | Included Denver, Broomfield, and multi-location rows |
 | New York, NY | 25 | 25 | Included New York, Brooklyn, and multi-location rows |
 
-The CLI `bun run builtin-scan` now treats the supplied `--url` or `--path` as
-the source of truth. Use `bun run builtin-scan:legacy` when you need the older
+The CLI `npm run builtin-scan` now treats the supplied `--url` or `--path` as
+the source of truth. Use `npm run builtin-scan:legacy` when you need the older
 configured `portals.yml -> builtin_searches` keyword sweep.
 
 ## Customizing Built In Searches

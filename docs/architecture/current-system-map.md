@@ -1,7 +1,7 @@
 # Current System Map
 
 Auto-Job is a local-first job search workspace. The current production shape
-is a Bun-first app/package layout plus root scanner/document scripts.
+is a npm-first app/package layout plus root scanner/document scripts.
 
 ```text
 User / Codex / Chrome extension
@@ -23,14 +23,14 @@ root package scripts
 
 ## Retained Commands
 
-- `bun run verify`
-- `bun run newgrad-scan`
-- `bun run linkedin-scan`
-- `bun run builtin-scan`
-- `bun run indeed-scan`
-- `bun run ext:build`
-- `bun run server`
-- `bun run dashboard:build`
+- `npm run verify`
+- `npm run newgrad-scan`
+- `npm run linkedin-scan`
+- `npm run builtin-scan`
+- `npm run indeed-scan`
+- `npm run ext:build`
+- `npm run server`
+- `npm run dashboard:build`
 
 The repository does not use a default external system-updater. Project changes
 land as normal repository edits and must pass relevant verification.

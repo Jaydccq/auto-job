@@ -2857,7 +2857,7 @@ function renderApplyNext() {
         generatedApplyDocs[applyDocKey(row.key, type)] = result.doc;
         setApplyDocStatus(row.key, type, `${label} generated: ${result.doc.filename}`);
       } catch (error) {
-        setApplyDocStatus(row.key, type, `${label} failed. Start with bun run dashboard. ${error.message}`);
+        setApplyDocStatus(row.key, type, `${label} failed. Start with npm run dashboard. ${error.message}`);
       }
       renderApplyNext();
     };
@@ -3426,7 +3426,7 @@ function renderFullEvaluationAction(row, decision) {
   const status = fullEvalStatus[key];
   const canRun = decision === 'manual_review' && row.reportPath;
   const disabledReason = !DASHBOARD_TOKEN
-    ? 'Start with bun run server'
+    ? 'Start with npm run server'
     : !row.reportPath
       ? 'No dossier'
       : '';
@@ -3810,7 +3810,7 @@ function renderApplications() {
         <td style="padding:8px 12px; border-bottom:1px solid var(--ink-soft); white-space:nowrap;">${esc(lastUpdate)}</td>
         <td style="padding:8px 12px; border-bottom:1px solid var(--ink-soft); color:var(--ink-soft); font-size:13px;">${esc(reason)}</td>
       </tr>`;
-  }).join('') || '<tr><td colspan="7" style="padding:24px; text-align:center; color:var(--ink-soft);">No applications yet — run <code>bun run gmail:scan</code> to populate.</td></tr>';
+  }).join('') || '<tr><td colspan="7" style="padding:24px; text-align:center; color:var(--ink-soft);">No applications yet — run <code>npm run gmail:scan</code> to populate.</td></tr>';
 }
 
 // Wire toggles AFTER render functions defined

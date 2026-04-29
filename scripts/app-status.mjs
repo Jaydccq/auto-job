@@ -13,6 +13,6 @@ try {
         console.log("\nStatus: LOADED but not running (LaunchAgent will retry)");
     }
 } catch {
-    console.log(`Status: NOT INSTALLED (run \`bun run app:install\`)`);
+    console.log(`Status: NOT INSTALLED (run \`npm run app:install\`)`);
     process.exit(1);
 }

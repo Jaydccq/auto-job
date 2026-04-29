@@ -133,8 +133,8 @@ function usage(): string {
   return `auto-job browser-backed job-board scan
 
 Usage:
-  bun run builtin-scan -- [options]
-  bun run indeed-scan -- [options]
+  npm run builtin-scan -- [options]
+  npm run indeed-scan -- [options]
 
 Options:
   --source <builtin|indeed>       Source, normally supplied by package script.
@@ -526,7 +526,7 @@ async function assertBbBrowserAvailable(): Promise<void> {
 async function readBridgeToken(): Promise<string> {
   const tokenPath = join(repoRoot, "apps", "server", ".bridge-token");
   if (!existsSync(tokenPath)) {
-    throw new Error("bridge token not found; start the bridge with bun run server");
+    throw new Error("bridge token not found; start the bridge with npm run server");
   }
   return (await readFile(tokenPath, "utf8")).trim();
 }

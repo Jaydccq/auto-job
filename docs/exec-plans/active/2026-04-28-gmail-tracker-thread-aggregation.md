@@ -15,7 +15,7 @@
 - Mutation of `data/gmail-signals.jsonl` schema or contents
 
 **Success Criteria (verifiable):**
-- `data/gmail-applications.jsonl` is generated after every successful `bun run gmail:scan`.
+- `data/gmail-applications.jsonl` is generated after every successful `npm run gmail:scan`.
 - Each record has shape `{ applicationKey, threadId, company, role, currentState, firstSeenAt, lastUpdateAt, messageCount, humanContact, timeline[], attention, confidence }`.
 - State machine: terminal events (`offer`, `rejected`) latch and override later non-terminal events; non-terminal events advance the state in priority order `offer > rejected > interview > online_assessment > responded > applied`.
 - Real-corpus replay: a single-thread Whatnot timeline of `applied → online_assessment → interview` produces `currentState: 'interview'`. A thread that hits `rejected` after `applied` produces `currentState: 'rejected'`.
@@ -156,7 +156,7 @@ test('applyStateMachine: ignores empty/unknown events', () => {
 
 - [ ] **Step 1.3: Run tests to confirm they fail**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: FAIL with `does not provide an export named 'applyStateMachine'`.
 
 - [ ] **Step 1.4: Implement state machine in `scripts/gmail-applications.mjs`**
@@ -204,7 +204,7 @@ export function applyStateMachine(timeline = []) {
 
 - [ ] **Step 1.5: Run tests to confirm they pass**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: 9/9 pass.
 
 - [ ] **Step 1.6: Commit**
@@ -293,7 +293,7 @@ test('aggregateByThread: signal with neither threadId nor messageId is skipped',
 
 - [ ] **Step 2.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: FAIL — `does not provide an export named 'aggregateByThread'`.
 
 - [ ] **Step 2.3: Implement `aggregateByThread`**
@@ -321,7 +321,7 @@ export function aggregateByThread(signals = []) {
 
 - [ ] **Step 2.4: Run tests to confirm they pass**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: 15/15 pass (9 prior + 6 new).
 
 - [ ] **Step 2.5: Commit**
@@ -392,7 +392,7 @@ test('selectBestCompanyAndRole: skips Unknown Company and Unknown Role when bett
 
 - [ ] **Step 3.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: FAIL — `does not provide an export named 'selectBestCompanyAndRole'`.
 
 - [ ] **Step 3.3: Implement `selectBestCompanyAndRole`**
@@ -445,7 +445,7 @@ export function selectBestCompanyAndRole(signals = []) {
 
 - [ ] **Step 3.4: Run tests to confirm they pass**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: 20/20 pass.
 
 - [ ] **Step 3.5: Commit**
@@ -532,7 +532,7 @@ test('computeApplicationAttention: returns reason and since fields', () => {
 
 - [ ] **Step 4.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: FAIL — exports not present.
 
 - [ ] **Step 4.3: Implement attention computation**
@@ -577,7 +577,7 @@ export function computeApplicationAttention(app = {}, now = new Date()) {
 
 - [ ] **Step 4.4: Run tests to confirm they pass**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: 30/30 pass.
 
 - [ ] **Step 4.5: Commit**
@@ -697,7 +697,7 @@ test('buildApplications: applicationKey is stable based on company+role', () => 
 
 - [ ] **Step 5.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: FAIL — exports not present.
 
 - [ ] **Step 5.3: Implement record builder**
@@ -769,7 +769,7 @@ export function buildApplications(signals = [], now = new Date()) {
 
 - [ ] **Step 5.4: Run tests to confirm they pass**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: 35/35 pass.
 
 - [ ] **Step 5.5: Commit**
@@ -823,7 +823,7 @@ test('parseApplications: missing file returns empty array', () => {
 
 - [ ] **Step 6.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: FAIL — `writeApplications`/`parseApplications` not exported.
 
 - [ ] **Step 6.3: Implement persistence helpers**
@@ -856,7 +856,7 @@ Move the existing top-of-file imports into a single import block at the top so t
 
 - [ ] **Step 6.4: Run tests to confirm they pass**
 
-Run: `bun run test:gmail-apps`
+Run: `npm run test:gmail-apps`
 Expected: 37/37 pass.
 
 - [ ] **Step 6.5: Wire scanner to call `buildApplications` + `writeApplications` after persisting signals**
@@ -883,7 +883,7 @@ console.log(`[gmail-oauth] ${options.dryRun ? 'would write' : 'wrote'} ${applica
 Run: `node --check scripts/gmail-oauth-refresh.mjs && node --input-type=module -e "import('./scripts/gmail-oauth-refresh.mjs').then(m => console.log('exports:', Object.keys(m).length))"`
 Expected: prints export count without error.
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: still 30/30 (Phase 1 tests unaffected).
 
 - [ ] **Step 6.7: Commit**
@@ -1005,22 +1005,22 @@ git commit -m "docs(gmail-signals): document applications layer, state machine, 
 
 | Layer | How |
 |---|---|
-| Unit | `bun run test:gmail-apps` — covers state machine, aggregation, contact selection, attention, record builder, persistence |
-| Phase 1 regression | `bun run test:gmail` — must remain green throughout |
+| Unit | `npm run test:gmail-apps` — covers state machine, aggregation, contact selection, attention, record builder, persistence |
+| Phase 1 regression | `npm run test:gmail` — must remain green throughout |
 | Integration | Standalone replay against the user's 295-signal corpus (Task 7) |
-| End-to-end | After merge, the next live `bun run gmail:scan` writes `data/gmail-applications.jsonl` automatically |
-| Repo health | `bun run verify` |
+| End-to-end | After merge, the next live `npm run gmail:scan` writes `data/gmail-applications.jsonl` automatically |
+| Repo health | `npm run verify` |
 
 ## Risks and Blockers
 
 - **`data/gmail-applications.jsonl` is gitignored** — verification numbers are recorded in this plan, not asserted in CI.
-- **Dashboard does NOT consume the new file** — Phase 3 is required before users see the aggregated view. Until Phase 3 ships, `bun run dashboard:build` continues to use the per-signal model. This is intentional (data layer ships independently of UI).
+- **Dashboard does NOT consume the new file** — Phase 3 is required before users see the aggregated view. Until Phase 3 ships, `npm run dashboard:build` continues to use the per-signal model. This is intentional (data layer ships independently of UI).
 - **State machine ordering may differ from user expectation** — `offer` outranks `rejected` (higher priority). If a user's mailbox has a thread where they were rejected and then sent a separate offer email on the same thread, the offer wins. Document this; revisit if the user sees actual misclassification on real data.
 
 ## Progress Log
 
 - 2026-04-28: Plan created after Phase 1 (`feature/gmail-tracker-phase1`) merged to `main`. Designed as a pure data-layer ship with no dashboard surface, deferring UI rework to Phase 3.
-- 2026-04-29: Tasks 1–6 implemented inline (TDD red → green → commit). New module `scripts/gmail-applications.mjs` exports `STATE_PRIORITY`, `TERMINAL_STATES`, `applyStateMachine`, `aggregateByThread`, `selectBestCompanyAndRole`, `computeApplicationAttention`, `ATTENTION_LEVELS`, `STALE_DAYS_THRESHOLD`, `URGENT_DEADLINE_HOURS`, `buildApplicationRecord`, `buildApplications`, `writeApplications`, `parseApplications`. 37 unit tests pass via `bun run test:gmail-apps`; Phase 1's 30 tests still pass via `bun run test:gmail`. Scanner now emits `data/gmail-applications.jsonl` after each scan.
+- 2026-04-29: Tasks 1–6 implemented inline (TDD red → green → commit). New module `scripts/gmail-applications.mjs` exports `STATE_PRIORITY`, `TERMINAL_STATES`, `applyStateMachine`, `aggregateByThread`, `selectBestCompanyAndRole`, `computeApplicationAttention`, `ATTENTION_LEVELS`, `STALE_DAYS_THRESHOLD`, `URGENT_DEADLINE_HOURS`, `buildApplicationRecord`, `buildApplications`, `writeApplications`, `parseApplications`. 37 unit tests pass via `npm run test:gmail-apps`; Phase 1's 30 tests still pass via `npm run test:gmail`. Scanner now emits `data/gmail-applications.jsonl` after each scan.
 - 2026-04-29: Real-corpus replay against the user's 295-signal `data/gmail-signals.jsonl` produced **271 applications** (24 multi-signal threads aggregated).
   - State distribution: `applied: 169, rejected: 60, responded: 31, interview: 8, online_assessment: 2, empty: 1`.
   - Attention distribution: `urgent: 60, info: 109, action: 41, stale: 61`.
@@ -1046,6 +1046,6 @@ Phase 2 shipped in 7 commits on `feature/gmail-tracker-phase2`. 37 new unit test
 | Multi-signal threads correctly aggregated | 24 |
 | State distribution | applied 169, rejected 60, responded 31, interview 8, OA 2 |
 | Attention distribution | urgent 60, action 41, stale 61, info 109 |
-| Phase 1 regressions | 0 (`bun run test:gmail` 30/30) |
+| Phase 1 regressions | 0 (`npm run test:gmail` 30/30) |
 
 Phase 3 (dashboard consumption) and Phase 4 (deadline parsing) can build on the new data layer without further changes to the scanner.

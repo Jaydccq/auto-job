@@ -17,7 +17,7 @@ const PRIMARY_ACTIONS = [
   {
     label: "Desktop launchpad (Codex)",
     description: "Build, start the Codex bridge, reveal dist, and open chrome://extensions.",
-    terminalCommand: "bun run ext:build && bun run server",
+    terminalCommand: "npm run ext:build && npm run server",
     afterOpen: [
       { type: "path", target: distDir },
       { type: "chrome-extensions" },
@@ -26,7 +26,7 @@ const PRIMARY_ACTIONS = [
   {
     label: "Desktop launchpad (Claude)",
     description: "Build, start the Claude bridge, reveal dist, and open chrome://extensions.",
-    terminalCommand: "bun run ext:build && AUTO_JOB_BACKEND=real-claude bun run server",
+    terminalCommand: "npm run ext:build && AUTO_JOB_BACKEND=real-claude npm run server",
     afterOpen: [
       { type: "path", target: distDir },
       { type: "chrome-extensions" },
@@ -42,27 +42,27 @@ const PRIMARY_ACTIONS = [
 const ADVANCED_ACTIONS = [
   {
     label: "Build extension",
-    terminalCommand: "bun run ext:build",
+    terminalCommand: "npm run ext:build",
   },
   {
     label: "Start bridge (Codex)",
-    terminalCommand: "bun run server",
+    terminalCommand: "npm run server",
   },
   {
     label: "Start bridge (Claude)",
-    terminalCommand: "AUTO_JOB_BACKEND=real-claude bun run server",
+    terminalCommand: "AUTO_JOB_BACKEND=real-claude npm run server",
   },
   {
     label: "Start bridge (Fake)",
-    terminalCommand: "AUTO_JOB_BACKEND=fake bun run server",
+    terminalCommand: "AUTO_JOB_BACKEND=fake npm run server",
   },
   {
     label: "Build + start (Codex)",
-    terminalCommand: "bun run ext:build && bun run server",
+    terminalCommand: "npm run ext:build && npm run server",
   },
   {
     label: "Build + start (Claude)",
-    terminalCommand: "bun run ext:build && AUTO_JOB_BACKEND=real-claude bun run server",
+    terminalCommand: "npm run ext:build && AUTO_JOB_BACKEND=real-claude npm run server",
   },
   {
     label: "Reveal extension/dist",
@@ -92,7 +92,7 @@ macOS:
   The default picker only shows the common daily actions.
 
 Other platforms:
-  Prints the available actions. Run the matching Bun script directly.`);
+  Prints the available actions. Run the matching npm script directly.`);
 }
 
 function listActions(actions = PRIMARY_ACTIONS) {

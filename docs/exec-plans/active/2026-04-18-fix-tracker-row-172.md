@@ -2,7 +2,7 @@
 
 ## Background
 
-`bun run verify` fails because row `#172` in `data/applications.md` has extra pipe-delimited fields. The report title contains `Backend Engineer | Mimir | USA | Remote`, and those title separators were written into the markdown table as separate columns.
+`npm run verify` fails because row `#172` in `data/applications.md` has extra pipe-delimited fields. The report title contains `Backend Engineer | Mimir | USA | Remote`, and those title separators were written into the markdown table as separate columns.
 
 ## Goal
 
@@ -12,7 +12,7 @@ Fix row `#172` so it matches the tracker table schema and passes pipeline verifi
 
 - Edit only the malformed `#172` tracker row.
 - Preserve the report link, score, skip decision, and note.
-- Run `bun run verify`.
+- Run `npm run verify`.
 
 ## Assumptions
 
@@ -28,7 +28,7 @@ Fix row `#172` so it matches the tracker table schema and passes pipeline verifi
 2. Rewrite row `#172` to the canonical tracker columns.
    Verify: row has the same column count as the header.
 3. Run pipeline verification.
-   Verify: `bun run verify`.
+   Verify: `npm run verify`.
 
 ## Verification Approach
 
@@ -40,7 +40,7 @@ Fix row `#172` so it matches the tracker table schema and passes pipeline verifi
 - 2026-04-18: Confirmed row `#172` has 12 data cells instead of the expected 9 because the role title contained literal pipe separators.
 - 2026-04-18: Rewrote row `#172` to `Backend Engineer, Mimir (USA Remote)` with score `1.3/5`, status `SKIP`, PDF `❌`, and report `[256](reports/256-grafana-labs-2026-04-17.md)`.
 - 2026-04-18: Ran `git diff --check`; passed.
-- 2026-04-18: Ran `bun run verify`; passed with 0 errors and 3 duplicate warnings.
+- 2026-04-18: Ran `npm run verify`; passed with 0 errors and 3 duplicate warnings.
 
 ## Key Decisions
 
@@ -52,7 +52,7 @@ Fix row `#172` so it matches the tracker table schema and passes pipeline verifi
 
 ## Final Outcome
 
-Completed. Row `#172` now matches the canonical tracker schema, and `bun run verify` reports `0 errors`.
+Completed. Row `#172` now matches the canonical tracker schema, and `npm run verify` reports `0 errors`.
 
 Remaining verifier warnings are duplicate candidates already present in the tracker:
 

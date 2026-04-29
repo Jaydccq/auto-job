@@ -55,7 +55,7 @@ function main() {
 
     console.log(`Installed: ${TARGET}`);
     console.log(`Logs:      ${LOG_DIR}/server.{out,err}.log`);
-    console.log(`Verify:    bun run app:status`);
+    console.log(`Verify:    npm run app:status`);
 }
 
 main();

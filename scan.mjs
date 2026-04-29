@@ -1018,7 +1018,7 @@ async function evaluateCurrentScanOffers(offers, options) {
 
   const tokenPath = 'apps/server/.bridge-token';
   if (!existsSync(tokenPath)) {
-    throw new Error('bridge token not found; start the bridge first with bun run server');
+    throw new Error('bridge token not found; start the bridge first with npm run server');
   }
 
   const token = readFileSync(tokenPath, 'utf-8').trim();
@@ -1117,7 +1117,7 @@ function dedupeScanOffers(offers) {
 async function evaluateBuiltInPending(options) {
   const tokenPath = 'apps/server/.bridge-token';
   if (!existsSync(tokenPath)) {
-    throw new Error('bridge token not found; start the bridge first with bun run server');
+    throw new Error('bridge token not found; start the bridge first with npm run server');
   }
 
   const token = readFileSync(tokenPath, 'utf-8').trim();

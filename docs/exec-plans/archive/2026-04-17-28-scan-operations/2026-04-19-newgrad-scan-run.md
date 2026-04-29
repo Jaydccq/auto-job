@@ -594,11 +594,11 @@ Login cookie import retest:
   `execution.mode=real`, `execution.realExecutor=codex`, tracker/CV/profile OK,
   Codex CLI OK, Node OK, and Playwright Chromium OK.
 - 2026-04-24: First `npm run newgrad-scan` attempt exposed a broken package
-  script from the scan Bun migration: `bun --cwd bridge run tsx ...` printed
-  Bun help and exited 0 instead of running the scanner. Fixed scan package
+  script from the scan npm migration: `npm --prefix bridge exec -- tsx ...` printed
+  npm help and exited 0 instead of running the scanner. Fixed scan package
   scripts to call `./bridge/node_modules/.bin/tsx` directly; verified both
-  `bun run newgrad-scan -- --help` and `npm run newgrad-scan -- --help`.
-- 2026-04-24: Full `bun run newgrad-scan` completed the scan/enrich phase.
+  `npm run newgrad-scan -- --help` and `npm run newgrad-scan -- --help`.
+- 2026-04-24: Full `npm run newgrad-scan` completed the scan/enrich phase.
   JobRight API source returned 96 rows within 24 hours; scanner promoted 34,
   filtered 62, enriched 34 with 0 failures, bridge enrich added 3 candidates
   and skipped 31. Skip breakdown: 18 `site_match_below_bar`, 8
@@ -635,7 +635,7 @@ Login cookie import retest:
   markdown files under `reports/` including `reports/CLAUDE.md`, 92 JD cache
   files, 544 lines in `data/pipeline.md`, 222 lines in `data/applications.md`,
   and 1092 lines in `data/scan-history.tsv`.
-- 2026-04-24: Verification passed: `bun run newgrad-scan -- --help`,
+- 2026-04-24: Verification passed: `npm run newgrad-scan -- --help`,
   `npm run newgrad-scan -- --help`, `npm --prefix bridge run typecheck`,
   `npm --prefix bridge run test -- src/adapters/claude-pipeline.test.ts
   src/server.test.ts` with 22 tests, `git diff --check`, and `npm run verify`.

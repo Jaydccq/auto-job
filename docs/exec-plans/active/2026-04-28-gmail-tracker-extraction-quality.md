@@ -20,7 +20,7 @@
 - Trusted-ATS senders (`*@ashbyhq.com`, `*@greenhouse.io`/`greenhouse-mail.io`, `*@hire.lever.co`/`lever.co`, `*@myworkday.com`/`workday.com`, `*@smartrecruiters.com`, `*@talent.icims.com`) yield a non-generic company derived from `from.name` after suffix stripping.
 - Confidence score is a weighted-feature value in `[0.0, 1.0]`, not the hardcoded `0.78` / `0.52`.
 - Zero-width / combining graphemes (`͏`, `​`–`‍`, `⁠`, `﻿`) are stripped from `summary` and `snippet`.
-- Re-run `bun run gmail:scan --dry-run` after the change: at least every prior `rejected` signal whose sender is `linkedin.com` flips to `applied` (or is dropped).
+- Re-run `npm run gmail:scan --dry-run` after the change: at least every prior `rejected` signal whose sender is `linkedin.com` flips to `applied` (or is dropped).
 
 ---
 
@@ -98,7 +98,7 @@ test('sanitizeMessageText is a no-op on empty / non-string input', () => {
 
 - [ ] **Step 1.3: Run tests to confirm they fail**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: FAIL with `SyntaxError` or `The requested module './gmail-oauth-refresh.mjs' does not provide an export named 'sanitizeMessageText'`.
 
 - [ ] **Step 1.4: Implement `sanitizeMessageText` in `scripts/gmail-oauth-refresh.mjs`**
@@ -144,7 +144,7 @@ snippet: compactText(sanitizeMessageText(message.snippet || bodyText), 220),
 
 - [ ] **Step 1.6: Run tests to confirm they pass**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: PASS — 4 tests pass.
 
 - [ ] **Step 1.7: Commit**
@@ -223,7 +223,7 @@ test('classifyEvent: real Kinstead rejection from ATS still classifies as reject
 
 - [ ] **Step 2.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: FAIL — `senderClassificationPolicy is not exported` and Kinstead/LinkedIn assertions fail because current `classifyEvent` doesn't gate on sender.
 
 - [ ] **Step 2.3: Implement `senderClassificationPolicy`**
@@ -299,7 +299,7 @@ A bare `return decide('offer')` would NOT fall through — when the policy denie
 
 - [ ] **Step 2.5: Run tests to confirm they pass**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: PASS — all 4 new tests pass; the 4 from Task 1 still pass.
 
 - [ ] **Step 2.6: Commit**
@@ -376,7 +376,7 @@ test('extractSignalFromMessage uses ATS sender name as company for ashbyhq.com',
 
 - [ ] **Step 3.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: FAIL — `companyFromAtsSenderName is not exported`; `extractSignalFromMessage` returns the prose-extracted name (not "Whatnot") on the ATS test.
 
 - [ ] **Step 3.3: Implement `companyFromAtsSenderName`**
@@ -420,7 +420,7 @@ const companyCandidates = [
 
 - [ ] **Step 3.5: Run tests to confirm they pass**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: PASS — all 4 new tests pass; prior 8 still pass.
 
 - [ ] **Step 3.6: Commit**
@@ -477,7 +477,7 @@ test('isGenericCompany accepts real company names', () => {
 
 - [ ] **Step 4.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: FAIL — `isGenericCompany('Software Engineer')` and the prepositional fragments currently return `false`.
 
 - [ ] **Step 4.3: Extend `isGenericCompany`**
@@ -513,7 +513,7 @@ If there is no existing `export` on the prior declaration, add one — it is nee
 
 - [ ] **Step 4.4: Run tests to confirm they pass**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: PASS — all 4 new tests pass; prior tests still pass.
 
 - [ ] **Step 4.5: Commit**
@@ -578,7 +578,7 @@ test('classifyEvent: applied receipt is not rejection even if body has filler "u
 
 - [ ] **Step 5.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: FAIL — current rejection regex includes `unfortunately` as a primary trigger, so the second test wrongly returns `rejected`.
 
 - [ ] **Step 5.3: Split rejection patterns**
@@ -631,7 +631,7 @@ The `!hasAnyPattern(APPLICATION_RECEIPT_PATTERNS, lower)` guard prevents the "Th
 
 - [ ] **Step 5.4: Run tests to confirm they pass**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: PASS — all 3 new tests pass; prior Kinstead test (Task 2) still passes because Kinstead body contains `not moving forward`.
 
 - [ ] **Step 5.5: Commit**
@@ -705,7 +705,7 @@ test('extractSignalFromMessage: signal from ATS produces realistic confidence (n
 
 - [ ] **Step 6.2: Run tests to confirm they fail**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: FAIL — `computeConfidence` not exported; `extractSignalFromMessage` still returns hardcoded 0.78.
 
 - [ ] **Step 6.3: Implement `computeConfidence`**
@@ -762,7 +762,7 @@ return {
 
 - [ ] **Step 6.5: Run tests to confirm they pass**
 
-Run: `bun run test:gmail`
+Run: `npm run test:gmail`
 Expected: PASS — all 4 new tests pass; prior tests still pass.
 
 - [ ] **Step 6.6: Commit**
@@ -831,7 +831,7 @@ Record the numbers in this plan's progress log.
 - [ ] **Step 7.3: Run the live scanner with `--dry-run` (requires Gmail OAuth set up)**
 
 ```bash
-bun run gmail:scan -- --dry-run --max-messages 250 2>&1 | tee /tmp/gmail-dry-run.log
+npm run gmail:scan -- --dry-run --max-messages 250 2>&1 | tee /tmp/gmail-dry-run.log
 grep -E '\[gmail-oauth\]' /tmp/gmail-dry-run.log
 ```
 
@@ -862,13 +862,13 @@ Expected: `LinkedIn rejected count: 0`. `Unknown Company count` should be lower 
 - [ ] **Step 7.5: Run the live scanner without `--dry-run` to persist the cleaned corpus**
 
 ```bash
-bun run gmail:scan
+npm run gmail:scan
 ```
 
 - [ ] **Step 7.6: Rebuild the dashboard and visually confirm**
 
 ```bash
-bun run dashboard:build
+npm run dashboard:build
 open web/index.html  # or visit http://127.0.0.1:47319/dashboard/
 ```
 
@@ -953,11 +953,11 @@ git commit -m "docs(gmail-signals): document sender policy and weighted confiden
 
 | Layer | How |
 |---|---|
-| Unit | `bun run test:gmail` — covers sanitizer, sender policy, ATS-name extraction, generic-company stop-list, hard/soft rejection split, weighted confidence |
+| Unit | `npm run test:gmail` — covers sanitizer, sender policy, ATS-name extraction, generic-company stop-list, hard/soft rejection split, weighted confidence |
 | Integration | `node scripts/replay-gmail-signals.mjs` against current `data/gmail-signals.jsonl` — counts dropped/kept signals, samples errors |
-| End-to-end | `bun run gmail:scan --dry-run` then `bun run gmail:scan` — exercises live OAuth path with no API mocks |
-| Visual | `bun run dashboard:build` + open dashboard Tracker tab — confirm LinkedIn-rejected rows and "Software Engineer"-as-company rows are gone |
-| Repo health | `bun run verify` — workspace tests + repo-guard pass (must remain green throughout) |
+| End-to-end | `npm run gmail:scan --dry-run` then `npm run gmail:scan` — exercises live OAuth path with no API mocks |
+| Visual | `npm run dashboard:build` + open dashboard Tracker tab — confirm LinkedIn-rejected rows and "Software Engineer"-as-company rows are gone |
+| Repo health | `npm run verify` — workspace tests + repo-guard pass (must remain green throughout) |
 
 ## Risks and Blockers
 
@@ -973,7 +973,7 @@ git commit -m "docs(gmail-signals): document sender policy and weighted confiden
 - 2026-04-28: Task 4 review surfaced false-positive on "The X" company names (Disney/Home Depot/Trade Desk); fix amended into the same commit, added `THE_FRAGMENT_PATTERN` (no `i` flag) so capitalized brand prefixes pass while lowercase prose is still rejected. Aligned `intern` between `ROLE_NOUN_PATTERN` and `ROLE_AT_COMPANY_PATTERN`. 2 new positive-case tests added.
 - 2026-04-28: Real-corpus replay (Task 7) ran the new `isValidStoredSignal` against all 295 stored signals. First pass dropped 106 records — but 20 of them were legitimate ATS rejections (Kinstead/Anyscale/Cohere/Mistral AI/Foresight Health/Axon/Bisnow/AfterQuery/Figma/Flex/Fluency/Hazel/Outset/Guidewire/etc.) whose 220-char snippets cut off the hard-rejection phrase. Phase 1's stricter classifier had broken validator idempotency.
 - 2026-04-28: Added Task 5b. `isValidStoredSignal` now trusts hard-stored events (`offer`/`rejected`/`interview`/`online_assessment`) without re-classifying, but gates that trust on the current sender policy so legacy LinkedIn-rejected misclassifications still get cleaned up. 4 new tests (Kinstead retained, LinkedIn-with-garbage-company dropped, LinkedIn-with-valid-company-but-policy-denies dropped, soft event still re-classifies). Final replay against the 295-signal corpus: 222 retained, 73 dropped — including all 9 LinkedIn-rejected garbage rows, 4 legacy LinkedIn-rejected rows that survived the company gate but failed the policy gate, and ~60 generic-company / generic-role rows. Unknown-Company count: 0 retained (was 14 baseline). LinkedIn-rejected count: 0 retained (Phase 1 goal achieved).
-- 2026-04-28: Skipped live `bun run gmail:scan` and dashboard rebuild (Steps 7.3 / 7.5 / 7.6) — OAuth credentials live in the main checkout's `config/`, not the worktree, and we should not mutate user-layer data from a feature branch. The next scheduled `gmail:scan` (after Phase 1 lands on `main`) will apply the new validator naturally.
+- 2026-04-28: Skipped live `npm run gmail:scan` and dashboard rebuild (Steps 7.3 / 7.5 / 7.6) — OAuth credentials live in the main checkout's `config/`, not the worktree, and we should not mutate user-layer data from a feature branch. The next scheduled `gmail:scan` (after Phase 1 lands on `main`) will apply the new validator naturally.
 - 2026-04-28: Two follow-ups recorded in `docs/exec-plans/tech-debt-tracker.md`: (a) extend `HARD_REJECTION_PATTERNS` with `we regret to inform`, `moving in a different direction`, `not (be )?advancing`, `position has been put on hold`, plus add `opportunity`/`opening` to the hiring-noun list; (b) collapse the duplicate `senderClassificationPolicy(from)` call between `classifyEvent` and `extractSignalFromMessage`, and promote two inline regexes to named constants.
 
 ## Key Decisions
@@ -988,7 +988,7 @@ git commit -m "docs(gmail-signals): document sender policy and weighted confiden
 
 ## Final Outcome
 
-Phase 1 shipped in 7 commits on `feature/gmail-tracker-phase1` (`f024c66`, `ef659a7`, `843f21a`, `d560474`, `3e6d3ca`, `03fed3c`, `7b75296`). 30 unit tests pass via `bun run test:gmail`.
+Phase 1 shipped in 7 commits on `feature/gmail-tracker-phase1` (`f024c66`, `ef659a7`, `843f21a`, `d560474`, `3e6d3ca`, `03fed3c`, `7b75296`). 30 unit tests pass via `npm run test:gmail`.
 
 Real-corpus impact (replay against the user's 295-signal `data/gmail-signals.jsonl`):
 

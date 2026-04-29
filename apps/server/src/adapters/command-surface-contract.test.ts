@@ -6,7 +6,16 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 
-const removedCompatibilityDirs = [".gemini", ".opencode"] as const;
+const ownedAgentCommandSurfaces = [
+  ".claude",
+  ".codex",
+  ".cursor",
+  ".gemini",
+  ".kilocode",
+  ".kiro",
+  ".opencode",
+  ".pi",
+] as const;
 
 const removedLegacyModes = [
   "apply",
@@ -31,7 +40,6 @@ const removedRootScripts = [
 
 const removedTopLevelFiles = [
   "GEMINI.md",
-  "AGENTS.md",
   "CITATION.cff",
   ".release-please-manifest.json",
   "templates/cv-template.tex",
@@ -46,9 +54,9 @@ const ownedAppDirs = [
 ] as const;
 
 describe("command surface contract (owned-only)", () => {
-  test("removed compatibility command surfaces are gone", () => {
-    for (const dir of removedCompatibilityDirs) {
-      expect(existsSync(resolve(repoRoot, dir))).toBe(false);
+  test("owned agent command surfaces are versioned", () => {
+    for (const dir of ownedAgentCommandSurfaces) {
+      expect(existsSync(resolve(repoRoot, dir))).toBe(true);
     }
   });
 

@@ -31,7 +31,7 @@ Two layers are kept distinct (see `DATA_CONTRACT.md` for the full table):
 
 ## Verification
 
-`scripts/verify-repo-guard.mjs` (wired into `bun run verify`) fails the
+`scripts/verify-repo-guard.mjs` (wired into `npm run verify`) fails the
 build if a removed compatibility surface, deleted legacy mode, or external
 update mechanism reappears. The matching test
 (`apps/server/src/adapters/command-surface-contract.test.ts`) asserts the

@@ -33,7 +33,7 @@ dashboard.
 Do **not** auto-generate a PDF. After the report is saved, summarize the
 result for the user and wait for explicit confirmation ("yes, build the CV"
 or "tailor the resume"). When confirmed, run `modes/cover-letter.md`'s sibling
-PDF flow via `bun run pdf`.
+PDF flow via `npm run pdf`.
 
 ## Step 4 — Application form drafts (only if Score ≥ 4.5)
 
@@ -74,7 +74,7 @@ Skip the cover letter even if the user asks when:
 ## Step 6 — Tracker TSV
 
 Write `batch/tracker-additions/{NNN}-{slug}.tsv` with the 9-column contract
-in `modes/_shared.md`. The user runs `bun run merge` later — never run it
+in `modes/_shared.md`. The user runs `npm run merge` later — never run it
 inside this pipeline.
 
 ## Failure handling

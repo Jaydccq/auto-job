@@ -65,13 +65,13 @@ export function presetDescription(preset: BridgePreset): string {
 export function presetCommand(preset: BridgePreset): string {
   switch (preset) {
     case "fake":
-      return "AUTO_JOB_BACKEND=fake bun run server";
+      return "AUTO_JOB_BACKEND=fake npm run server";
     case "real-claude":
-      return "AUTO_JOB_BACKEND=real-claude bun run server";
+      return "AUTO_JOB_BACKEND=real-claude npm run server";
     case "real-codex":
-      return "bun run server";
+      return "npm run server";
     case "real-openrouter":
-      return "AUTO_JOB_BACKEND=real-openrouter bun run server";
+      return "AUTO_JOB_BACKEND=real-openrouter npm run server";
   }
 }
 

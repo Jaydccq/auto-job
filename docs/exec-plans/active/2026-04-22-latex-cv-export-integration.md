@@ -5,7 +5,7 @@
 The upstream merge added the LaTeX CV export implementation:
 `generate-latex.mjs`, `modes/latex.md`, and `templates/cv-template.tex`.
 Project docs also mention `/auto-job-latex`, but the local command routing is
-not fully wired for Claude, OpenCode, Gemini, Codex, and Bun package scripts.
+not fully wired for Claude, OpenCode, Gemini, Codex, and npm package scripts.
 
 ## Goal
 
@@ -39,13 +39,13 @@ surfaces as the existing Auto-Job modes.
 4. Add package script.
    Verify: `package.json` parses and includes `latex`.
 5. Run targeted verification.
-   Verify: no conflict markers, `bun run verify`, and safe script checks.
+   Verify: no conflict markers, `npm run verify`, and safe script checks.
 
 ## Verification Approach
 
 - Parse `package.json` with Node.
 - Search for command/routing references to `latex`.
-- Run `bun run verify`.
+- Run `npm run verify`.
 - Run `node generate-latex.mjs` without args to verify the command is callable
   and reports usage. Full PDF compilation depends on `pdflatex` availability and
   a generated `.tex` file.
@@ -55,7 +55,7 @@ surfaces as the existing Auto-Job modes.
 - 2026-04-22: Confirmed worktree was clean before edits.
 - 2026-04-22: Compared local routing with `upstream/main`; upstream added the
   core LaTeX files and documentation references, but not full command routing.
-- 2026-04-22: Added `latex` to the Auto-Job router, discovery menu, Bun package scripts
+- 2026-04-22: Added `latex` to the Auto-Job router, discovery menu, npm package scripts
   scripts, OpenCode command list, Gemini command list, and Codex routing docs.
 - 2026-04-22: Added `.opencode/commands/auto-job-latex.md` and
   `.gemini/commands/auto-job-latex.toml`; both route into upstream
@@ -65,7 +65,7 @@ surfaces as the existing Auto-Job modes.
   `latex: node generate-latex.mjs`.
 - 2026-04-22: `node generate-latex.mjs` without args reported the expected
   usage string.
-- 2026-04-22: `bun run verify` passed with 0 errors and 2 existing duplicate
+- 2026-04-22: `npm run verify` passed with 0 errors and 2 existing duplicate
   warnings in `data/applications.md`.
 - 2026-04-22: `node generate-latex.mjs /tmp/auto-job-latex-smoke.tex
   /tmp/auto-job-latex-smoke.pdf` passed and compiled a PDF with `pdflatex`.
@@ -86,7 +86,7 @@ surfaces as the existing Auto-Job modes.
 ## Final Outcome
 
 LaTeX/Overleaf CV export is now wired as an explicit Auto-Job mode across
-Claude, OpenCode, Gemini, Codex routing docs, and Bun package scripts. The upstream implementation
+Claude, OpenCode, Gemini, Codex routing docs, and npm package scripts. The upstream implementation
 files remain the source of truth: `modes/latex.md`, `templates/cv-template.tex`,
 and `generate-latex.mjs`. Verification passed, including a real local pdflatex
 smoke compile.

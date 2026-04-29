@@ -10,12 +10,12 @@ analogous to `newgrad-scan`.
 ## Prerequisites
 
 - Codex session with the Gmail connector available, or local OAuth credentials
-  at `config/gmail-oauth-credentials.json` plus token from `bun run gmail:auth`.
+  at `config/gmail-oauth-credentials.json` plus token from `npm run gmail:auth`.
 - Existing dashboard signal support from `docs/GMAIL_SIGNALS.md`.
 
 If the Gmail connector is unavailable, stop and tell the user:
 
-> "Run `bun run gmail:auth` once, then `bun run gmail:scan` or `bun run dashboard`."
+> "Run `npm run gmail:auth` once, then `npm run gmail:scan` or `npm run dashboard`."
 
 ## Safety Rules
 
@@ -89,7 +89,7 @@ company+role+eventType+eventDate
 8. Run:
 
 ```bash
-bun run gmail:update
+npm run gmail:update
 ```
 
 This records the latest refresh status and validates the current signal file
@@ -98,7 +98,7 @@ summary. It does not fetch Gmail by itself.
 9. Run or refresh the dashboard:
 
 ```bash
-bun run dashboard
+npm run dashboard
 ```
 
 The Tracker tab should show synced signals, Gmail-only application rows, recent
@@ -112,16 +112,16 @@ Create a Google Cloud OAuth client with Application type `Desktop app`, not
 Run once:
 
 ```bash
-bun run gmail:auth
+npm run gmail:auth
 ```
 
 Then scan:
 
 ```bash
-bun run gmail:scan
+npm run gmail:scan
 ```
 
-`bun run dashboard` runs `scripts/refresh-gmail-signals.mjs`, which defaults to
+`npm run dashboard` runs `scripts/refresh-gmail-signals.mjs`, which defaults to
 `scripts/gmail-oauth-refresh.mjs`, so the dashboard startup will pull Gmail
 again after OAuth is configured.
 
@@ -149,8 +149,8 @@ After every Gmail scan:
 
 ```bash
 node --check web/build-dashboard.mjs
-bun run gmail:update
-bun run dashboard:build
+npm run gmail:update
+npm run dashboard:build
 git diff --check
 ```
 

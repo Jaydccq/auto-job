@@ -43,9 +43,9 @@ Out of scope:
    Verify: required `SKILL.md` files and bundled resources exist.
 2. Sync `.claude/skills` to the same content.
    Verify: byte-for-byte comparison passes.
-3. Add `scripts/verify-skills-sync.mjs` and `bun run verify:skills`.
+3. Add `scripts/verify-skills-sync.mjs` and `npm run verify:skills`.
    Verify: targeted sync command passes.
-4. Wire skill sync into `bun run verify`.
+4. Wire skill sync into `npm run verify`.
    Verify: full verification includes the new check.
 5. Update active docs to describe `skills/` as canonical.
    Verify: `rg` no longer shows live docs treating `.claude/skills` as the
@@ -53,10 +53,10 @@ Out of scope:
 
 ## Verification Approach
 
-- `bun run verify:skills`
+- `npm run verify:skills`
 - `python3 skills/exec-plan-consolidator/scripts/plan_inventory.py --json`
-- `bun run verify:repo-guard`
-- `bun run verify`
+- `npm run verify:repo-guard`
+- `npm run verify`
 - `git diff --check`
 
 ## Progress Log
@@ -65,13 +65,13 @@ Out of scope:
   and execution-plan layout.
 - 2026-04-28: Added repository-local skills under `skills/` and mirrored them
   into `.claude/skills/`.
-- 2026-04-28: Added `verify:skills` and wired it into `bun run verify`.
+- 2026-04-28: Added `verify:skills` and wired it into `npm run verify`.
 - 2026-04-28: Updated README, data contract, command-surface docs, origin
   ownership docs, and exec-plan navigation to point at the generic skill path.
-- 2026-04-28: Verified with `bun run verify:skills`, the generic
-  `plan_inventory.py --json` path, `bun run verify:repo-guard`,
+- 2026-04-28: Verified with `npm run verify:skills`, the generic
+  `plan_inventory.py --json` path, `npm run verify:repo-guard`,
   `git diff --check`, targeted live-doc search for old Claude-only wording,
-  and `bun run verify`.
+  and `npm run verify`.
 
 ## Key Decisions
 
@@ -93,5 +93,5 @@ Out of scope:
 
 Completed. The repository now has canonical portable skills under `skills/`,
 Claude Code mirrors under `.claude/skills/`, and a verification command that
-prevents mirror drift. `bun run verify` passed with 0 errors and 1 existing
+prevents mirror drift. `npm run verify` passed with 0 errors and 1 existing
 duplicate tracker warning for Anduril rows.

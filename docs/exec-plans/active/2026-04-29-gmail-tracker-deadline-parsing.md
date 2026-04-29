@@ -24,8 +24,8 @@ Out of scope (tracked in tech-debt): weekday phrasings (`by next Friday`, `EOD M
 
 ## Verification
 
-- `bun run test:gmail-apps` 49/49 passes (37 prior + 12 new).
-- `bun run test:gmail` 30/30 still passes (no Phase 1 regression).
+- `npm run test:gmail-apps` 49/49 passes (37 prior + 12 new).
+- `npm run test:gmail` 30/30 still passes (no Phase 1 regression).
 - Standalone replay against the user's 295-signal corpus produced 0 deadlines on the truncated stored snippets, confirming the rationale for moving extraction to the scanner-side full-body path. Live scans will produce non-zero deadlines on emails containing supported phrasings.
 
 ## Final Outcome

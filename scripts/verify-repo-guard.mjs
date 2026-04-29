@@ -51,15 +51,15 @@ const FORBIDDEN = [
   },
   {
     label: "deleted update-system invocation",
-    pattern: /\b(?:node|bun)\s+update-system\.mjs\b/,
+    pattern: /\bnode\s+update-system\.mjs\b/,
   },
   {
     label: "deleted gemini-eval invocation",
-    pattern: /\b(?:node|bun)\s+gemini-eval\.mjs\b/,
+    pattern: /\bnode\s+gemini-eval\.mjs\b/,
   },
   {
     label: "deleted generate-latex invocation",
-    pattern: /\b(?:node|bun)\s+generate-latex\.mjs\b/,
+    pattern: /\bnode\s+generate-latex\.mjs\b/,
   },
   {
     label: "removed .opencode command surface",

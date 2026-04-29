@@ -157,11 +157,11 @@ Save the downloaded Desktop app client JSON as
 `config/gmail-oauth-credentials.json`, then run:
 
 ```bash
-bun run gmail:auth
+npm run gmail:auth
 ```
 
 The same Google Cloud project must also have Gmail API enabled. If
-`bun run gmail:scan` reports that Gmail API has not been used or is disabled,
+`npm run gmail:scan` reports that Gmail API has not been used or is disabled,
 enable Gmail API for the project shown in the error, wait a minute, then retry.
 
 This requests `https://www.googleapis.com/auth/gmail.readonly` and stores the
@@ -171,18 +171,18 @@ gitignored.
 After auth, run a scan manually with:
 
 ```bash
-bun run gmail:scan
+npm run gmail:scan
 ```
 
-`bun run dashboard` and `bun run dashboard` call
+`npm run dashboard` and `npm run dashboard` call
 `scripts/refresh-gmail-signals.mjs` once before the local dashboard server
 starts. That hook now defaults to `scripts/gmail-oauth-refresh.mjs`, so after
-`bun run gmail:auth` every dashboard start attempts a fresh Gmail API scan.
+`npm run gmail:auth` every dashboard start attempts a fresh Gmail API scan.
 
 To override the startup scanner command, set:
 
 ```bash
-AUTO_JOB_GMAIL_REFRESH_COMMAND='["node","scripts/gmail-oauth-refresh.mjs"]' bun run dashboard
+AUTO_JOB_GMAIL_REFRESH_COMMAND='["node","scripts/gmail-oauth-refresh.mjs"]' npm run dashboard
 ```
 
 The command must be a JSON array so it can run without a shell. Set

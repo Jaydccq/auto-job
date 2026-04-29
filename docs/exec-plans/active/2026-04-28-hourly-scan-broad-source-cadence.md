@@ -73,7 +73,7 @@ hourly recent-source flow for `newgrad`, `linkedin`, `builtin`, and `indeed`.
 - 2026-04-29: Reporting-only automation check found the newest completed
   summary still at `data/automation/hourly-scan-2026-04-28T16-19-04-129Z.md`.
   A later 17:00Z launch left a stale-looking lock and failed before summary
-  creation because the launchd environment could not spawn `bun`.
+  creation because the launchd environment could not spawn `npm`.
 
 ## Key Decisions
 
@@ -94,8 +94,8 @@ hourly recent-source flow for `newgrad`, `linkedin`, `builtin`, and `indeed`.
   jobs until the next cadence window.
 - Existing worktree has many unrelated modified files; changes must stay
   surgical.
-- Host launchd must provide `bun` on `PATH`; otherwise the runner can create a
-  lock, skip `scan`, fail on the first Bun-backed source, and produce no
+- Host launchd must provide `npm` on `PATH`; otherwise the runner can create a
+  lock, skip `scan`, fail on the first npm-backed source, and produce no
   hourly summary.
 
 ## Final Outcome
