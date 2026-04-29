@@ -167,6 +167,45 @@ export function isPublicDashboardPath(req: FastifyRequest): boolean {
   return false;
 }
 
+/** Lower-cased version of the auth header — Fastify normalises req.headers to lowercase. */
+const AUTH_HEADER_LOWER = "x-auto-job-token";
+
+/**
+ * Narrow whitelist for the SSE stream endpoint. The `[^/]+` constraint
+ * enforces exactly one path segment for the job id so adversaries can't
+ * widen the exception via path traversal (e.g. /scans/jobs/foo/bar/stream).
+ */
+const SSE_STREAM_PATTERN = /^\/dashboard\/api\/scans\/jobs\/[^/]+\/stream(\?.*)?$/;
+
+/**
+ * Pull the candidate auth token from a request.
+ *
+ * Default behaviour: read the `X-Auto-Job-Token` header.
+ *
+ * Narrow exception: when the URL matches the SSE stream endpoint
+ * (`/dashboard/api/scans/jobs/<id>/stream`), also accept a `?token=`
+ * query parameter. Required because `EventSource` cannot set headers.
+ * The whitelist is single-path-only so this does NOT widen auth for any
+ * other endpoint.
+ *
+ * Returns `null` when no usable token is present.
+ */
+export function tokenFromRequest(req: FastifyRequest): string | null {
+  const headerVal = req.headers[AUTH_HEADER_LOWER];
+  if (typeof headerVal === "string" && headerVal.length > 0) return headerVal;
+
+  const url = req.url ?? "";
+  if (SSE_STREAM_PATTERN.test(url)) {
+    const qIdx = url.indexOf("?");
+    if (qIdx >= 0) {
+      const params = new URLSearchParams(url.slice(qIdx + 1));
+      const t = params.get("token");
+      if (t && t.length > 0) return t;
+    }
+  }
+  return null;
+}
+
 function escapeHtmlAttr(value: string): string {
   return value
     .replace(/&/g, "&amp;")

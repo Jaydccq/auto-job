@@ -361,3 +361,66 @@ describe("bridge server autofill profile endpoint", () => {
     }
   });
 });
+
+describe("auth — SSE token-in-query exception", () => {
+  it("rejects ?token= on a non-SSE endpoint", async () => {
+    const { fastify } = buildServer({
+      config: makeConfig(),
+      adapter: makeAdapter(async (): Promise<EvaluationResult> => {
+        throw new Error("not expected");
+      }),
+    });
+
+    try {
+      const res = await fastify.inject({
+        method: "GET",
+        url: `/dashboard/api/health?token=${TOKEN}`,
+      });
+      expect(res.statusCode).toBe(401);
+    } finally {
+      await fastify.close();
+    }
+  });
+
+  it("accepts a valid ?token= ONLY on the SSE stream URL pattern", async () => {
+    const { fastify } = buildServer({
+      config: makeConfig(),
+      adapter: makeAdapter(async (): Promise<EvaluationResult> => {
+        throw new Error("not expected");
+      }),
+    });
+    await fastify.ready();
+
+    try {
+      // Job id won't be found — the route should reach 404 (auth passed),
+      // not 401 (auth failed).
+      const res = await fastify.inject({
+        method: "GET",
+        url: `/dashboard/api/scans/jobs/00000000-0000-0000-0000-000000000000/stream?token=${TOKEN}`,
+      });
+      expect(res.statusCode).toBe(404);
+    } finally {
+      await fastify.close();
+    }
+  });
+
+  it("rejects an invalid ?token= on the SSE stream URL", async () => {
+    const { fastify } = buildServer({
+      config: makeConfig(),
+      adapter: makeAdapter(async (): Promise<EvaluationResult> => {
+        throw new Error("not expected");
+      }),
+    });
+    await fastify.ready();
+
+    try {
+      const res = await fastify.inject({
+        method: "GET",
+        url: "/dashboard/api/scans/jobs/00000000-0000-0000-0000-000000000000/stream?token=wrong",
+      });
+      expect(res.statusCode).toBe(401);
+    } finally {
+      await fastify.close();
+    }
+  });
+});

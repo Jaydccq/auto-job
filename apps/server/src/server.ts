@@ -46,6 +46,7 @@ import {
   type DashboardRouteOptions,
   isPublicDashboardPath,
   registerDashboardRoutes,
+  tokenFromRequest,
 } from "./routes/dashboard.js";
 import { dirname, resolve } from "node:path";
 import { existsSync } from "node:fs";
@@ -202,8 +203,8 @@ export function buildServer(args: BuildServerArgs) {
 
   fastify.addHook("preHandler", async (req, reply) => {
     if (isPublicDashboardPath(req)) return;
-    const token = req.headers[AUTH_HEADER];
-    if (typeof token !== "string" || token !== config.token) {
+    const token = tokenFromRequest(req);
+    if (token !== config.token) {
       const err = bridgeError(
         "UNAUTHORIZED",
         "missing or invalid " + AUTH_HEADER + " header"
