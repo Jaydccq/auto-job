@@ -25,11 +25,14 @@ Sender policy:
   signals because LinkedIn application-confirmation bodies frequently contain
   misleading phrasing.
 - Rejection requires either a hard phrase (`not moving forward`,
-  `decided not to proceed`, `position has been filled`, `not selected for`,
-  `unable to move forward`, `not able to offer`) or a soft phrase
+  `decided not to proceed`, `position has been filled / put on hold`,
+  `not selected for`, `unable to move forward`, `not able to offer`,
+  `regret to inform`, `moving in a different direction`,
+  `will not (be) advancing` / `we are not advancing`) or a soft phrase
   (`unfortunately`, `not an ideal fit`, `other candidates`, `more aligned with`)
   combined with a hiring noun (`application` / `candidacy` / `interview` /
-  `role` / `position`) AND no application-receipt phrase in the same body.
+  `role` / `position` / `opportunity` / `opening` / `requisition`) AND no
+  application-receipt phrase in the same body.
 
 Recommended fields:
 
@@ -122,10 +125,14 @@ message body during signal extraction (not from the 220-char stored snippet).
 Supported phrasings:
 
 - ISO date: `2026-05-05`, `2026/05/05`
-- Relative: `complete within 5 days`, `due in 2 weeks`, `submit in 3 days`
+- Relative N units: `complete within 5 days`, `due in 2 weeks`, `submit in 3 days`
 - Named: `by May 5`, `before April 30`, `until June 1, 2026` (year defaults to
   reference year; if the resulting date is more than 30 days in the past, it
   rolls to the next year)
+- Casual relative: `tomorrow`, `end of week` (returns the upcoming Friday)
+- Weekday names: `by Friday`, `by next Friday` (skips one week ahead),
+  `by EOD Monday`, `before Tuesday`, `submit by Wednesday` — same-day
+  match when the reference date already falls on the named weekday
 
 Signals on `interview` / `online_assessment` / `action_required` events carry
 a `dueAt` ISO field when extraction succeeds.
