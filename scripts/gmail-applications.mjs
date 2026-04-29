@@ -91,3 +91,37 @@ export function selectBestCompanyAndRole(signals = []) {
   const confidence = Number(ranked[0].confidence || 0);
   return { company, role, humanContact, confidence };
 }
+
+export const ATTENTION_LEVELS = ['urgent', 'action', 'stale', 'info'];
+export const STALE_DAYS_THRESHOLD = 14;
+export const URGENT_DEADLINE_HOURS = 48;
+
+const URGENT_STATES = new Set(['offer', 'rejected']);
+const ACTION_STATES = new Set(['interview', 'online_assessment', 'responded', 'action_required']);
+
+function daysBetween(fromIso, toIso) {
+  const from = new Date(fromIso).getTime();
+  const to = new Date(toIso).getTime();
+  if (!Number.isFinite(from) || !Number.isFinite(to)) return null;
+  return Math.floor((to - from) / 86_400_000);
+}
+
+export function computeApplicationAttention(app = {}, now = new Date()) {
+  const state = String(app.currentState || '').trim();
+  const since = app.lastUpdateAt || app.firstSeenAt || '';
+  const nowIso = now instanceof Date ? now.toISOString() : new Date(now).toISOString();
+
+  if (URGENT_STATES.has(state)) {
+    return { level: 'urgent', reason: `${state} on the table`, since, dueAt: '' };
+  }
+  if (ACTION_STATES.has(state)) {
+    return { level: 'action', reason: `${state.replace(/_/g, ' ')} active`, since, dueAt: '' };
+  }
+  if (state === 'applied') {
+    const days = daysBetween(since, nowIso);
+    if (days != null && days >= STALE_DAYS_THRESHOLD) {
+      return { level: 'stale', reason: `no update for ${days} days`, since, dueAt: '' };
+    }
+  }
+  return { level: 'info', reason: '', since, dueAt: '' };
+}

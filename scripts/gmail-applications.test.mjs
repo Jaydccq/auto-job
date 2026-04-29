@@ -177,3 +177,63 @@ test('selectBestCompanyAndRole: skips Unknown Company and Unknown Role when bett
   assert.equal(result.company, 'Whatnot');
   assert.equal(result.role, 'Software Engineer');
 });
+
+import {
+  computeApplicationAttention,
+  ATTENTION_LEVELS,
+  STALE_DAYS_THRESHOLD,
+  URGENT_DEADLINE_HOURS,
+} from './gmail-applications.mjs';
+
+const NOW = new Date('2026-05-01T12:00:00Z');
+
+test('ATTENTION_LEVELS exposes the four levels in priority order', () => {
+  assert.deepEqual(ATTENTION_LEVELS, ['urgent', 'action', 'stale', 'info']);
+});
+
+test('STALE_DAYS_THRESHOLD is 14, URGENT_DEADLINE_HOURS is 48', () => {
+  assert.equal(STALE_DAYS_THRESHOLD, 14);
+  assert.equal(URGENT_DEADLINE_HOURS, 48);
+});
+
+test('computeApplicationAttention: offer state → urgent regardless of age', () => {
+  const app = { currentState: 'offer', lastUpdateAt: '2026-04-25T00:00:00Z' };
+  assert.equal(computeApplicationAttention(app, NOW).level, 'urgent');
+});
+
+test('computeApplicationAttention: rejected state → urgent', () => {
+  const app = { currentState: 'rejected', lastUpdateAt: '2026-04-30T12:00:00Z' };
+  assert.equal(computeApplicationAttention(app, NOW).level, 'urgent');
+});
+
+test('computeApplicationAttention: interview state → action', () => {
+  const app = { currentState: 'interview', lastUpdateAt: '2026-04-30T12:00:00Z' };
+  assert.equal(computeApplicationAttention(app, NOW).level, 'action');
+});
+
+test('computeApplicationAttention: online_assessment state → action', () => {
+  const app = { currentState: 'online_assessment', lastUpdateAt: '2026-04-30T00:00:00Z' };
+  assert.equal(computeApplicationAttention(app, NOW).level, 'action');
+});
+
+test('computeApplicationAttention: applied + lastUpdateAt > 14d → stale', () => {
+  const app = { currentState: 'applied', lastUpdateAt: '2026-04-10T00:00:00Z' };
+  assert.equal(computeApplicationAttention(app, NOW).level, 'stale');
+});
+
+test('computeApplicationAttention: applied + recent update → info', () => {
+  const app = { currentState: 'applied', lastUpdateAt: '2026-04-28T00:00:00Z' };
+  assert.equal(computeApplicationAttention(app, NOW).level, 'info');
+});
+
+test('computeApplicationAttention: empty state → info', () => {
+  const app = { currentState: '', lastUpdateAt: '2026-04-30T00:00:00Z' };
+  assert.equal(computeApplicationAttention(app, NOW).level, 'info');
+});
+
+test('computeApplicationAttention: returns reason and since fields', () => {
+  const app = { currentState: 'applied', lastUpdateAt: '2026-04-10T00:00:00Z' };
+  const attention = computeApplicationAttention(app, NOW);
+  assert.ok(attention.reason && typeof attention.reason === 'string');
+  assert.equal(attention.since, '2026-04-10T00:00:00Z');
+});
