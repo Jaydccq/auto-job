@@ -316,7 +316,21 @@ async function rerunTarget(
   const scoreSource: Result["scoreSource"] = target.pipelineScore ? "pipeline" : "synthetic";
   const page = await context.newPage();
   try {
-    await page.goto(target.url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    try {
+      await page.goto(target.url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    } catch (error) {
+      // JobRight anti-bot can stall DOMContentLoaded while the helper script
+      // (script#jobright-helper-job-detail-info) is already in the served HTML.
+      // If that script is present, the response body has arrived and extraction
+      // can proceed; otherwise the original timeout is still a real failure.
+      const helperPresent = await page
+        .locator("script#jobright-helper-job-detail-info")
+        .first()
+        .count()
+        .then((count) => count > 0)
+        .catch(() => false);
+      if (!helperPresent) throw error;
+    }
     await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => undefined);
     await page.waitForTimeout(DEFAULT_URL_SETTLE_MS);
 

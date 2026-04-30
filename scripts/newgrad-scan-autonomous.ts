@@ -577,7 +577,21 @@ async function gotoSettled(page: Page, url: string): Promise<void> {
 }
 
 async function gotoDetail(page: Page, url: string): Promise<void> {
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: DETAIL_GOTO_TIMEOUT_MS });
+  try {
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: DETAIL_GOTO_TIMEOUT_MS });
+  } catch (error) {
+    // JobRight anti-bot can stall DOMContentLoaded while the helper script
+    // (script#jobright-helper-job-detail-info) is already in the served HTML.
+    // If that script is present, the response body has arrived and extraction
+    // can proceed; otherwise the original timeout is still a real failure.
+    const helperPresent = await page
+      .locator("script#jobright-helper-job-detail-info")
+      .first()
+      .count()
+      .then((count) => count > 0)
+      .catch(() => false);
+    if (!helperPresent) throw error;
+  }
   await page
     .waitForLoadState("networkidle", { timeout: DETAIL_NETWORK_IDLE_TIMEOUT_MS })
     .catch(() => undefined);

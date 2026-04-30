@@ -86,6 +86,31 @@ also inspect the summary for queue and completion counts.
   ~5× speedup on the detail-fetch phase. Live verification of these two
   requires an authenticated bb-browser session and is deferred to the next
   natural run; both files parse cleanly via `tsx --help`.
+- 2026-04-29: User requested `new grad scan`. The bridge was not initially
+  reachable, and sandboxed `npm run server` reproduced the known `tsx` IPC
+  `listen EPERM` failure. Reran the bridge outside the sandbox, confirmed
+  `/v1/health` in real Codex mode, then ran `npm run newgrad-scan`. The scan
+  completed with summary
+  `data/scan-runs/newgrad-20260429T205855Z-361b72f2-summary.json`.
+  It discovered 143 rows, promoted 60, filtered 83, enriched 54, failed 6
+  detail pages at the bounded navigation timeout, skipped 54 at the bridge
+  detail gate, and queued 0 evaluations. Detail-gate breakdown:
+  `already_evaluated_report=16`, `site_match_below_bar=17`,
+  `site_signal_mixed=9`, `no_sponsorship=7`,
+  `active_clearance_required=1`, `seniority_too_high=2`,
+  `pipeline_threshold=2`.
+- 2026-04-30: User requested `new grad scan`. Initial bridge health could not
+  connect, and sandboxed `npm run server` again reproduced the known `tsx` IPC
+  `listen EPERM` failure. Reran the bridge outside the sandbox, confirmed
+  `/v1/health` in real Codex mode, then ran `npm run newgrad-scan`. The scan
+  completed with summary
+  `data/scan-runs/newgrad-20260430T012205Z-e9846128-summary.json`.
+  It discovered 182 rows, promoted 81, filtered 101, enriched 81, failed 0
+  enrichments, skipped 81 at the bridge detail gate, and queued 0 evaluations.
+  Detail-gate breakdown: `site_match_below_bar=30`,
+  `already_evaluated_report=24`, `site_signal_mixed=17`,
+  `no_sponsorship=6`, `experience_too_high=1`, `seniority_too_high=1`,
+  `active_clearance_required=1`, `pipeline_threshold=1`.
 
 ## Key Decisions
 
@@ -113,3 +138,43 @@ the detail gate. Skip breakdown: `already_evaluated_report=15`,
 `site_signal_mixed=22`, `site_match_below_bar=37`, `no_sponsorship=5`,
 `active_clearance_required=2`, `detail_value_threshold=1`,
 `seniority_too_high=3`, `pipeline_threshold=3`.
+
+Latest run, 2026-04-29 20:58:55Z:
+
+- Event log: `data/scan-runs/newgrad-20260429T205855Z-361b72f2.jsonl`
+- Summary:
+  `data/scan-runs/newgrad-20260429T205855Z-361b72f2-summary.json`
+- Outcome: completed, with 143 discovered, 60 promoted, 54 enriched, 6
+  enrichment failures, 54 detail-gate skips, and 0 queued evaluations.
+
+Latest run, 2026-04-30 01:22:05Z:
+
+- Event log: `data/scan-runs/newgrad-20260430T012205Z-e9846128.jsonl`
+- Summary:
+  `data/scan-runs/newgrad-20260430T012205Z-e9846128-summary.json`
+- Outcome: completed, with 182 discovered, 81 promoted, 81 enriched, 0
+  enrichment failures, 81 detail-gate skips, and 0 queued evaluations.
+
+## Follow-up: detail-goto JobRight anti-bot rescue
+
+Targeted fix for the 6 enrichment failures whose root cause was a JobRight
+detail page stalling DOMContentLoaded under an anti-bot challenge while the
+helper script — `script#jobright-helper-job-detail-info` — had already arrived
+in the served HTML. `gotoDetail` in `scripts/newgrad-scan-autonomous.ts` now
+catches the `domcontentloaded` timeout, checks for the helper script, and
+treats the navigation as successful when present (extraction reads exactly
+that node). If the helper is missing, the original timeout still surfaces.
+
+- Scope: only the timeout *handling* in `gotoDetail`. Timeout value (30s),
+  `networkidle` follow-up wait, and all gating thresholds are unchanged.
+- Verification: `tsx --eval import('./scripts/newgrad-scan-autonomous.ts')`
+  parses cleanly; runtime impact will be observable on the next live scan via
+  the existing event log (`detail_enrichment_completed.failed` count).
+- Out of scope (explicitly deferred): JobRight redirect decode/follow to ATS
+  endpoint, `site_match` / `site_signal_mixed` threshold tuning, logging the
+  final URL when timeouts genuinely fail.
+- Same patch applied to `scripts/rerun-newgrad-history.ts` (`rerunTarget` —
+  `page.goto(target.url, …)` was the only other JobRight-detail navigation
+  with the same hard `domcontentloaded` wait). LinkedIn (`linkedin-scan-bb-browser.ts`)
+  and the generic board scan (`job-board-scan-bb-browser.ts`) do not navigate
+  JobRight detail pages, so they were not changed.
