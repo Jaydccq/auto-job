@@ -24,23 +24,35 @@ const SKILLS = [
   {
     id: 'builtin-scan',
     label: 'Built In',
-    description: 'Built In ATS direct (BB-browser). Discovery only — feeds /v1/builtin-scan/pending.',
+    description: "Built In ATS direct (BB-browser). Discovery → enrich → evaluate via the bridge’s configured runner (default codex).",
     npmScript: 'builtin-scan',
-    runners: ['discovery-only', 'fake'],
-    defaultRunner: 'discovery-only',
+    runners: ['real-codex', 'real-claude', 'real-openrouter', 'fake'],
+    advancedRunners: ['discovery-only'],
+    defaultRunner: 'real-codex',
     inputs: [
-      { id: 'limit', label: 'Limit', type: 'number', default: 50, help: '--limit' },
+      { id: 'url', label: 'Search URL', type: 'url', help: 'Optional Built In search URL' },
+      { id: 'pages', label: 'Pages', type: 'number', default: 1 },
+      { id: 'limit', label: 'Limit', type: 'number', default: 50 },
+      { id: 'enrichLimit', label: 'Enrich limit', type: 'number', default: 5 },
+      { id: 'evaluateLimit', label: 'Eval limit', type: 'number', default: 5, help: '--evaluate-limit' },
+      { id: 'scoreOnly', label: 'Score only', type: 'checkbox', default: false, help: '--score-only' },
     ],
   },
   {
     id: 'indeed-scan',
     label: 'Indeed',
-    description: 'Indeed via BB-browser. Same shape as builtin-scan.',
+    description: "Indeed search (BB-browser). Discovery → enrich → evaluate via the bridge’s configured runner (default codex).",
     npmScript: 'indeed-scan',
-    runners: ['discovery-only', 'fake'],
-    defaultRunner: 'discovery-only',
+    runners: ['real-codex', 'real-claude', 'real-openrouter', 'fake'],
+    advancedRunners: ['discovery-only'],
+    defaultRunner: 'real-codex',
     inputs: [
+      { id: 'url', label: 'Search URL', type: 'url', help: 'Optional Indeed search URL' },
+      { id: 'pages', label: 'Pages', type: 'number', default: 1 },
       { id: 'limit', label: 'Limit', type: 'number', default: 50 },
+      { id: 'enrichLimit', label: 'Enrich limit', type: 'number', default: 5 },
+      { id: 'evaluateLimit', label: 'Eval limit', type: 'number', default: 5, help: '--evaluate-limit' },
+      { id: 'scoreOnly', label: 'Score only', type: 'checkbox', default: false, help: '--score-only' },
     ],
   },
   {
@@ -156,7 +168,13 @@ export function buildArgv({ skillId, runner, inputs }) {
       break;
     case 'builtin-scan':
     case 'indeed-scan':
+      if (inputs.url) argv.push('--url', String(inputs.url));
+      if (inputs.pages) argv.push('--pages', String(inputs.pages));
       if (inputs.limit) argv.push('--limit', String(inputs.limit));
+      if (inputs.enrichLimit) argv.push('--enrich-limit', String(inputs.enrichLimit));
+      if (inputs.evaluateLimit) argv.push('--evaluate-limit', String(inputs.evaluateLimit));
+      if (inputs.scoreOnly || runner === 'discovery-only') argv.push('--score-only');
+      if (runner === 'discovery-only') argv.push('--no-evaluate');
       break;
     case 'linkedin-scan':
       if (!inputs.url) throw new Error('linkedin-scan requires url');
