@@ -1476,6 +1476,18 @@ export async function copyToDownloads(docId) {
   return { ...doc, savedPath };
 }
 
+function isTrackerRowLine(line) {
+  if (!line.startsWith('|')) return false;
+  if (line.includes('---')) return false;
+  if (/\|\s*#\s*\|/.test(line)) return false;
+  return true;
+}
+
+function extractReportNumber(reportCell) {
+  const m = (reportCell ?? '').match(/\[(\d+)\]/);
+  return m ? m[1] : null;
+}
+
 function updateApplicationsMarkdownStatus(markdown, rowNum, applied) {
   const normalizedNum = String(rowNum ?? '').trim();
   if (!/^\d+$/.test(normalizedNum)) {
@@ -1485,41 +1497,79 @@ function updateApplicationsMarkdownStatus(markdown, rowNum, applied) {
     throw new ClientError('applied must be boolean');
   }
 
-  let found = false;
-  let changed = false;
-  let status = null;
-  const lines = markdown.split('\n').map((line) => {
-    if (!line.startsWith('|') || line.includes('---') || /\|\s*#\s*\|/.test(line)) {
-      return line;
-    }
+  const rawLines = markdown.split('\n');
+
+  // First pass: locate the matched row and capture its report number.
+  let matchedIdx = -1;
+  let matchedReportNumber = null;
+  for (let i = 0; i < rawLines.length; i++) {
+    const line = rawLines[i];
+    if (!isTrackerRowLine(line)) continue;
     const cells = line.split('|');
-    if (cells.length < 11 || cells[1].trim() !== normalizedNum) {
-      return line;
-    }
+    if (cells.length < 11) continue;
+    if (cells[1].trim() !== normalizedNum) continue;
+    matchedIdx = i;
+    matchedReportNumber = extractReportNumber(cells[8]);
+    break;
+  }
 
-    found = true;
-    const currentStatus = cells[6].trim();
-    status = applied
-      ? (TERMINAL_APPLICATION_STATUSES.has(currentStatus) ? currentStatus : 'Applied')
-      : (currentStatus === 'Applied' ? 'Evaluated' : currentStatus);
-
-    if (currentStatus === status) {
-      return line;
-    }
-
-    cells[6] = ` ${status} `;
-    changed = true;
-    return cells.join('|');
-  });
-
-  if (!found) {
+  if (matchedIdx === -1) {
     throw new ClientError(`application row ${normalizedNum} was not found`, 404);
   }
 
+  // Second pass: collect every row to mutate. Always include the matched row.
+  // Also include any other tracker row whose report cell references the same
+  // [N] number — exact report-number match only, no company+role heuristic.
+  const targetIdxs = new Set([matchedIdx]);
+  if (matchedReportNumber) {
+    for (let i = 0; i < rawLines.length; i++) {
+      if (i === matchedIdx) continue;
+      const line = rawLines[i];
+      if (!isTrackerRowLine(line)) continue;
+      const cells = line.split('|');
+      if (cells.length < 11) continue;
+      const otherReportNumber = extractReportNumber(cells[8]);
+      if (otherReportNumber && otherReportNumber === matchedReportNumber) {
+        targetIdxs.add(i);
+      }
+    }
+  }
+
+  // Third pass: apply the same status promotion to every target row.
+  // Direction is unified: applied=true promotes Evaluated → Applied (and
+  // preserves any more-advanced terminal status); applied=false demotes
+  // Applied → Evaluated, leaving non-Applied statuses untouched. The matched
+  // row's intent governs; per-row currentStatus still gates whether each line
+  // actually changes (a sibling already in Interview won't get downgraded).
+  let changed = false;
+  let matchedStatus = null;
+  const mutatedNums = [];
+
+  for (const idx of [...targetIdxs].sort((a, b) => a - b)) {
+    const cells = rawLines[idx].split('|');
+    const num = cells[1].trim();
+    const currentStatus = cells[6].trim();
+    const nextStatus = applied
+      ? (TERMINAL_APPLICATION_STATUSES.has(currentStatus) ? currentStatus : 'Applied')
+      : (currentStatus === 'Applied' ? 'Evaluated' : currentStatus);
+
+    if (idx === matchedIdx) {
+      matchedStatus = nextStatus;
+    }
+
+    if (currentStatus !== nextStatus) {
+      cells[6] = ` ${nextStatus} `;
+      rawLines[idx] = cells.join('|');
+      changed = true;
+      mutatedNums.push(Number.parseInt(num, 10));
+    }
+  }
+
   return {
-    markdown: lines.join('\n'),
-    status,
+    markdown: rawLines.join('\n'),
+    status: matchedStatus,
     changed,
+    mutatedNums,
   };
 }
 

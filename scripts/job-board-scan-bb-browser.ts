@@ -46,6 +46,11 @@ import {
   newGradCompanyRoleKey,
   wasNewGradRowSeen,
 } from "../apps/server/src/adapters/newgrad-scan-history.ts";
+import {
+  createJobIdentity,
+  jobCompanyRoleKey,
+  normalizeJobUrl,
+} from "../apps/server/src/adapters/job-identity.ts";
 import { scoreAndFilter } from "../apps/server/src/adapters/newgrad-scorer.ts";
 import {
   filterKnownEvaluationCandidates,
@@ -330,6 +335,19 @@ async function main(): Promise<void> {
 
   if (rows.length === 0) {
     console.log(`No rows extracted; check the ${options.source} search filters or site verification state.`);
+    return;
+  }
+
+  const seenKeys = loadNewGradSeenKeys(repoRoot);
+  const beforeFilter = rows.length;
+  rows = rows.filter((row) => !wasNewGradRowSeen(row, seenKeys));
+  const filteredKnown = beforeFilter - rows.length;
+  console.log(
+    `Dedup vs history: ${beforeFilter} unique → ${rows.length} unseen (filtered_known=${filteredKnown}).`,
+  );
+
+  if (rows.length === 0) {
+    console.log("All rows already seen in scan history / pipeline / reports; skipping enrichment and scoring.");
     return;
   }
 
@@ -778,7 +796,16 @@ async function queueDirectEvaluations(
 }
 
 function candidateEvaluationKey(candidate: PipelineEntry): string {
-  return normalizeUrl(candidate.url) ?? `${normalizeText(candidate.company)}|${normalizeText(candidate.role)}`;
+  const identity = createJobIdentity({
+    url: candidate.url,
+    company: candidate.company,
+    role: candidate.role,
+  });
+  return (
+    identity.stableKey ||
+    jobCompanyRoleKey(candidate.company, candidate.role) ||
+    `${normalizeText(candidate.company)}|${normalizeText(candidate.role)}`
+  );
 }
 
 function findEnrichedRowForCandidate(
@@ -1043,9 +1070,14 @@ function dedupeRows(rows: readonly NewGradRow[]): NewGradRow[] {
   const unique: NewGradRow[] = [];
 
   for (const row of rows) {
+    const identity = createJobIdentity({
+      url: row.detailUrl || row.applyUrl,
+      company: row.company,
+      role: row.title,
+    });
     const key =
-      normalizeUrl(row.detailUrl) ??
-      normalizeUrl(row.applyUrl) ??
+      identity.stableKey ||
+      jobCompanyRoleKey(row.company, row.title) ||
       `${normalizeText(row.company)}|${normalizeText(row.title)}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -1124,16 +1156,13 @@ function sourceSignal(source: Source): string {
   return source === "builtin" ? "builtin-scan" : "indeed-scan";
 }
 
+// Local string|null wrapper around the canonical normalizer. Callers rely on
+// the `?? fallback` chain semantics, so empty results from the canonical
+// helper are mapped back to null here.
 function normalizeUrl(value: string | null | undefined): string | null {
   if (!value) return null;
-  try {
-    const parsed = new URL(value);
-    parsed.hash = "";
-    parsed.searchParams.sort();
-    return parsed.toString().toLowerCase();
-  } catch {
-    return null;
-  }
+  const normalized = normalizeJobUrl(value);
+  return normalized || null;
 }
 
 function normalizeText(value: string | null | undefined): string {

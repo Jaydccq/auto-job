@@ -27,6 +27,11 @@ import { readFileSync, writeFileSync, appendFileSync, existsSync, mkdirSync, rea
 import yaml from 'js-yaml';
 import { pathToFileURL } from 'url';
 import { getJobBoardProvider } from './providers/job-board-providers.mjs';
+import {
+  normalizeJobUrl,
+  jobCompanyRoleKey,
+  createJobIdentity,
+} from './lib/job-identity-runtime/index.mjs';
 const parseYaml = yaml.load;
 
 // ── Config ──────────────────────────────────────────────────────────
@@ -38,18 +43,6 @@ const SCAN_HISTORY_PATH = 'data/scan-history.tsv';
 const PIPELINE_PATH = 'data/pipeline.md';
 const APPLICATIONS_PATH = 'data/applications.md';
 const REPORTS_PATH = 'reports';
-const TRACKING_PARAMS = new Set([
-  'utm_source',
-  'utm_medium',
-  'utm_campaign',
-  'utm_content',
-  'utm_term',
-  'utm_id',
-  'ref',
-  'source',
-  'gh_src',
-  'lever-source',
-]);
 
 // Ensure required directories exist (fresh setup)
 mkdirSync('data', { recursive: true });
@@ -513,7 +506,7 @@ function loadSeenUrls() {
     const lines = readFileSync(SCAN_HISTORY_PATH, 'utf-8').split('\n');
     for (const line of lines.slice(1)) { // skip header
       const url = line.split('\t')[0];
-      if (url) seen.add(normalizeScanUrl(url));
+      if (url) seen.add(normalizeJobUrl(url));
     }
   }
 
@@ -521,7 +514,7 @@ function loadSeenUrls() {
   if (existsSync(PIPELINE_PATH)) {
     const text = readFileSync(PIPELINE_PATH, 'utf-8');
     for (const match of text.matchAll(/- \[[ x]\] (https?:\/\/\S+)/g)) {
-      seen.add(normalizeScanUrl(match[1]));
+      seen.add(normalizeJobUrl(match[1]));
     }
   }
 
@@ -529,7 +522,7 @@ function loadSeenUrls() {
   if (existsSync(APPLICATIONS_PATH)) {
     const text = readFileSync(APPLICATIONS_PATH, 'utf-8');
     for (const match of text.matchAll(/https?:\/\/[^\s|)]+/g)) {
-      seen.add(normalizeScanUrl(match[0]));
+      seen.add(normalizeJobUrl(match[0]));
     }
   }
 
@@ -538,7 +531,7 @@ function loadSeenUrls() {
       if (!file.endsWith('.md')) continue;
       const markdown = readFileSync(`${REPORTS_PATH}/${file}`, 'utf-8');
       const match = markdown.match(/^\*\*URL:\*\*\s+(.+)$/m);
-      if (match?.[1]) seen.add(normalizeScanUrl(match[1]));
+      if (match?.[1]) seen.add(normalizeJobUrl(match[1]));
     }
   }
 
@@ -554,7 +547,7 @@ function loadSeenCompanyRoles() {
       const company = match[1].trim();
       const role = match[2].trim();
       if (company && role && normalizeIdentityValue(company) !== 'company') {
-        seen.add(scanCompanyRoleKey(company, role));
+        seen.add(jobCompanyRoleKey(company, role));
       }
     }
   }
@@ -564,31 +557,10 @@ function loadSeenCompanyRoles() {
       if (!file.endsWith('.md')) continue;
       const markdown = readFileSync(`${REPORTS_PATH}/${file}`, 'utf-8');
       const parsed = parseReportCompanyRole(markdown);
-      if (parsed) seen.add(scanCompanyRoleKey(parsed.company, parsed.role));
+      if (parsed) seen.add(jobCompanyRoleKey(parsed.company, parsed.role));
     }
   }
   return seen;
-}
-
-function normalizeScanUrl(value) {
-  const raw = String(value ?? '').trim();
-  if (!raw) return '';
-
-  try {
-    const url = new URL(raw);
-    for (const key of [...url.searchParams.keys()]) {
-      if (TRACKING_PARAMS.has(key)) url.searchParams.delete(key);
-    }
-    url.hash = '';
-    url.pathname = url.pathname.replace(/\/{2,}/g, '/').replace(/\/+$/, '') || '/';
-    return url.toString();
-  } catch {
-    return raw;
-  }
-}
-
-function scanCompanyRoleKey(company, role) {
-  return `${normalizeIdentityValue(company)}::${normalizeIdentityValue(role)}`;
 }
 
 function normalizeIdentityValue(value) {
@@ -860,12 +832,12 @@ async function main() {
           totalFiltered++;
           continue;
         }
-        const jobUrl = normalizeScanUrl(job.url);
+        const jobUrl = normalizeJobUrl(job.url);
         if (seenUrls.has(jobUrl)) {
           totalDupes++;
           continue;
         }
-        const key = scanCompanyRoleKey(job.company, job.title);
+        const key = jobCompanyRoleKey(job.company, job.title);
         if (seenCompanyRoles.has(key)) {
           totalDupes++;
           continue;
@@ -900,12 +872,12 @@ async function main() {
               totalFiltered++;
               continue;
             }
-            const jobUrl = normalizeScanUrl(job.url);
+            const jobUrl = normalizeJobUrl(job.url);
             if (seenUrls.has(jobUrl)) {
               totalDupes++;
               continue;
             }
-            const key = scanCompanyRoleKey(job.company, job.title);
+            const key = jobCompanyRoleKey(job.company, job.title);
             if (seenCompanyRoles.has(key)) {
               totalDupes++;
               continue;

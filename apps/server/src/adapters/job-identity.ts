@@ -97,16 +97,16 @@ export function extractSourceJobId(url: string | null | undefined): string | nul
     const host = parsed.hostname.toLowerCase();
     const path = parsed.pathname;
 
-    if (host.includes("linkedin.com")) {
+    if (host === "linkedin.com" || host.endsWith(".linkedin.com")) {
       return path.match(/\/jobs\/view\/(\d+)/)?.[1] ?? null;
     }
     if (host === "jobright.ai" || host.endsWith(".jobright.ai")) {
       return path.match(/\/jobs\/info\/([^/]+)/)?.[1] ?? null;
     }
-    if (host.includes("greenhouse.io")) {
+    if (host === "greenhouse.io" || host.endsWith(".greenhouse.io")) {
       return parsed.searchParams.get("token");
     }
-    if (host.includes("indeed.com")) {
+    if (host === "indeed.com" || host.endsWith(".indeed.com")) {
       return parsed.searchParams.get("jk");
     }
 
