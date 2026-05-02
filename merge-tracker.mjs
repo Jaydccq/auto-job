@@ -198,7 +198,17 @@ for (const file of tsvFiles) {
         const status = chooseStatus(dup.status, addition.status);
         const pdf = choosePdf(dup.pdf, addition.pdf);
         const note = `Re-eval ${addition.date} (${oldScore}→${newScore}). ${addition.notes}`.trim();
-        trackerLines[lineIdx] = `| ${dup.num} | ${cell(addition.date)} | ${cell(addition.company)} | ${cell(addition.role)} | ${cell(addition.score)} | ${cell(status)} | ${cell(pdf)} | ${cell(addition.report)} | ${cell(note)} |`;
+        const newLine = `| ${dup.num} | ${cell(addition.date)} | ${cell(addition.company)} | ${cell(addition.role)} | ${cell(addition.score)} | ${cell(status)} | ${cell(pdf)} | ${cell(addition.report)} | ${cell(note)} |`;
+        trackerLines[lineIdx] = newLine;
+        dup.raw = newLine;
+        dup.date = addition.date;
+        dup.company = addition.company;
+        dup.role = addition.role;
+        dup.score = addition.score;
+        dup.status = status;
+        dup.pdf = pdf;
+        dup.report = addition.report;
+        dup.notes = note;
         updated++;
         console.log(`Update #${dup.num} ${addition.company} (${oldScore}→${newScore}).`);
       }
@@ -209,9 +219,10 @@ for (const file of tsvFiles) {
   } else {
     const entryNum = addition.num > maxNum ? addition.num : ++maxNum;
     if (entryNum > maxNum) maxNum = entryNum;
-    newRows.push(
-      `| ${entryNum} | ${cell(addition.date)} | ${cell(addition.company)} | ${cell(addition.role)} | ${cell(addition.score)} | ${cell(addition.status)} | ${cell(addition.pdf)} | ${cell(addition.report)} | ${cell(addition.notes)} |`,
-    );
+    const newLine = `| ${entryNum} | ${cell(addition.date)} | ${cell(addition.company)} | ${cell(addition.role)} | ${cell(addition.score)} | ${cell(addition.status)} | ${cell(addition.pdf)} | ${cell(addition.report)} | ${cell(addition.notes)} |`;
+    newRows.push(newLine);
+    const parsedNew = parseTrackerLine(newLine);
+    if (parsedNew) existingApps.push(parsedNew);
     added++;
     console.log(`Add #${entryNum} ${addition.company} — ${addition.role}.`);
   }

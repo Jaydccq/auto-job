@@ -31,6 +31,14 @@ import {
   filterKnownEvaluationCandidates,
   loadEvaluationDedupeKeys,
 } from "./evaluation-dedupe.ts";
+import {
+  loadNewGradSeenKeys,
+  wasNewGradRowSeen,
+} from "../apps/server/src/adapters/newgrad-scan-history.ts";
+import {
+  createJobIdentity,
+  normalizeJobUrl,
+} from "../apps/server/src/adapters/job-identity.ts";
 
 const PROTOCOL_VERSION = "1.0.0";
 const DEFAULT_URL = "https://www.newgrad-jobs.com/";
@@ -336,7 +344,24 @@ async function main(): Promise<void> {
       return;
     }
 
-    const score = await scoreRows(bridgeBase, token, dedupeRows(rows));
+    const uniqueRows = dedupeRows(rows);
+    const seenKeys = loadNewGradSeenKeys(repoRoot);
+    const beforeFilter = uniqueRows.length;
+    const unseenRows = uniqueRows.filter((row) => !wasNewGradRowSeen(row, seenKeys));
+    const filteredKnown = beforeFilter - unseenRows.length;
+    console.log(
+      `Dedup vs history: ${beforeFilter} unique → ${unseenRows.length} unseen (skipped ${filteredKnown} already-known).`,
+    );
+    scanRun.record("rows_filtered_known", { count: filteredKnown });
+    scanRun.increment("listFiltered", filteredKnown);
+
+    if (unseenRows.length === 0) {
+      const summary = scanRun.finalize("completed", { reason: "all_rows_already_seen" });
+      console.log(`Scan run summary: ${summary.summaryPath}`);
+      return;
+    }
+
+    const score = await scoreRows(bridgeBase, token, unseenRows);
     console.log(`Scored rows: promoted=${score.promoted.length}, filtered=${score.filtered.length}`);
     scanRun.increment("listPromoted", score.promoted.length);
     scanRun.increment("listFiltered", score.filtered.length);
@@ -1266,9 +1291,13 @@ function dedupeRows(rows: NewGradRow[]): NewGradRow[] {
   const unique: NewGradRow[] = [];
 
   for (const row of rows) {
+    const identity = createJobIdentity({
+      url: row.detailUrl || row.applyUrl,
+      company: row.company,
+      role: row.title,
+    });
     const key =
-      normalizeUrl(row.detailUrl) ??
-      normalizeUrl(row.applyUrl) ??
+      identity.stableKey ||
       `${row.company.trim().toLowerCase()}|${row.title.trim().toLowerCase()}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -1278,16 +1307,13 @@ function dedupeRows(rows: NewGradRow[]): NewGradRow[] {
   return unique;
 }
 
+// Local string|null wrapper around the canonical normalizer. Callers rely on
+// the `?? fallback` chain semantics, so empty results from the canonical
+// helper are mapped back to null here.
 function normalizeUrl(value: string | null | undefined): string | null {
   if (!value) return null;
-  try {
-    const parsed = new URL(value);
-    parsed.hash = "";
-    parsed.searchParams.sort();
-    return parsed.toString().toLowerCase();
-  } catch {
-    return null;
-  }
+  const normalized = normalizeJobUrl(value);
+  return normalized || null;
 }
 
 function normalizeText(value: string | null | undefined): string {

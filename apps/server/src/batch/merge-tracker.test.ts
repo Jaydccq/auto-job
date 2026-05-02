@@ -112,6 +112,133 @@ test("higher score duplicate uses rerun status instead of preserving stale skip"
   expect(tracker).toContain("| 320 | 2026-04-23 | Wonderschool | Early Career Software Engineer - Applied AI | 4.05/5 | Evaluated | ❌ | [330](reports/330-wonderschool-2026-04-23.md) |");
 });
 
+test("two TSVs in one run that share a report number collapse to one row", () => {
+  const repoRoot = makeRepo();
+  writeFileSync(
+    join(repoRoot, "data", "applications.md"),
+    [
+      "# Auto-Job Applications Tracker",
+      "",
+      "| # | Date | Company | Role | Score | Status | PDF | Report | Notes |",
+      "|---|------|---------|------|-------|--------|-----|--------|-------|",
+      "",
+    ].join("\n"),
+    "utf-8",
+  );
+  writeFileSync(
+    join(repoRoot, "batch", "tracker-additions", "001-qualcomm-a.tsv"),
+    [
+      "587",
+      "2026-05-02",
+      "Qualcomm",
+      "Machine Learning Engineer - College Graduate",
+      "Evaluated",
+      "4.3/5",
+      "❌",
+      "[588](reports/588-qualcomm-2026-05-02.md)",
+      "First TSV referencing report 588.",
+    ].join("\t"),
+    "utf-8",
+  );
+  writeFileSync(
+    join(repoRoot, "batch", "tracker-additions", "002-qualcomm-b.tsv"),
+    [
+      "588",
+      "2026-05-02",
+      "Qualcomm",
+      "Machine Learning Engineer - College Graduate",
+      "Evaluated",
+      "4.3/5",
+      "❌",
+      "[588](reports/588-qualcomm-2026-05-02.md)",
+      "Second TSV with same report 588.",
+    ].join("\t"),
+    "utf-8",
+  );
+
+  runMerge(repoRoot);
+
+  const tracker = readFileSync(join(repoRoot, "data", "applications.md"), "utf-8");
+  const lines = tracker.split("\n");
+  const dataRows = lines.filter(
+    (l) => l.startsWith("|") && !l.includes("---") && !/^\|\s*#\s*\|/.test(l),
+  );
+  expect(dataRows.length).toBe(1);
+  expect(dataRows[0]).toContain("[588](reports/588-qualcomm-2026-05-02.md)");
+});
+
+test("subsequent TSVs match a row that was just updated in the same run", () => {
+  const repoRoot = makeRepo();
+  writeFileSync(
+    join(repoRoot, "data", "applications.md"),
+    [
+      "# Auto-Job Applications Tracker",
+      "",
+      "| # | Date | Company | Role | Score | Status | PDF | Report | Notes |",
+      "|---|------|---------|------|-------|--------|-----|--------|-------|",
+      "| 100 | 2026-04-01 | Acme Robotics | Software Engineer New Grad | 3.5/5 | Evaluated | ❌ | [100](reports/100-acme-robotics-2026-04-01.md) | Initial eval. |",
+      "",
+    ].join("\n"),
+    "utf-8",
+  );
+  writeFileSync(
+    join(repoRoot, "batch", "tracker-additions", "001-acme-update.tsv"),
+    [
+      "200",
+      "2026-04-15",
+      "Acme Robotics",
+      "Software Engineer New Grad",
+      "Evaluated",
+      "4.0/5",
+      "❌",
+      "[100](reports/100-acme-robotics-2026-04-01.md)",
+      "First rerun.",
+    ].join("\t"),
+    "utf-8",
+  );
+  writeFileSync(
+    join(repoRoot, "batch", "tracker-additions", "002-acme-rematch-by-report.tsv"),
+    [
+      "201",
+      "2026-04-16",
+      "Acme Robotics",
+      "Software Engineer New Grad",
+      "Evaluated",
+      "4.5/5",
+      "❌",
+      "[100](reports/100-acme-robotics-2026-04-01.md)",
+      "Second rerun (same report).",
+    ].join("\t"),
+    "utf-8",
+  );
+  writeFileSync(
+    join(repoRoot, "batch", "tracker-additions", "003-acme-rematch-by-name.tsv"),
+    [
+      "202",
+      "2026-04-17",
+      "Acme Robotics",
+      "Software Engineer New Grad",
+      "Evaluated",
+      "4.7/5",
+      "❌",
+      "",
+      "Third rerun (no report number, matches by company+role).",
+    ].join("\t"),
+    "utf-8",
+  );
+
+  runMerge(repoRoot);
+
+  const tracker = readFileSync(join(repoRoot, "data", "applications.md"), "utf-8");
+  const lines = tracker.split("\n");
+  const dataRows = lines.filter(
+    (l) => l.startsWith("|") && !l.includes("---") && !/^\|\s*#\s*\|/.test(l),
+  );
+  expect(dataRows.length).toBe(1);
+  expect(dataRows[0]).toMatch(/^\|\s*100\s*\|/);
+  expect(dataRows[0]).toContain("4.7/5");
+});
+
 test("sanitizes pipe characters before writing markdown tracker cells", () => {
   const repoRoot = makeRepo();
   writeFileSync(

@@ -47,6 +47,11 @@ import {
   newGradCompanyRoleKey,
   wasNewGradRowSeen,
 } from "../apps/server/src/adapters/newgrad-scan-history.ts";
+import {
+  createJobIdentity,
+  jobCompanyRoleKey,
+  normalizeJobUrl,
+} from "../apps/server/src/adapters/job-identity.ts";
 import { scoreAndFilter } from "../apps/server/src/adapters/newgrad-scorer.ts";
 import { scoreEnrichedRowValue } from "../apps/server/src/adapters/newgrad-value-scorer.ts";
 import { pickPipelineEntryUrl } from "../apps/server/src/adapters/newgrad-links.ts";
@@ -416,6 +421,23 @@ async function main(): Promise<void> {
     if (rows.length === 0) {
       console.log("No rows extracted; check the LinkedIn page filters or login state.");
       const summary = scanRun.finalize("completed", { reason: "no_rows" });
+      console.log(`Scan run summary: ${summary.summaryPath}`);
+      return;
+    }
+
+    const seenKeys = loadNewGradSeenKeys(repoRoot);
+    const beforeFilter = rows.length;
+    rows = rows.filter((row) => !wasNewGradRowSeen(row, seenKeys));
+    const filteredKnown = beforeFilter - rows.length;
+    console.log(
+      `Dedup vs history: ${beforeFilter} unique → ${rows.length} unseen (skipped ${filteredKnown} already-known).`,
+    );
+    scanRun.record("rows_filtered_known", { count: filteredKnown });
+    scanRun.increment("listFiltered", filteredKnown);
+
+    if (rows.length === 0) {
+      console.log("All extracted rows already seen; nothing to score.");
+      const summary = scanRun.finalize("completed", { reason: "all_rows_already_seen" });
       console.log(`Scan run summary: ${summary.summaryPath}`);
       return;
     }
@@ -2261,9 +2283,13 @@ function dedupeRows(rows: readonly NewGradRow[]): NewGradRow[] {
   const unique: NewGradRow[] = [];
 
   for (const row of rows) {
+    const identity = createJobIdentity({
+      url: row.detailUrl || row.applyUrl,
+      company: row.company,
+      role: row.title,
+    });
     const key =
-      normalizeUrl(row.detailUrl) ??
-      normalizeUrl(row.applyUrl) ??
+      identity.stableKey ||
       `${normalizeText(row.company)}|${normalizeText(row.title)}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -2304,15 +2330,30 @@ function dedupePipelineEntries(entries: readonly PipelineEntry[]): PipelineEntry
 }
 
 function pipelineEntryKeys(entry: PipelineEntry): string[] {
+  const identity = createJobIdentity({
+    url: entry.url,
+    company: entry.company,
+    role: entry.role,
+  });
   const keys: string[] = [];
-  const url = normalizeUrl(entry.url);
-  if (url) keys.push(`url:${url}`);
 
-  const company = normalizeText(entry.company);
-  const role = normalizeText(entry.role);
-  if (company || role) keys.push(`company_role:${company}|${role}`);
+  if (identity.stableKey) {
+    keys.push(`stable:${identity.stableKey}`);
+  }
 
-  if (keys.length === 0) keys.push(`raw:${entry.url}`);
+  if (identity.canonicalUrl) {
+    keys.push(`url:${identity.canonicalUrl}`);
+  }
+
+  const companyRole = jobCompanyRoleKey(entry.company, entry.role);
+  if (companyRole) {
+    keys.push(`company_role:${companyRole}`);
+  }
+
+  if (keys.length === 0) {
+    keys.push(`raw:${entry.url}`);
+  }
+
   return keys;
 }
 
@@ -2465,15 +2506,8 @@ function extractYearsExperienceRequired(text: string): number | null {
 }
 
 function normalizeUrl(value: string | null | undefined): string | null {
-  if (!value) return null;
-  try {
-    const parsed = new URL(value);
-    parsed.hash = "";
-    parsed.searchParams.sort();
-    return parsed.toString().toLowerCase();
-  } catch {
-    return null;
-  }
+  const canonical = normalizeJobUrl(value ?? "");
+  return canonical || null;
 }
 
 function normalizeText(value: string | null | undefined): string {
