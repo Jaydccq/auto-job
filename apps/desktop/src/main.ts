@@ -89,7 +89,8 @@ function ensureRepoRoot(): void {
 
 /**
  * Tell the bundled server where to find the dashboard helper .mjs
- * modules (web/build-dashboard.mjs + web/dashboard-handlers.mjs) when
+ * modules (web/build-dashboard.mjs + web/dashboard-handlers.mjs +
+ * web/scan-runner.mjs) when
  * the user's repo predates the dashboard-handlers split.
  *
  * electron-builder's extraResources places these at
@@ -103,7 +104,8 @@ function ensureWebDirFallback(): void {
   if (
     repoRoot &&
     existsSync(join(repoRoot, "web", "build-dashboard.mjs")) &&
-    existsSync(join(repoRoot, "web", "dashboard-handlers.mjs"))
+    existsSync(join(repoRoot, "web", "dashboard-handlers.mjs")) &&
+    existsSync(join(repoRoot, "web", "scan-runner.mjs"))
   ) {
     return;
   }

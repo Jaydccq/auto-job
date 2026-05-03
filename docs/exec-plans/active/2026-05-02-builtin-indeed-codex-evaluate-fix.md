@@ -116,6 +116,26 @@ Out of scope:
   the change — we need explicit new tests for builtin/indeed runner sets and
   argv mappings; (d) executor-at-startup assumption confirmed in
   `config.ts:296` → `index.ts:buildAdapter` → `server.ts:buildServer`.
+- 2026-05-02: Follow-up issue found from the running packaged desktop app:
+  `GET /dashboard/api/scans/catalog` on port 47319 still returned the old
+  Built In/Indeed catalog (`discovery-only`, `fake`). The process was the
+  packaged `Auto Job.app`; its `Resources/web/` directory contained
+  `build-dashboard.mjs`, `dashboard-handlers.mjs`, and `template.html`, but not
+  `scan-runner.mjs`. Root cause: `apps/desktop/electron-builder.yml`
+  `extraResources` was not updated when the scan launcher split
+  `web/scan-runner.mjs` out of `dashboard-handlers.mjs`.
+- 2026-05-02: Patched desktop packaging to include `scan-runner.mjs`, tightened
+  web-dir completeness checks in the desktop main process and server dashboard
+  route resolution, and added a structural test so packaged dashboard resource
+  drift is mechanically checked.
+- 2026-05-02: Rebuilt `apps/desktop/release/mac-arm64/Auto Job.app`. First
+  sandboxed package attempt failed when electron-builder tried to write
+  `~/Library/Caches/electron-builder`; escalated rerun succeeded. Static check
+  confirmed `Resources/web/scan-runner.mjs` exists. Relaunched the rebuilt app
+  and verified `GET /dashboard/api/scans/catalog` on `127.0.0.1:47319` returns
+  `real-codex`, `real-claude`, `real-openrouter`, and `fake` for both
+  `builtin-scan` and `indeed-scan`, with `defaultRunner: real-codex` and
+  `advancedRunners: ["discovery-only"]`.
 
 ## Key decisions
 
@@ -149,3 +169,25 @@ Verification:
 - `npm --prefix apps/server run typecheck`: passed.
 - `npm run verify` full gate: passed (0 errors, 1 pre-existing duplicate warning unrelated to this fix).
 
+Follow-up packaging fix:
+- `apps/desktop/electron-builder.yml` now includes `scan-runner.mjs` in
+  `extraResources.web`.
+- `apps/desktop/src/main.ts`, `apps/server/src/routes/dashboard.ts`, and
+  `apps/server/src/server.ts` now require `scan-runner.mjs` when treating a
+  `web/` directory as complete.
+- `apps/server/src/runtime/desktop-packaging.test.ts` pins the packaged web
+  resource list.
+- `apps/desktop/release/mac-arm64/Auto Job.app` and
+  `apps/desktop/release/Auto Job-1.3.0-arm64.dmg` were rebuilt from the fixed
+  packaging config.
+
+Follow-up verification:
+- `npm --prefix apps/server test -- scan-runner desktop-packaging`: passed
+  (14/14).
+- `npm --prefix apps/desktop run typecheck`: passed.
+- `npm --prefix apps/server run typecheck`: passed.
+- `npm run verify:repo-guard`: passed.
+- `git diff --check` on touched files: passed.
+- `npm --prefix apps/desktop run package`: passed on escalated rerun.
+- Live packaged app catalog API: passed; Built In/Indeed expose Codex CLI and
+  Claude SDK runners.

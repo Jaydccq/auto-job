@@ -66,8 +66,8 @@ type RenderDashboardHtmlFn = (opts: {
 }) => { html: string };
 
 /**
- * Resolve the directory containing web/build-dashboard.mjs and
- * web/dashboard-handlers.mjs.
+ * Resolve the directory containing web/build-dashboard.mjs,
+ * web/dashboard-handlers.mjs, and web/scan-runner.mjs.
  *
  * Lookup order:
  *   1. AUTO_JOB_WEB_DIR env var — explicit override, set by the
@@ -82,14 +82,16 @@ function resolveWebDir(repoRoot: string): string {
   const envOverride = process.env.AUTO_JOB_WEB_DIR;
   if (
     envOverride &&
-    existsSync(resolve(envOverride, "dashboard-handlers.mjs"))
+    existsSync(resolve(envOverride, "dashboard-handlers.mjs")) &&
+    existsSync(resolve(envOverride, "scan-runner.mjs"))
   ) {
     return envOverride;
   }
   const fromRepo = resolve(repoRoot, "web");
   if (
     existsSync(resolve(fromRepo, "build-dashboard.mjs")) &&
-    existsSync(resolve(fromRepo, "dashboard-handlers.mjs"))
+    existsSync(resolve(fromRepo, "dashboard-handlers.mjs")) &&
+    existsSync(resolve(fromRepo, "scan-runner.mjs"))
   ) {
     return fromRepo;
   }

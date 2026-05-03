@@ -55,17 +55,24 @@ import { createScanJobRegistry } from "./runtime/scan-job-registry.js";
 import { registerScanRoutes } from "./routes/scans.js";
 
 /**
- * Resolve the directory containing dashboard-handlers.mjs. Mirrors the
+ * Resolve the directory containing dashboard-handlers.mjs and scan-runner.mjs. Mirrors the
  * lookup order in routes/dashboard.ts so that tests with a tmp repoRoot
  * fall through to the source-tree fallback.
  */
 function resolveWebDirForScans(repoRoot: string): string {
   const envOverride = process.env.AUTO_JOB_WEB_DIR;
-  if (envOverride && existsSync(resolve(envOverride, "dashboard-handlers.mjs"))) {
+  if (
+    envOverride &&
+    existsSync(resolve(envOverride, "dashboard-handlers.mjs")) &&
+    existsSync(resolve(envOverride, "scan-runner.mjs"))
+  ) {
     return envOverride;
   }
   const fromRepo = resolve(repoRoot, "web");
-  if (existsSync(resolve(fromRepo, "dashboard-handlers.mjs"))) {
+  if (
+    existsSync(resolve(fromRepo, "dashboard-handlers.mjs")) &&
+    existsSync(resolve(fromRepo, "scan-runner.mjs"))
+  ) {
     return fromRepo;
   }
   const here = dirname(fileURLToPath(import.meta.url));

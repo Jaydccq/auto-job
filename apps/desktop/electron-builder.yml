@@ -41,6 +41,7 @@ extraResources:
     filter:
       - "build-dashboard.mjs"
       - "dashboard-handlers.mjs"
+      - "scan-runner.mjs"
       - "template.html"
 
 
