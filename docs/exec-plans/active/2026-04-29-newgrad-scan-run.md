@@ -111,6 +111,51 @@ also inspect the summary for queue and completion counts.
   `already_evaluated_report=24`, `site_signal_mixed=17`,
   `no_sponsorship=6`, `experience_too_high=1`, `seniority_too_high=1`,
   `active_clearance_required=1`, `pipeline_threshold=1`.
+- 2026-05-01: User requested `newgrad scan`. Initial sandboxed health check
+  could not connect to the local bridge because localhost access returned
+  `Operation not permitted`. Sandboxed `npm run server` again reproduced the
+  known `tsx` IPC `listen EPERM` failure. Reran the bridge outside the sandbox,
+  confirmed `/v1/health` in real Codex mode, then ran `npm run newgrad-scan`.
+  The scan completed with summary
+  `data/scan-runs/newgrad-20260501T030144Z-a5582d69-summary.json`.
+  It discovered 158 rows, promoted 58, filtered 100, enriched 33, failed 25
+  detail pages at the bounded `domcontentloaded` navigation timeout, skipped 33
+  at the bridge detail gate, and queued 0 evaluations. Detail-gate breakdown:
+  `already_evaluated_report=5`, `no_sponsorship=12`,
+  `detail_value_threshold=4`, `site_match_below_bar=9`,
+  `site_signal_mixed=2`, `pipeline_threshold=1`.
+- 2026-05-02: User requested `run auto job newgrad scan`. Confirmed the
+  required user-layer files exist (`cv.md`, `config/profile.yml`,
+  `modes/_profile.md`, `portals.yml`), verified unauthenticated `/v1/health`
+  returns `401`, then verified authenticated bridge health with
+  `apps/server/.bridge-token`. The bridge is already live on `127.0.0.1:47319`
+  in `execution.mode=real` / `execution.realExecutor=codex`, so this run can
+  use the existing local bridge instead of restarting it.
+- 2026-05-02: Ran `npm run newgrad-scan` against the live bridge. The run
+  completed with summary
+  `data/scan-runs/newgrad-20260502T044220Z-1bdf7dc9-summary.json`.
+  It discovered 158 rows, promoted 60, filtered 98, enriched 60, failed 0
+  detail enrichments, added 8 pipeline entries, skipped 52 at the bridge
+  detail gate, queued 7 direct evaluations, had 1 direct-evaluation queue
+  failure, and completed all 7 queued evaluations without timeout. Detail-gate
+  breakdown: `detail_value_threshold=24`, `no_sponsorship=17`,
+  `active_clearance_required=3`, `already_in_pipeline=3`,
+  `pipeline_threshold=2`, `experience_too_high=1`,
+  `seniority_too_high=1`, `site_signal_mixed=1`.
+- 2026-05-02: Direct evaluation queue failure affected Cisco
+  (`Software Engineer Backend/Platform Systems I (Full Time) – United States`);
+  `/v1/evaluate` returned `BAD_REQUEST invalid envelope`. Other queued
+  evaluations completed and wrote reports `584` through `590`.
+- 2026-05-02: Follow-up diagnosis confirmed the Cisco queue miss happened at
+  bridge request validation time, before any evaluation job was created. The
+  runner posts `{ input }` to `/v1/evaluate`, and the bridge rejects malformed
+  envelopes with Zod-backed `BAD_REQUEST invalid envelope`. This run did not
+  preserve the returned `issues` array, so the exact offending field is still
+  unknown from artifacts alone. Based on the current code path, the most likely
+  failure surface is a Cisco-specific `EvaluationInput.structuredSignals` field
+  that is passed through without truncation (for example `workModel`,
+  `employmentType`, `seniority`, or `companySize`), not queue pressure or
+  background evaluation execution.
 
 ## Key Decisions
 
@@ -155,6 +200,37 @@ Latest run, 2026-04-30 01:22:05Z:
 - Outcome: completed, with 182 discovered, 81 promoted, 81 enriched, 0
   enrichment failures, 81 detail-gate skips, and 0 queued evaluations.
 
+Latest run, 2026-05-01 03:01:44Z:
+
+- Event log: `data/scan-runs/newgrad-20260501T030144Z-a5582d69.jsonl`
+- Summary:
+  `data/scan-runs/newgrad-20260501T030144Z-a5582d69-summary.json`
+- Outcome: completed, with 158 discovered, 58 promoted, 33 enriched, 25
+  enrichment failures, 33 detail-gate skips, and 0 queued evaluations.
+- Residual blocker: JobRight detail navigation hit the bounded 30 s
+  `domcontentloaded` timeout on 25 promoted rows. The run still reached a
+  summary artifact, but enrichment coverage regressed compared with the
+  previous 0-failure run.
+
+Latest run, 2026-05-02 04:42:20Z:
+
+- Event log: `data/scan-runs/newgrad-20260502T044220Z-1bdf7dc9.jsonl`
+- Summary:
+  `data/scan-runs/newgrad-20260502T044220Z-1bdf7dc9-summary.json`
+- Outcome: completed, with 158 discovered, 60 promoted, 60 enriched, 0
+  enrichment failures, 8 pipeline additions, 52 detail-gate skips, 7 queued
+  evaluations, 1 queue failure, and 7 completed evaluations.
+- Reports written:
+  `reports/584-uber-2026-05-02.md`,
+  `reports/585-remotehunter-2026-05-02.md`,
+  `reports/586-maximus-2026-05-02.md`,
+  `reports/587-applied-materials-2026-05-02.md`,
+  `reports/588-qualcomm-2026-05-02.md`,
+  `reports/589-man-group-2026-05-02.md`,
+  `reports/590-nasdaq-2026-05-02.md`
+- Residual blocker: Cisco failed at direct-evaluation queue time with
+  `BAD_REQUEST invalid envelope`, so it did not produce a report in this run.
+
 ## Follow-up: detail-goto JobRight anti-bot rescue
 
 Targeted fix for the 6 enrichment failures whose root cause was a JobRight
@@ -178,3 +254,29 @@ that node). If the helper is missing, the original timeout still surfaces.
   with the same hard `domcontentloaded` wait). LinkedIn (`linkedin-scan-bb-browser.ts`)
   and the generic board scan (`job-board-scan-bb-browser.ts`) do not navigate
   JobRight detail pages, so they were not changed.
+
+### Timeout calibration probe (2026-04-30)
+
+Throwaway probe (`scripts/_probe-jobright-timeout.ts`, since deleted) navigated
+12 recent JobRight detail URLs from
+`data/scan-runs/newgrad-20260430T012205Z-e9846128.jsonl` against the persistent
+`data/browser-profiles/newgrad-scan` profile, recording ms-to-DCL,
+ms-to-helper-script, and ms-to-networkidle under three concurrency levels.
+
+| Concurrency | DCL p50 | DCL p90 | DCL max | HelperReady max | Ceiling hits |
+|-------------|---------|---------|---------|-----------------|--------------|
+| 1 (sequential) | 1306 ms | 1953 ms | 2769 ms | 2462 ms | 0/12 |
+| 3 (rerun default) | 1444 ms | 2844 ms | 2870 ms | 3083 ms | 0/12 |
+| 6 (autonomous default) | 4990 ms | 5531 ms | 5547 ms | 7257 ms | 0/12 |
+
+Findings:
+
+- 60 s in `rerun-newgrad-history.ts` is ~11× the worst observed DCL — keeping
+  it as-is. No reason to lower it either; the cost of a generous ceiling is
+  zero on healthy pages.
+- 30 s in `newgrad-scan-autonomous.ts` is still ~5× p90 at the actual default
+  concurrency (6). The 6 enrichment failures in the 2026-04-29 20:58 run were
+  therefore not "page load needed >30 s" — JobRight's anti-bot path simply
+  never sent the close-of-response signal for those specific detail IDs.
+  Raising the timeout would not rescue them; the helper-script presence check
+  is the correct shape of fix.

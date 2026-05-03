@@ -73,6 +73,15 @@ const FORBIDDEN = [
     label: "removed legacy mode file reference",
     pattern: /modes\/(?:apply|batch|deep|interview-prep|latex|ofertas|patterns|pdf|pipeline|project|tracker|training)\.md/,
   },
+  {
+    // RFC 3986: only scheme + host are case-insensitive. `new URL(...)`
+    // already lowercases those automatically; lowercasing the full
+    // toString() corrupts case-sensitive paths (Oracle HCM
+    // /hcmUI/CandidateExperience/..., Workday /en-US/, etc.). If you
+    // need a dedup key, `parsed.toString()` alone is sufficient.
+    label: "URL-path lowercasing (use parsed.toString() without .toLowerCase)",
+    pattern: /\.toString\(\)\s*\.toLowerCase\(\)/,
+  },
 ];
 
 const trackedAndNew = execFileSync(

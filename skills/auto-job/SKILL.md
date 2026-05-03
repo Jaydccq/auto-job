@@ -42,6 +42,7 @@ scope and should not be used as a generic helper.
 | "Scan LinkedIn" | `linkedin-scan` | `/v1/scan/linkedin` |
 | "Scan Indeed" | `indeed-scan` | `/v1/scan/indeed` |
 | "Scan newgrad" | `newgrad-scan` | `/v1/scan/newgrad` |
+| "Scan recommend" / "scan jobright recommend" / "scan my recommended jobs" | `newgrad-recommend-scan` | `/v1/scan/newgrad-recommend` |
 | "Scan Gmail" | `gmail-scan` | `/v1/gmail/scan` |
 | "Tracker" / "what's in flight" | read `data/applications.md` and the dashboard | — |
 | "Follow up" | `followup` | — |

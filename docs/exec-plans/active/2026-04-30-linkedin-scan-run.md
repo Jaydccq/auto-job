@@ -76,6 +76,48 @@ Out of scope:
 - 2026-04-30: `npm run verify` passed outside the sandbox: 0 errors, 6 duplicate
   warnings. A sandboxed verification attempt failed only on a server SSE test
   that could not bind `127.0.0.1` (`listen EPERM`).
+- 2026-05-01: User requested another `linkedin scan`. Required onboarding
+  files still exist. `npm run linkedin-scan -- --help` passed. Initial bridge
+  health was unreachable, and sandboxed `npm run server` failed on the known
+  `tsx` IPC `listen EPERM` issue, so the bridge was started outside the
+  sandbox in real Codex mode.
+- 2026-05-01: Re-ran `npm run linkedin-scan` with the configured URL. The scan
+  discovered 100 unique rows, promoted 72, filtered 28, enriched 72, failed 0
+  enrichments, added 11 detail-backed pipeline candidates, skipped 61, queued
+  46 evaluations, completed 46, failed 0, and timed out 0. Summary:
+  `data/scan-runs/linkedin-20260501T021018Z-e51b97fe-summary.json`.
+- 2026-05-01: `npm run verify` inside the sandbox failed only on the server SSE
+  bind test (`listen EPERM: operation not permitted 127.0.0.1`). Re-ran
+  `npm run verify` outside the sandbox: passed with 0 errors and 15 duplicate
+  warnings.
+- 2026-05-02: User requested another `linkedin scan` from the local
+  `auto-job` checkout. Required onboarding files still exist. Read the
+  repo-local `auto-job` skill plus `modes/_shared.md` to confirm the default
+  `linkedin-scan` mode and tracker/report contracts. `npm run linkedin-scan --
+  --help` passed; next step is the full repo-native scan run.
+- 2026-05-02: First full run attempt reached bridge health `ok` and created
+  `data/scan-runs/linkedin-20260502T044127Z-a1945a18.jsonl`, but I interrupted
+  it too early while checking for a stall before the first extraction event
+  landed. That attempt should not be treated as a scanner verdict.
+- 2026-05-02: Re-ran `npm run linkedin-scan` from a warm managed-browser
+  session. The scan extracted page 1 through page 4 (20, 43, 64, then 86
+  unique rows so far) but failed on page 5 with a `bb-browser eval` timeout
+  while extracting visible LinkedIn rows. Failed summary:
+  `data/scan-runs/linkedin-20260502T044352Z-b0ce7a5d-summary.json`.
+- 2026-05-02: Cleaned the managed browser back to a single `about:blank` tab
+  and restarted the `bb-browser` daemon, then retried the full default scan.
+  The rerun failed immediately after `source_page_open_started` on page 1 with
+  `Runtime.evaluate: Cannot find default execution context`. Failed summary:
+  `data/scan-runs/linkedin-20260502T050053Z-7dd25062-summary.json`.
+- 2026-05-02: Re-ran `npm run linkedin-scan` again after confirming bridge
+  health. This run completed successfully despite a slow first-page extract and
+  intermittent authenticated-detail fallbacks. Summary:
+  `data/scan-runs/linkedin-20260502T121857Z-acb0cae0-summary.json`.
+- 2026-05-02: Successful run counts: discovered 100 rows, promoted 69,
+  filtered 31, enriched 69, enrichment failures 0, detail-backed pipeline
+  additions 37, detail skips 32, queued 34 evaluations, completed 34, failed
+  0, timed out 0. Reports and tracker merges were produced for all 34 queued
+  evaluations.
 
 ## Key Decisions
 
@@ -92,17 +134,27 @@ Out of scope:
 - Tracker verification currently reports duplicate warnings for several
   company-role pairs, including some created by this run, but they are warnings
   rather than verification failures.
+- During the 2026-05-01 enrichment pass, some LinkedIn authenticated detail
+  reads failed with `Cannot find default execution context`, and several ATS
+  pages returned JSON/string parse warnings. The scanner recovered through
+  guest LinkedIn detail or skipped external apply probing without failing the
+  run.
+- On 2026-05-02 the managed `bb-browser` session itself became the blocker:
+  one full scan failed on a daemon timeout during list extraction, and the
+  clean rerun failed during the initial auth-state `Runtime.evaluate` probe.
+  No LinkedIn rows were promoted or evaluated on those failed runs.
+- The successful 2026-05-02 rerun still showed repeated authenticated-detail
+  `Runtime.evaluate: Cannot find default execution context` fallbacks for some
+  listings, but the scanner recovered via guest detail or external ATS detail
+  and finished the run.
 
 ## Final Outcome
 
-Completed. The LinkedIn scan finished with 37 completed evaluations and 1
-failed evaluation in scanner accounting; the MITRE artifact for the missing
-completed listing exists in both reports and tracker. Relevant review-worthy
-scores from this run include eClerx
-Junior AI Engineer 4.4, Rocket Machine Learning Engineer 4.4, Amazon Science
-Applied Scientist I 4.4, GSK Applied AI Engineer 4.2, Anika Systems AI Engineer
-4.2, Amazon Applied Scientist I 4.2, AMD AI & DevOps Software Development
-Engineer 4.2, Jobgether Software Engineer (AI Platform) 4.1, Twitch Software
-Engineer I Monetization ML 4.0, ServiceNow Software Engineer Agentic AI Systems
-4.0, Kforce Python AI/ML Developer 4.0, Serve AI Backend Engineer 4.0, and
-NVIDIA AI Chip Design Engineer New College Grad 2026 4.0.
+The latest 2026-05-02 LinkedIn scan completed successfully in
+`data/scan-runs/linkedin-20260502T121857Z-acb0cae0-summary.json`. The scanner
+discovered 100 unique rows, promoted 69, filtered 31, enriched all 69
+promoted rows without enrichment failure, added 37 detail-backed pipeline
+candidates, skipped 32 at the detail gate, queued 34 direct evaluations, and
+finished all 34 with 0 failed and 0 timed out. Earlier failed attempts on
+2026-05-02 remain useful diagnostics for managed-browser instability, but they
+are no longer the latest scan verdict for this checkout.
