@@ -405,3 +405,248 @@ test('classifyEvent accepts pre-computed policy without recomputing', () => {
   // the body is innocuous and the policy comes from the caller.
   assert.notEqual(event, 'rejected');
 });
+
+// -----------------------------------------------------------------------------
+// inferAtsTenantCompany — multi-tenant ATS local-part inference
+// -----------------------------------------------------------------------------
+
+import { inferAtsTenantCompany } from './gmail-oauth-refresh.mjs';
+
+test('inferAtsTenantCompany: workday tenants resolve via local-part', () => {
+  assert.equal(inferAtsTenantCompany({ email: 'disney@myworkday.com' }), 'The Walt Disney Company');
+  assert.equal(inferAtsTenantCompany({ email: 'etsy@myworkday.com' }), 'Etsy');
+  assert.equal(inferAtsTenantCompany({ email: 'unum@myworkday.com' }), 'Unum');
+  assert.equal(inferAtsTenantCompany({ email: 'finra@myworkday.com' }), 'FINRA');
+  assert.equal(inferAtsTenantCompany({ email: 'usbank@myworkday.com' }), 'U.S. Bank');
+  assert.equal(inferAtsTenantCompany({ email: 'manulife@myworkday.com' }), 'Manulife');
+  assert.equal(inferAtsTenantCompany({ email: 'elekta@myworkday.com' }), 'Elekta');
+  assert.equal(inferAtsTenantCompany({ email: 'ms@myworkday.com' }), 'Morgan Stanley');
+  assert.equal(inferAtsTenantCompany({ email: 'snc@myworkday.com' }), 'Sierra Nevada Corporation');
+  assert.equal(inferAtsTenantCompany({ email: 'cvshealth@myworkday.com' }), 'CVS Health');
+  assert.equal(inferAtsTenantCompany({ email: 'kendallgroup@myworkday.com' }), 'The Kendall Group');
+  assert.equal(inferAtsTenantCompany({ email: 'microchiphr@myworkday.com' }), 'Microchip');
+  assert.equal(inferAtsTenantCompany({ email: 'nordstrom@myworkday.com' }), 'Nordstrom');
+});
+
+test('inferAtsTenantCompany: unknown workday tenant falls back to titlecased slug', () => {
+  // Slug not in the curated map → titlecase fallback (with -hr/-careers/-talent suffix stripped)
+  assert.equal(inferAtsTenantCompany({ email: 'acme@myworkday.com' }), 'Acme');
+  assert.equal(inferAtsTenantCompany({ email: 'acme-hr@myworkday.com' }), 'Acme');
+  assert.equal(inferAtsTenantCompany({ email: 'acmehr@myworkday.com' }), 'Acme');
+  assert.equal(inferAtsTenantCompany({ email: 'foo_bar@myworkday.com' }), 'Foo Bar');
+});
+
+test('inferAtsTenantCompany: ATS generic local-parts return empty (no tenant)', () => {
+  assert.equal(inferAtsTenantCompany({ email: 'no-reply@hire.lever.co' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'noreply@greenhouse-mail.io' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'donotreply@ashbyhq.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'notification@smartrecruiters.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'notification@jobvite.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'notifications@ashbyhq.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'mail@ats.rippling.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'scheduling@ats.rippling.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'careers@myworkday.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'talent@myworkday.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'recruiting@myworkday.com' }), '');
+});
+
+test('inferAtsTenantCompany: plus-tag stripping for icims and others', () => {
+  assert.equal(inferAtsTenantCompany({ email: 'uber+email+3ucw0-ead611133c@talent.icims.com' }), 'Uber');
+  assert.equal(inferAtsTenantCompany({ email: 'uber+anything@icims.com' }), 'Uber');
+});
+
+test('inferAtsTenantCompany: returns empty for non-multi-tenant ATS', () => {
+  assert.equal(inferAtsTenantCompany({ email: 'noreply@gmail.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'jobs-noreply@linkedin.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: 'random@example.com' }), '');
+  assert.equal(inferAtsTenantCompany({ email: '' }), '');
+  assert.equal(inferAtsTenantCompany({}), '');
+});
+
+// -----------------------------------------------------------------------------
+// companyFromAtsSenderName — additional Workday-style display patterns
+// -----------------------------------------------------------------------------
+
+test('companyFromAtsSenderName: Workday-style display names resolve to tenant', () => {
+  assert.equal(companyFromAtsSenderName({ name: 'workday etsy', email: 'etsy@myworkday.com' }), 'Etsy');
+  assert.equal(companyFromAtsSenderName({ name: 'Workday Microchip', email: 'microchiphr@myworkday.com' }), 'Microchip');
+  assert.equal(companyFromAtsSenderName({ name: 'workday unum', email: 'unum@myworkday.com' }), 'Unum');
+  assert.equal(companyFromAtsSenderName({ name: 'Workday Nordstrom', email: 'nordstrom@myworkday.com' }), 'Nordstrom');
+  assert.equal(companyFromAtsSenderName({ name: 'Workday.Admin elekta', email: 'elekta@myworkday.com' }), 'Elekta');
+  assert.equal(companyFromAtsSenderName({ name: 'Workday @ U.S. Bank', email: 'usbank@myworkday.com' }), 'U.S. Bank');
+  assert.equal(companyFromAtsSenderName({ name: 'No Reply Manulife', email: 'manulife@myworkday.com' }), 'Manulife');
+  assert.equal(companyFromAtsSenderName({ name: 'donotreply_ms workday', email: 'ms@myworkday.com' }), 'Morgan Stanley');
+  assert.equal(companyFromAtsSenderName({ name: 'KION Group Workday', email: 'kiongroup@myworkday.com' }), 'KION Group');
+});
+
+test('companyFromAtsSenderName: opaque display names like "Colleague Zone" return empty so local-part wins', () => {
+  // "Colleague Zone" is an internal CVS Health Workday brand — useless as a company name.
+  // The extractor should fall through to inferAtsTenantCompany or to subject/body inference.
+  assert.equal(companyFromAtsSenderName({ name: 'Colleague Zone', email: 'cvshealth@myworkday.com' }), '');
+});
+
+// -----------------------------------------------------------------------------
+// extractSignalFromMessage — subsidiary-aware end-to-end
+// -----------------------------------------------------------------------------
+
+test('extractSignalFromMessage: workday tenant + plain email address → company from local-part', () => {
+  const msg = fakeAtsMessage({
+    from: 'finra@myworkday.com',
+    subject: 'Thank You for Applying',
+    body: 'Dear Hongxi, Thank you for applying for the position of Software Engineer. Application Status: Application Closed.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, 'FINRA');
+});
+
+test('extractSignalFromMessage: subject names a subsidiary that overrides workday tenant', () => {
+  // cvshealth tenant, but the application is to "Oak Street Health"
+  const msg = fakeAtsMessage({
+    from: '"Colleague Zone" <cvshealth@myworkday.com>',
+    subject: 'Your application with Oak Street Health has been received!',
+    body: 'Dear Hongxi, Thank you for your interest in joining Oak Street Health. We have successfully received your application for: R0881317 Associate Software Development Engineer.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, 'Oak Street Health');
+});
+
+test('extractSignalFromMessage: subject "X - Application" wins over workday tenant', () => {
+  // kiongroup tenant, applied to "Dematic"
+  const msg = fakeAtsMessage({
+    from: '"KION Group Workday" <kiongroup@myworkday.com>',
+    subject: 'Dematic - Your Application for Java Software Engineer - Associate',
+    body: 'Hello Hongxi Chen, Thank you again for your application for the role of Java Software Engineer - Associate (JR-0087237) and your interest in our company. Unfortunately we will not be moving forward.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, 'Dematic');
+});
+
+test('extractSignalFromMessage: body "interest in employment opportunities at X" wins over tenant', () => {
+  const msg = fakeAtsMessage({
+    from: 'peak6group@myworkday.com',
+    subject: 'Regarding your Apex Fintech Solutions Application',
+    body: 'Hongxi, Thank you for your time and interest in employment opportunities at Apex Fintech Solutions. After carefully reviewing your application we will not be moving forward.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, 'Apex Fintech Solutions');
+});
+
+test('extractSignalFromMessage: Nordstrom subject confirmation produces "Nordstrom" not "Seattle"', () => {
+  const msg = fakeAtsMessage({
+    from: '"Workday Nordstrom" <nordstrom@myworkday.com>',
+    subject: 'Nordstrom: Application Confirmation',
+    body: 'Hello Hongxi, Thank you for applying to Engineer 1 - Nordstrom Product Group Technology Team (Hybrid - Seattle, WA) . We appreciate your interest, and we will review the information provided. Nordstrom team.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, 'Nordstrom');
+});
+
+test('extractSignalFromMessage: Sierra Nevada subject gets cleaned (no "- Application Update" suffix)', () => {
+  const msg = fakeAtsMessage({
+    from: 'snc@myworkday.com',
+    subject: 'Thank you for your interest in Sierra Nevada Corporation - Application Update',
+    body: 'Dear Hongxi, Thank you for your interest in working for Sierra Nevada Corporation. We received applications from many qualified individuals for the position of Software Engineer I. We regret to inform you.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, 'Sierra Nevada Corporation');
+});
+
+test('extractSignalFromMessage: Disney subject "Your X Careers Application Is In!" → company X', () => {
+  const msg = fakeAtsMessage({
+    from: 'disney@myworkday.com',
+    subject: 'Your Disney Careers Application Is In!',
+    body: 'Dear Hongxi Chen: Thank you for sharing your story with us! We are delighted by the interest you have shown in the Software Engineer I position. Our Talent Acquisition team will review your application.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  // Subject pattern returns "Disney"; tenant map would also give "The Walt Disney Company".
+  // We require the result to be a Disney variant — either is acceptable.
+  assert.match(signal.company, /^(Disney|The Walt Disney Company)$/);
+});
+
+test('extractSignalFromMessage: Etsy subject pipe pattern "| Your application to Etsy |" → "Etsy"', () => {
+  const msg = fakeAtsMessage({
+    from: '"workday etsy" <etsy@myworkday.com>',
+    subject: 'Senior Software Engineer I, Data Enablement | Your application to Etsy | Hongxi Chen',
+    body: 'Hi Hongxi, Thank you for taking the time to explore an opportunity with Etsy. Unfortunately, the Senior Software Engineer I, Data Enablement role has since been filled.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, 'Etsy');
+});
+
+// -----------------------------------------------------------------------------
+// companyFromDisplayName — last-resort fallback
+// -----------------------------------------------------------------------------
+
+import { companyFromDisplayName, companyFromExplicitSubject } from './gmail-oauth-refresh.mjs';
+
+test('companyFromDisplayName: trusts a plausible display name on a non-ATS sender', () => {
+  assert.equal(companyFromDisplayName({ name: 'Cascade AI', email: 'no-reply@send.dover.com' }), 'Cascade AI');
+  assert.equal(companyFromDisplayName({ name: '3DS Talent Acquisition', email: 'ta-3DS@3ds.com' }), '3DS');
+});
+
+test('companyFromDisplayName: rejects no-reply mailbox names', () => {
+  // "Do Not Reply at Uber" and "No Reply Manulife" are no-reply mailbox names — this helper
+  // rejects them. Manulife still resolves correctly via companyFromAtsSenderName upstream.
+  assert.equal(companyFromDisplayName({ name: 'Do Not Reply at Uber', email: 'uber+x@talent.icims.com' }), '');
+  assert.equal(companyFromDisplayName({ name: 'No Reply Manulife', email: 'manulife@myworkday.com' }), '');
+});
+
+test('companyFromDisplayName: rejects personal-mail-domain senders (self-replies)', () => {
+  assert.equal(companyFromDisplayName({ name: 'Hongxi Chen', email: 'smyhc1@gmail.com' }), '');
+  assert.equal(companyFromDisplayName({ name: 'Acme Hiring Team', email: 'recruiter@yahoo.com' }), '');
+});
+
+test('companyFromDisplayName: rejects email-shaped names and prose fragments', () => {
+  assert.equal(companyFromDisplayName({ name: 'finra@myworkday.com', email: 'finra@myworkday.com' }), '');
+  assert.equal(companyFromDisplayName({ name: 'this position', email: 'careers@example.com' }), '');
+  assert.equal(companyFromDisplayName({ name: 'our team', email: 'careers@example.com' }), '');
+});
+
+test('extractSignalFromMessage: 3DS via display name when sender domain is the company itself', () => {
+  const msg = fakeAtsMessage({
+    from: '"3DS Talent Acquisition" <ta-3DS@3ds.com>',
+    subject: '3DS Talent Acquisition - Your application for the position of Software Engineer',
+    body: 'Hi Hongxi, Thank you for your application for the position of Software Engineer at 3DS.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, '3DS');
+});
+
+test('extractSignalFromMessage: Cascade AI via display name when sender is a recruiting tool', () => {
+  const msg = fakeAtsMessage({
+    from: '"Cascade AI" <no-reply@send.dover.com>',
+    subject: 'Cascade AI has received your application',
+    body: 'Hi Hongxi, Thank you for applying for the Founding Engineer role at Cascade AI! We received your application and will be in touch about next steps.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, 'Cascade AI');
+});
+
+test('companyFromExplicitSubject: LinkedIn "Your application to ROLE at COMPANY" → COMPANY', () => {
+  // The live extractor refuses to emit signals for LinkedIn rejections (policy restriction),
+  // but the backfill script and the helper itself must still resolve the company correctly
+  // from the subject so legacy rows can be repaired.
+  assert.equal(companyFromExplicitSubject('Your application to AI Engineer at PRI Global'), 'PRI Global');
+  assert.equal(companyFromExplicitSubject('Your application to Software Engineer at Pursuit'), 'Pursuit');
+  assert.equal(companyFromExplicitSubject('Your application to Junior Software Engineer at Botdo Labs'), 'Botdo Labs');
+});
+
+test('companyFromDisplayName: skips scheduling-tool domains', () => {
+  assert.equal(companyFromDisplayName({ name: 'Hillary Low', email: 'scheduling@ats.rippling.com' }), '');
+  assert.equal(companyFromDisplayName({ name: 'Rokt via Hireflix', email: 'users@hireflix.com' }), '');
+});
+
+test('companyFromDisplayName: skips platform brands like LinkedIn / Indeed', () => {
+  assert.equal(companyFromDisplayName({ name: 'LinkedIn', email: 'jobs-noreply@linkedin.com' }), '');
+  assert.equal(companyFromDisplayName({ name: 'Indeed', email: 'noreply@indeed.com' }), '');
+});
+
+test('extractSignalFromMessage: New Lantern Ashby (regression — should already work via display-name strip)', () => {
+  const msg = fakeAtsMessage({
+    from: '"New Lantern Hiring Team" <no-reply@ashbyhq.com>',
+    subject: 'New Lantern Residency Application | Action Required: Submit Your Coding Challenge',
+    body: 'Hello! Thanks for applying to the New Lantern Software Engineer — Residency Program. We noticed you have not yet submitted the coding challenge, which is required to complete your application.',
+  });
+  const signal = extractSignalFromMessage(msg);
+  assert.equal(signal.company, 'New Lantern');
+});

@@ -4,6 +4,9 @@ data/applications.md
 data/pipeline.md
 data/scan-history.tsv
 data/gmail-signals.jsonl
+data/gmail-signals.jsonl.bak
+data/gmail-signals.jsonl.pre-backfill
+data/gmail-signals.backfill-log.jsonl
 data/gmail-refresh-status.json
 reports/*.md
 !reports/.gitkeep

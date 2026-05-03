@@ -64,6 +64,7 @@ the runtime layer for user-specific content.
 | `merge-tracker.mjs` | Apply pending TSVs to the tracker |
 | `verify-pipeline.mjs` | Full health gate (`npm run verify`) |
 | `scripts/verify-repo-guard.mjs` | Ownership guard (no upstream surfaces) |
+| `scripts/backfill-unknown-company.mjs` | Re-derive `company` for stored Gmail signals (idempotent; see `modes/gmail-scan.md`) |
 
 ## Run flow
 

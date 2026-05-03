@@ -164,3 +164,52 @@ Then browser-test the private local dashboard and confirm:
 
 If `node test-all.mjs --quick` is run, report any pre-existing absolute-path
 failures separately from Gmail-scan changes.
+
+## Company attribution
+
+Signal extraction tries the following sources in order — first non-generic match wins.
+This is implemented in `scripts/gmail-oauth-refresh.mjs::extractSignalFromMessage`:
+
+1. **Subject explicit patterns** (`companyFromExplicitSubject`) — names a subsidiary
+   directly: `"X - Your Application"`, `"Your application with X"`, `"Your X Careers"`,
+   `"Regarding your X Application"`, `"Thank you for your interest in X"`,
+   `"application to ROLE at X"`, `"Thank you for applying to X"`, `"X invites you"`.
+   Subject wins because subsidiaries on a parent's Workday tenant must override the
+   tenant slug (KION→Dematic, CVS→Oak Street Health, Peak6→Apex Fintech Solutions).
+2. **ATS sender display name** (`companyFromAtsSenderName`) — strips
+   "Hiring Team / Recruiting / Talent Acquisition" suffixes and parses Workday-style
+   names like `"workday etsy"`, `"Workday @ U.S. Bank"`, `"No Reply Manulife"`.
+   Returns the curated tenant company (`Morgan Stanley` for `ms`) when slug matches.
+3. **Body explicit patterns** (`companyFromExplicitBody`) — `"interest in joining X"`,
+   `"interest in employment opportunities at X"`, `"opportunity with X"`,
+   `"applying ... role at X"`.
+4. **Existing weak regex** — legacy patterns kept for backward compatibility.
+5. **Multi-tenant ATS local-part** (`inferAtsTenantCompany`) — recovers the tenant
+   slug from `disney@myworkday.com` / `etsy@myworkday.com` / `uber+...@talent.icims.com`.
+   Uses a hand-curated slug→company map (see `TENANT_SLUG_OVERRIDES`) and falls back
+   to a titlecased slug for unknown tenants. Skips generic mailbox local-parts
+   (`no-reply`, `notification`, `mail`, `careers`, `talent`, `hr`, …).
+6. **Display-name last-resort** (`companyFromDisplayName`) — trusts a plausible display
+   name (`"3DS Talent Acquisition"`, `"Cascade AI"`) when no higher-precision source
+   resolves. Skips no-reply mailboxes, scheduling-tool domains
+   (`ats.rippling.com`, `hireflix.com`, `calendly.com`, …), platform brands
+   (LinkedIn / Indeed / Glassdoor / …), and personal-mail domains (gmail / yahoo / …).
+7. **Email domain root** + **`from X` / `at X` in display name** — final fallbacks.
+
+Adding a new ambiguous tenant slug? Append it to `TENANT_SLUG_OVERRIDES` in
+`scripts/gmail-oauth-refresh.mjs`. Adding a new platform brand or scheduling tool?
+Add to `OPAQUE_DISPLAY_NAMES` or `SCHEDULING_TOOL_DOMAINS`.
+
+## Backfilling legacy rows
+
+When attribution logic improves, re-run signal extraction on stored rows in place:
+
+```bash
+node scripts/backfill-unknown-company.mjs --dry-run   # preview rewrites
+node scripts/backfill-unknown-company.mjs             # apply
+npm run dashboard:build                                # rebuild tracker
+```
+
+Rewrites are tracked in the gitignored audit log
+`data/gmail-signals.backfill-log.jsonl`. The script is idempotent — a second run is a
+no-op.

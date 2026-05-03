@@ -51,6 +51,58 @@ const TRUSTED_RECRUITING_DOMAINS = [
   'bamboohr.com',
 ];
 
+// Multi-tenant ATS domains where the tenant slug is encoded in the email local-part
+// (e.g. `disney@myworkday.com`). Single-tenant senders (linkedin.com, indeed.com) are
+// deliberately excluded so we never reinterpret personal local-parts as company names.
+const MULTI_TENANT_ATS_DOMAINS = [
+  'myworkday.com',
+  'workday.com',
+  'icims.com',
+  'talent.icims.com',
+  'jobvite.com',
+  'smartrecruiters.com',
+  'ashbyhq.com',
+  'bamboohr.com',
+];
+
+// Local-parts that are shared across tenants and must never be treated as a company.
+const ATS_GENERIC_LOCAL_PARTS = new Set([
+  'no-reply', 'noreply', 'no_reply', 'donotreply', 'do-not-reply', 'do_not_reply',
+  'notification', 'notifications', 'notify', 'notifier',
+  'mail', 'mailer', 'email', 'mailroom',
+  'scheduling', 'scheduler',
+  'hello', 'support', 'info', 'contact',
+  'careers', 'jobs', 'hr',
+  'talent', 'recruiting', 'recruiter', 'recruitment',
+  'candidate', 'candidates',
+  'admin',
+]);
+
+// Curated tenant slug → display name. The slug is the email local-part (after plus-tag
+// strip + lowercasing). Falls back to titlecased slug when not in this map.
+const TENANT_SLUG_OVERRIDES = new Map([
+  ['ms', 'Morgan Stanley'],
+  ['cvshealth', 'CVS Health'],
+  ['usbank', 'U.S. Bank'],
+  ['kendallgroup', 'The Kendall Group'],
+  ['microchiphr', 'Microchip'],
+  ['microchip', 'Microchip'],
+  ['finra', 'FINRA'],
+  ['manulife', 'Manulife'],
+  ['unum', 'Unum'],
+  ['disney', 'The Walt Disney Company'],
+  ['etsy', 'Etsy'],
+  ['elekta', 'Elekta'],
+  ['peak6group', 'Peak6 Group'],
+  ['kiongroup', 'KION Group'],
+  ['snc', 'Sierra Nevada Corporation'],
+  ['nordstrom', 'Nordstrom'],
+]);
+
+// Suffixes appended to tenant slugs that should be stripped before titlecasing
+// (so `acmehr` → `Acme`, `acme-careers` → `Acme`).
+const TENANT_SLUG_SUFFIXES = ['hr', 'careers', 'careeers', 'talent', 'recruiting', 'admin'];
+
 const GENERIC_SENDER_NAMES = new Set([
   'recruiting',
   'recruiter',
@@ -668,6 +720,48 @@ function domainCompany(email = '') {
   return titleCase(root.replace(/[-_]+/g, ' '));
 }
 
+function isMultiTenantAtsDomain(domain = '') {
+  const lower = String(domain || '').toLowerCase();
+  if (!lower) return false;
+  return MULTI_TENANT_ATS_DOMAINS.some(
+    (host) => lower === host || lower.endsWith(`.${host}`)
+  );
+}
+
+function stripTenantSlugSuffix(slug = '') {
+  for (const suffix of TENANT_SLUG_SUFFIXES) {
+    const dashed = new RegExp(`[-_]${suffix}$`, 'i');
+    if (dashed.test(slug)) return slug.replace(dashed, '');
+    if (slug.toLowerCase().endsWith(suffix) && slug.length > suffix.length + 1) {
+      return slug.slice(0, slug.length - suffix.length);
+    }
+  }
+  return slug;
+}
+
+// Multi-tenant ATS local-part → company. Returns '' when the sender is not on a
+// multi-tenant ATS domain or when the local-part is in the generic blocklist.
+export function inferAtsTenantCompany(from = {}) {
+  const email = String(from?.email || '').trim().toLowerCase();
+  if (!email || !email.includes('@')) return '';
+  const [rawLocal, domain] = email.split('@');
+  if (!isMultiTenantAtsDomain(domain)) return '';
+  const localBeforePlus = rawLocal.split('+')[0];
+  if (!localBeforePlus) return '';
+  if (ATS_GENERIC_LOCAL_PARTS.has(localBeforePlus)) return '';
+  if (TENANT_SLUG_OVERRIDES.has(localBeforePlus)) {
+    return TENANT_SLUG_OVERRIDES.get(localBeforePlus);
+  }
+  const stripped = stripTenantSlugSuffix(localBeforePlus);
+  if (!stripped || ATS_GENERIC_LOCAL_PARTS.has(stripped)) return '';
+  if (TENANT_SLUG_OVERRIDES.has(stripped)) {
+    return TENANT_SLUG_OVERRIDES.get(stripped);
+  }
+  const candidate = titleCase(stripped.replace(/[-_]+/g, ' '));
+  if (!candidate || isGenericCompany(candidate)) return '';
+  return candidate;
+}
+
 function senderNameCompany(name = '') {
   const cleanedName = name.trim();
   if (!cleanedName || GENERIC_SENDER_NAMES.has(cleanedName.toLowerCase())) return '';
@@ -675,6 +769,42 @@ function senderNameCompany(name = '') {
     /\bfrom\s+([A-Z][A-Za-z0-9&' -]{2,70})$/i,
     /\bat\s+([A-Z][A-Za-z0-9&' -]{2,70})$/i,
   ], cleanedName)) || '';
+}
+
+const PERSONAL_MAIL_DOMAINS = new Set([
+  'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com',
+  'aol.com', 'me.com', 'live.com', 'msn.com', 'protonmail.com', 'pm.me',
+  'duck.com', 'fastmail.com', 'yandex.com', 'mail.com', 'gmx.com', 'qq.com',
+]);
+
+// Last-resort: trust the email display name as a company when it looks plausible. This
+// only runs after all higher-precision sources have failed, so any false-positive risk
+// is bounded — at worst we label a row with a slightly wrong display name instead of
+// `Unknown Company`. Skips no-reply mailboxes, generic words, anything email-shaped, and
+// personal-mail-domain senders (whose display name is a person's name, not a company).
+export function companyFromDisplayName(from = {}) {
+  const rawName = String(from?.name || '').trim();
+  if (!rawName) return '';
+  if (rawName.length > 70) return '';
+  if (/[@<>]/.test(rawName)) return '';
+  if (GENERIC_SENDER_NAMES.has(rawName.toLowerCase())) return '';
+  if (OPAQUE_DISPLAY_NAMES.has(rawName.toLowerCase())) return '';
+  if (/^(?:do[\s_-]?not[\s_-]?reply|donotreply|no[\s_-]?reply|noreply)\b/i.test(rawName)) return '';
+  const domain = emailDomain(from?.email || '');
+  if (PERSONAL_MAIL_DOMAINS.has(domain)) return '';
+  if (SCHEDULING_TOOL_DOMAINS.has(domain)) return '';
+  // Strip ATS suffixes the same way as companyFromAtsSenderName.
+  const stripped = rawName.replace(ATS_SENDER_NAME_SUFFIX_RE, '').trim();
+  if (!stripped) return '';
+  if (GENERIC_SENDER_NAMES.has(stripped.toLowerCase())) return '';
+  if (isGenericCompany(stripped)) return '';
+  const cleaned = cleanCompany(stripped);
+  if (!cleaned || isGenericCompany(cleaned)) return '';
+  // Require each token to begin with uppercase, digit, or be a single-letter joiner like
+  // "&" / "AI" — rejects prose phrases like "Do Not Reply" that would slip past otherwise.
+  const tokens = cleaned.split(/\s+/);
+  if (!tokens.every((t) => /^[A-Z0-9&]/.test(t))) return '';
+  return cleaned;
 }
 
 function cleanCompany(value = '') {
@@ -688,6 +818,34 @@ function cleanCompany(value = '') {
 
 const ATS_SENDER_NAME_SUFFIX_RE = /\s+(?:hiring team|recruiting team|recruiting|talent acquisition|talent team|talent|careers|candidate experience|people team|hr team|human resources)\s*$/i;
 
+// Workday display names commonly encode the tenant alongside literal "workday" words.
+// Examples: "workday etsy", "Workday Microchip", "Workday.Admin elekta",
+// "Workday @ U.S. Bank", "donotreply_ms workday", "No Reply Manulife", "KION Group Workday".
+// Returns the tenant fragment, or '' when no Workday cue is present.
+function extractWorkdayDisplayTenant(rawName = '') {
+  const name = String(rawName || '').trim();
+  if (!name) return '';
+  // "donotreply_ms workday"  → ms
+  let match = name.match(/^donotreply[_\s.-]+([A-Za-z0-9.& '-]+?)\s+workday$/i);
+  if (match) return match[1].trim();
+  // "Workday.Admin elekta" / "Workday Admin elekta" → elekta (strip the "Admin" word too)
+  match = name.match(/^workday[\s.]+admin[\s.]+(.+)$/i);
+  if (match) return match[1].trim();
+  // "Workday @ U.S. Bank"    → U.S. Bank
+  match = name.match(/^workday\s*[@:.\s-]+\s*(.+)$/i);
+  if (match) return match[1].trim();
+  // "workday etsy" / "Workday Microchip"
+  match = name.match(/^workday\s+(.+)$/i);
+  if (match) return match[1].trim();
+  // "etsy workday" / "KION Group Workday"
+  match = name.match(/^(.+)\s+workday$/i);
+  if (match) return match[1].trim();
+  // "No Reply Manulife"
+  match = name.match(/^(?:no[\s-]?reply|noreply|donotreply|do[\s-]?not[\s-]?reply)\s+(.+)$/i);
+  if (match) return match[1].trim();
+  return '';
+}
+
 export function companyFromAtsSenderName(from = {}) {
   const domain = emailDomain(from.email || '');
   const isAts = TRUSTED_RECRUITING_DOMAINS.some(
@@ -697,11 +855,39 @@ export function companyFromAtsSenderName(from = {}) {
   const rawName = (from.name || '').trim();
   if (!rawName) return '';
   if (GENERIC_SENDER_NAMES.has(rawName.toLowerCase())) return '';
-  const stripped = rawName.replace(ATS_SENDER_NAME_SUFFIX_RE, '').trim();
-  if (!stripped) return '';
-  if (GENERIC_SENDER_NAMES.has(stripped.toLowerCase())) return '';
-  if (isGenericCompany(stripped)) return '';
-  return cleanCompany(stripped);
+  if (OPAQUE_DISPLAY_NAMES.has(rawName.toLowerCase())) return '';
+
+  // Try Workday-style display-name parsing first; pick the longest plausible candidate
+  // among (workday-tenant, plain-strip) that also passes the genericity filter. Skip the
+  // plain-strip fallback when the display name is a no-reply mailbox brand — its content
+  // ("Do Not Reply at Uber") is not a usable company string.
+  const isNoReplyMailbox = /^(?:do[\s_-]?not[\s_-]?reply|donotreply|no[\s_-]?reply|noreply)\b/i
+    .test(rawName);
+  const candidates = [];
+  const workdayTenant = extractWorkdayDisplayTenant(rawName);
+  if (workdayTenant) candidates.push(workdayTenant);
+  if (!isNoReplyMailbox) {
+    candidates.push(rawName.replace(ATS_SENDER_NAME_SUFFIX_RE, '').trim());
+  }
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (GENERIC_SENDER_NAMES.has(candidate.toLowerCase())) continue;
+    if (isGenericCompany(candidate)) continue;
+    // Email-shaped display names (`disney@myworkday.com`) are not company names. Let the
+    // tenant-inference step handle these instead.
+    if (/[@<>]/.test(candidate)) continue;
+    const cleaned = cleanCompany(candidate);
+    if (!cleaned) continue;
+    // If the cleaned name matches a known tenant slug, prefer the curated company name
+    // (e.g. "ms" → "Morgan Stanley", "microchiphr" → "Microchip").
+    const slug = cleaned.toLowerCase().replace(/[^a-z0-9]+/g, '');
+    if (TENANT_SLUG_OVERRIDES.has(slug)) return TENANT_SLUG_OVERRIDES.get(slug);
+    const stripped = stripTenantSlugSuffix(slug);
+    if (TENANT_SLUG_OVERRIDES.has(stripped)) return TENANT_SLUG_OVERRIDES.get(stripped);
+    return cleaned;
+  }
+  return '';
 }
 
 function cleanRole(value = '') {
@@ -722,7 +908,7 @@ function firstPattern(patterns, text) {
 const ROLE_NOUN_PATTERN = /^(?:senior\s+|staff\s+|principal\s+|junior\s+|lead\s+)?(?:software|data|machine learning|ml|ai|backend|frontend|full[- ]?stack|platform|systems?|security|devops|site reliability|infrastructure|product|research|applied)\s+(?:engineer|scientist|developer|manager|analyst|researcher|intern)s?$/i;
 // "The" alone is not a fragment — real companies start with "The" (Disney, Home Depot, Trade Desk).
 // Only treat "the X" as a fragment when X is lowercase prose or a known stopword.
-const PREPOSITION_FRAGMENT_PATTERN = /^(?:this|that|an?|our|your|their|his|her)\b/i;
+const PREPOSITION_FRAGMENT_PATTERN = /^(?:this|that|an?|our|your|their|his|her|at|with|for|from|by|in|on|of|to)\b/i;
 const THE_FRAGMENT_PATTERN = /^the\s+(?:[a-z]|ideal|next|right|best|perfect|first|last|new|same|only|role|position|opportunity|opening|candidate|team|company|hiring)\b/;
 const ROLE_AT_COMPANY_PATTERN = /\b(?:engineer|scientist|developer|manager|analyst|researcher|intern)\s+(?:at|with|for)\s+/i;
 
@@ -753,6 +939,136 @@ function isGenericRole(value = '') {
   return !value ||
     value.length > 90 ||
     /\b(application has been received|your application seems|we will contact you|requirements of the|needs of the team|role\. in the meantime|world who help|first 90 days)\b/i.test(value);
+}
+
+// Company-name token: capital initial, may contain spaces, ampersands, periods, hyphens,
+// apostrophes — but no embedded English stopwords that signal we've crossed into prose.
+// Lookahead `(?!.{0,80}?\b(?:your|for|with|at|in|the|of|to|on|by)\b)` forbids the capture
+// from spanning a stopword-heavy phrase ("Thank you for your interest in Sierra...").
+// Terminator `(?=\s+(?:has|been|please|application|careers?)\b|[.!,|]|\s+[-–—:]|$)` accepts
+// multi-word company names ("Oak Street Health", "Sierra Nevada Corporation").
+const COMPANY_TOKEN = String.raw`[A-Z][A-Za-z0-9.&'-]+(?:\s+[A-Z0-9][A-Za-z0-9.&'-]+){0,5}`;
+
+// High-precision SUBJECT patterns that name the company directly. These are the canonical
+// "who you applied to" signals — they beat tenant inference because the tenant is often
+// the parent operator of a multi-brand Workday setup (KION → Dematic, CVS → Oak Street,
+// Peak6 → Apex Fintech). Patterns deliberately use only "with"/"to" (not "for") because
+// "Your application for X" is almost always followed by a role description, not a company.
+const SUBJECT_COMPANY_PATTERNS = [
+  // "Dematic - Your Application ..."
+  new RegExp(`^(${COMPANY_TOKEN})\\s*[-–—:]\\s*Your Application\\b`, 'i'),
+  // "Your application with X has been received" / "Your application to X"
+  new RegExp(`\\bYour\\s+application\\s+(?:with|to)\\s+(${COMPANY_TOKEN})\\b`, 'i'),
+  // "| Your application to X |"
+  new RegExp(`\\|\\s*Your application to\\s+(${COMPANY_TOKEN})\\s*\\|`, 'i'),
+  // "Your X Careers Application Is In!" — restricted to "Careers" to avoid capturing
+  // bare nouns like "Your job application". We deliberately do not pair "Application"
+  // here because the English phrase "Your application" is too common.
+  new RegExp(`\\bYour\\s+(${COMPANY_TOKEN})\\s+Careers?\\b`, 'i'),
+  // "Regarding your X Application"
+  new RegExp(`\\bRegarding\\s+your\\s+(${COMPANY_TOKEN})\\s+Application\\b`, 'i'),
+  // "X: Application Confirmation" / "X - Application Status"
+  new RegExp(`^(${COMPANY_TOKEN})\\s*[-–—:]\\s*(?:Application|Interview|Offer)\\b`, 'i'),
+  // "Thank you for your interest in X" / "Thank you for your interest in working for X"
+  new RegExp(`\\bThank\\s+you\\s+for\\s+your\\s+interest\\s+in\\s+(?:joining\\s+|working\\s+(?:for|at)\\s+)?(${COMPANY_TOKEN})\\b`, 'i'),
+  // LinkedIn-style "application to ROLE at COMPANY" — capture the LAST "at <Company>"
+  // following an "application/applying" anchor. Greedy `[^,.\n]+?` consumes the role.
+  new RegExp(`\\b(?:application|applying)\\s+(?:to|for)\\s+[^,.\\n]+?\\s+at\\s+(${COMPANY_TOKEN})\\s*$`, 'i'),
+  // "Thank you for applying to X" / "Thanks for applying to X" with the company at the end
+  new RegExp(`\\b(?:thank\\s+you|thanks)\\s+for\\s+applying\\s+to\\s+(${COMPANY_TOKEN})(?:[,!.]|$)`, 'i'),
+  // "X invites you to ..." (scheduling-tool subjects)
+  new RegExp(`\\b(${COMPANY_TOKEN})\\s+invites?\\s+you\\b`, 'i'),
+];
+
+// High-precision BODY patterns. These run when subject patterns miss but the body explicitly
+// names the applied-to company. We deliberately keep these phrasings narrow.
+const BODY_COMPANY_PATTERNS = [
+  new RegExp(`\\binterest in\\s+(?:employment\\s+opportunities\\s+at|opportunities\\s+at|joining|working\\s+(?:for|at))\\s+(${COMPANY_TOKEN})\\b`, 'i'),
+  new RegExp(`\\bThank you for taking the time to explore an opportunity (?:with|at)\\s+(${COMPANY_TOKEN})\\b`, 'i'),
+  // Require the full "role at X" / "position at X" structure so we never capture a bare
+  // role description ("Founding Engineer role"). The optional version was too permissive.
+  new RegExp(`\\bThanks\\s+(?:so much )?for applying\\s+(?:to|for)\\s+(?:the\\s+|our\\s+)?[^,.\\n]{0,80}?\\s+(?:role|position)\\s+(?:at|with)\\s+(${COMPANY_TOKEN})\\b`, 'i'),
+];
+
+// Display names that are internal-portal jargon or platform brand-names — not the actual
+// hiring company. The extractor should fall through to subject/body inference for these.
+const OPAQUE_DISPLAY_NAMES = new Set([
+  'colleague zone',
+  'colleague portal',
+  'careers portal',
+  'workday',
+  'workday admin',
+  'workday admin.',
+  'workday.admin',
+  'people portal',
+  'linkedin',
+  'indeed',
+  'glassdoor',
+  'ziprecruiter',
+  'wellfound',
+  'angel.co',
+  'angellist',
+  'handshake',
+]);
+
+// Sender domains that route on behalf of recruiters/schedulers. Their display names are
+// usually a person ("Hillary Low") or a tool brand, not the hiring company. Skip the
+// last-resort display-name fallback for these.
+const SCHEDULING_TOOL_DOMAINS = new Set([
+  'ats.rippling.com',
+  'mail.ats.rippling.com',
+  'calendly.com',
+  'mixmax.com',
+  'hireflix.com',
+  'goodtime.io',
+  'modernloop.com',
+]);
+
+function trimCompanyTrail(value = '') {
+  return String(value || '')
+    .replace(/\s+(?:Application(?:\s+(?:Update|Confirmation|Status))?|Careers?|Update|Confirmation|Status)\s*$/i, '')
+    .replace(/\s*[-–—:]\s*Application\b.*$/i, '')
+    .replace(/[®™©]+/g, '')
+    .replace(/[.,:;]+$/g, '')
+    .trim();
+}
+
+// JavaScript regex case-insensitive `[A-Z]` matches lowercase too. Post-process the captured
+// company by dropping trailing tokens whose original case doesn't start with an uppercase
+// letter. This trims "Oak Street Health has been received" → "Oak Street Health" without
+// requiring case-sensitive regex (which would force every prefix variant to be enumerated).
+function trimToCapitalizedTokens(captured) {
+  const tokens = String(captured || '').trim().split(/\s+/);
+  while (tokens.length > 1 && !/^[A-Z0-9]/.test(tokens[tokens.length - 1])) {
+    tokens.pop();
+  }
+  return tokens.join(' ');
+}
+
+export function companyFromExplicitSubject(subject = '') {
+  const text = String(subject || '').trim();
+  if (!text) return '';
+  for (const pattern of SUBJECT_COMPANY_PATTERNS) {
+    const match = text.match(pattern);
+    if (match?.[1]) {
+      const cleaned = trimCompanyTrail(cleanCompany(trimToCapitalizedTokens(match[1])));
+      if (cleaned && !isGenericCompany(cleaned) && !/[@<>]/.test(cleaned)) return cleaned;
+    }
+  }
+  return '';
+}
+
+export function companyFromExplicitBody(text = '') {
+  const haystack = String(text || '');
+  if (!haystack) return '';
+  for (const pattern of BODY_COMPANY_PATTERNS) {
+    const match = haystack.match(pattern);
+    if (match?.[1]) {
+      const cleaned = trimCompanyTrail(cleanCompany(trimToCapitalizedTokens(match[1])));
+      if (cleaned && !isGenericCompany(cleaned) && !/[@<>]/.test(cleaned)) return cleaned;
+    }
+  }
+  return '';
 }
 
 export function classifyEvent({ subject = '', text = '', from = {}, policy = null }) {
@@ -826,24 +1142,32 @@ export function extractSignalFromMessage(message) {
   const eventType = classifyEvent({ subject, text: bodyText, from, policy });
   if (!eventType) return null;
 
+  // Candidate ordering: subsidiary-aware subject → display-name strip → subsidiary body
+  // → existing weaker regex sets → multi-tenant ATS local-part → domain/name fallbacks.
+  // The subject patterns run first so that subsidiary brands (Dematic on KION's Workday,
+  // Oak Street Health on CVS's Workday) beat the parent tenant.
   const companyCandidates = [
+    companyFromExplicitSubject(subject),
     companyFromAtsSenderName(from),
-    cleanCompany(firstPattern([
+    companyFromExplicitBody(bodyText),
+    trimCompanyTrail(cleanCompany(firstPattern([
       /application for\s+.+?\s+at\s+([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\n|\s{2,}|$)/i,
       /(?:thank you|thanks) for applying to\s+([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\||\n|\s{2,}|$)/i,
-      /interest in\s+(?:a career with|joining)?\s*([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\n|\s{2,}|$)/i,
+      /interest in\s+(?:a career with|joining)\s+([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\n|\s{2,}|$)/i,
       /(?:position|role|job|opening|interview)\s+(?:at|with)\s+([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\n|\s{2,}|$)/i,
       /-\s*([A-Z][A-Za-z0-9&' -]{2,90}?)(?:\.|,|!|\n|\s{2,}|$)/i,
-    ], searchText)),
-    cleanCompany(firstPattern([
-    /applying to\s+(?:the\s+)?(?:.+?)\s+at\s+([A-Z][A-Za-z0-9&' -]{2,70}?)(?:\.|,|\n|\s{2,}|$)/i,
-    /application (?:to|with)\s+([A-Z][A-Za-z0-9&' -]{2,70}?)(?:\.|,|\n|\s{2,}|$)/i,
-    /career opportunities at\s+([A-Z][A-Za-z0-9&' -]{2,70}?)(?:\.|,|\n|\s{2,}|$)/i,
-    /from\s+([A-Z][A-Za-z0-9&' -]{2,70}?)(?:\.|,|\n|\s{2,}|$)/i,
-    ], searchText)),
+    ], searchText))),
+    trimCompanyTrail(cleanCompany(firstPattern([
+      /applying to\s+(?:the\s+)?(?:.+?)\s+at\s+([A-Z][A-Za-z0-9&' -]{2,70}?)(?:\.|,|\n|\s{2,}|$)/i,
+      /application (?:to|with)\s+([A-Z][A-Za-z0-9&' -]{2,70}?)(?:\.|,|\n|\s{2,}|$)/i,
+      /career opportunities at\s+([A-Z][A-Za-z0-9&' -]{2,70}?)(?:\.|,|\n|\s{2,}|$)/i,
+      /from\s+([A-Z][A-Za-z0-9&' -]{2,70}?)(?:\.|,|\n|\s{2,}|$)/i,
+    ], searchText))),
+    inferAtsTenantCompany(from),
+    companyFromDisplayName(from),
     domainCompany(from.email),
     senderNameCompany(from.name),
-  ].filter((candidate) => candidate && !isGenericCompany(candidate));
+  ].filter((candidate) => candidate && !isGenericCompany(candidate) && !/[@<>]/.test(candidate));
   const company = companyCandidates[0] || '';
 
   const roleCandidates = [
