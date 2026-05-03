@@ -61,6 +61,14 @@ writes qualifying rows to `data/pipeline.md` as `linkedin-scan`, and does not
 queue formal evaluations. When an external posting URL is found, that URL is
 used for pipeline/evaluation output instead of the LinkedIn job-view URL.
 
+The external-URL probe waits for LinkedIn's redirect chain to settle by
+polling `window.location.href`, `<link rel="canonical">`, and `og:url`
+inside the popup tab(s) until the URL is offsite (not `linkedin.com`) AND
+stable across two consecutive polls (or host-stable for tracking-param
+churn). Hard ceiling: 12s per tab; popup discovery has its own 6s window
+with a 1.2s quiet-period bailout. If LinkedIn never leaves itself, the
+pipeline keeps the LinkedIn job-view URL.
+
 Default behavior without `--no-evaluate` queues `newgrad_quick` evaluations for
 enrich survivors and waits for completion.
 

@@ -43,6 +43,12 @@ export interface AutofillMatch {
 export interface ScanOptions {
   visibility?: AutofillVisibilityOptions;
   threshold?: number;
+  /**
+   * Optional subtree to scan instead of the whole document. Defaults to `doc`.
+   * Used by Easy Apply flows to scope the matcher to a modal subtree so
+   * page-level controls outside the modal aren't picked up.
+   */
+  root?: ParentNode;
 }
 
 const OPTION_FIELD_KEYS = new Set<AutofillProfileField["key"]>([
@@ -343,10 +349,19 @@ export function scanAutofillMatches(
 ): AutofillMatch[] {
   const visibility = options?.visibility;
   const threshold = options?.threshold ?? 0.68;
-  const candidatesQuery = Array.from(doc.querySelectorAll(AUTOFILL_CONTROL_SELECTOR));
+  const root: ParentNode = options?.root ?? doc;
+  const candidatesQuery = Array.from(root.querySelectorAll(AUTOFILL_CONTROL_SELECTOR));
   const visibleControls = candidatesQuery
     .filter((el): el is AutofillControl => isAutofillCandidate(el, visibility));
-  const controls = uniqueElements([...visibleControls, ...resumeFileControls(doc)]);
+  const fileInputs = Array.from(root.querySelectorAll<HTMLInputElement>("input[type='file']"))
+    .filter((control) => {
+      if (control.disabled || (control.files?.length ?? 0) > 0) return false;
+      const label = normalizeAutofillLabel(controlLabel(control, doc));
+      const accept = normalizeAutofillLabel(control.accept);
+      if (/\b(cover letter|transcript|portfolio|photo|image|headshot|avatar)\b/.test(label)) return false;
+      return /\b(resume|cv|curriculum vitae)\b/.test(label) || /\bpdf\b/.test(accept);
+    });
+  const controls = uniqueElements([...visibleControls, ...fileInputs]);
   const usedControls = new Set<AutofillControl>();
   const usedFieldIndexes = new Set<number>();
   const candidates: AutofillMatch[] = [];

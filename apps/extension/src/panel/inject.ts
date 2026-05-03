@@ -39,6 +39,12 @@ import {
   scanAutofillMatches,
   type AutofillMatch,
 } from "../shared/autofill-matcher.js";
+import {
+  assertSafeClick,
+  findEasyApplyModal,
+  findEasyApplyProgressButton,
+  findEasyApplySubmitButton,
+} from "../shared/easy-apply.js";
 
 declare const __EXTENSION_VERSION__: string;
 const PANEL_ID = "auto-job-panel-root";
@@ -740,6 +746,10 @@ function buildHTML(): string {
         <button class="cta" id="autofill-refresh-btn">Preview fields</button>
         <button class="cta primary" id="autofill-fill-btn" disabled>Autofill current page</button>
       </div>
+      <div class="action-row">
+        <button class="cta primary" id="ap-easy-apply-fill">Easy Apply: fill this step</button>
+        <label class="fine-print"><input id="ap-easy-apply-auto" type="checkbox" /> auto-advance until Submit</label>
+      </div>
       <div class="fine-print">
         Click-to-fill only. It may attach your configured resume, but never submits or advances applications.
       </div>
@@ -853,6 +863,8 @@ function initPanel(shadow: ShadowRoot, root: HTMLElement): void {
   const autofillListEl = $("autofill-list");
   const autofillRefreshBtn = $("autofill-refresh-btn") as HTMLButtonElement;
   const autofillFillBtn = $("autofill-fill-btn") as HTMLButtonElement;
+  const easyApplyFillBtn = $("ap-easy-apply-fill") as HTMLButtonElement;
+  const easyApplyAutoToggle = $("ap-easy-apply-auto") as HTMLInputElement;
   const runningEl = $("running");
   const doneEl = $("done");
   const errorEl = $("error");
@@ -1231,6 +1243,91 @@ function initPanel(shadow: ShadowRoot, root: HTMLElement): void {
     }
     renderAutofillPreview();
     autofillSummaryEl.textContent = `Filled ${filled} fields. Skipped ${skipped}. Review before submitting.`;
+  }
+
+  async function fillEasyApplyStep(modal: HTMLElement): Promise<{ filled: number; skipped: number }> {
+    if (!autofillProfile) return { filled: 0, skipped: 0 };
+    const matches = scanAutofillMatches(autofillProfile, document, { root: modal });
+    let filled = 0;
+    let skipped = 0;
+    for (const match of matches) {
+      if (await setControlValue(match.control, match.field)) filled += 1;
+      else skipped += 1;
+    }
+    return { filled, skipped };
+  }
+
+  async function onEasyApplyFillClick(): Promise<void> {
+    if (!autofillProfile) {
+      autofillSummaryEl.textContent = "Load your local profile first.";
+      return;
+    }
+    const modal = findEasyApplyModal(document);
+    if (!modal) {
+      autofillSummaryEl.textContent = "Easy Apply modal not found.";
+      return;
+    }
+    const submit = findEasyApplySubmitButton(modal);
+    if (submit) {
+      autofillSummaryEl.textContent = "Step is the final review. Submit yourself — never auto-clicked.";
+      return;
+    }
+    if (easyApplyAutoToggle.checked) {
+      await easyApplyLoop();
+      return;
+    }
+    const { filled, skipped } = await fillEasyApplyStep(modal);
+    autofillSummaryEl.textContent =
+      `Easy Apply step: filled ${filled}, skipped ${skipped}. Review and click Continue/Next yourself.`;
+  }
+
+  async function easyApplyLoop(): Promise<void> {
+    if (!autofillProfile) {
+      autofillSummaryEl.textContent = "Load your local profile first.";
+      return;
+    }
+    const MAX_ITERATIONS = 8;
+    let totalFilled = 0;
+    let advanced = 0;
+    for (let i = 0; i < MAX_ITERATIONS; i += 1) {
+      const modal = findEasyApplyModal(document);
+      if (!modal) {
+        autofillSummaryEl.textContent = "Easy Apply modal not found.";
+        return;
+      }
+      if (findEasyApplySubmitButton(modal)) {
+        autofillSummaryEl.textContent =
+          `Easy Apply ready to submit. Filled ${totalFilled} field(s) across ${advanced} step(s). `
+          + "Submit yourself — never auto-clicked.";
+        return;
+      }
+      const { filled } = await fillEasyApplyStep(modal);
+      totalFilled += filled;
+      const progress = findEasyApplyProgressButton(modal);
+      if (filled === 0 && !progress) {
+        autofillSummaryEl.textContent =
+          `Nothing to fill on this step. Filled ${totalFilled} field(s) across ${advanced} step(s).`;
+        return;
+      }
+      if (!progress) {
+        autofillSummaryEl.textContent =
+          `Easy Apply step filled (${filled}). No progress button found — review and advance yourself.`;
+        return;
+      }
+      try {
+        assertSafeClick(progress);
+      } catch (err) {
+        autofillSummaryEl.textContent =
+          `Refused to click "${progress.textContent?.trim() ?? ""}" — unsafe label.`;
+        return;
+      }
+      progress.click();
+      advanced += 1;
+      await new Promise<void>((resolve) => setTimeout(resolve, 700));
+    }
+    autofillSummaryEl.textContent =
+      `Easy Apply: stopped after ${MAX_ITERATIONS} steps without reaching Submit. `
+      + `Filled ${totalFilled} field(s). Review the form yourself.`;
   }
 
   // pct, scoreColor imported from shared/utils
@@ -2116,6 +2213,7 @@ function initPanel(shadow: ShadowRoot, root: HTMLElement): void {
   }
   autofillRefreshBtn.addEventListener("click", () => void loadAutofillProfile());
   autofillFillBtn.addEventListener("click", () => void fillAutofillMatches());
+  easyApplyFillBtn.addEventListener("click", () => void onEasyApplyFillClick());
   evaluateBtn.addEventListener("click", () => void onEvaluateClick());
   evaluateAnywayBtn.addEventListener("click", () => {
     if (capturedData) { show("captured"); void onEvaluateClick(); }

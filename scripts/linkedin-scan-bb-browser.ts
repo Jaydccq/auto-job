@@ -57,6 +57,11 @@ import { scoreEnrichedRowValue } from "../apps/server/src/adapters/newgrad-value
 import { pickPipelineEntryUrl } from "../apps/server/src/adapters/newgrad-links.ts";
 import { parseLinkedInGuestJobPostingHtml } from "../apps/server/src/adapters/linkedin-guest-detail.ts";
 import {
+  isOffsiteHttpUrl,
+  settleFinalUrl,
+  type TabUrlState,
+} from "../apps/server/src/adapters/external-apply-settle.ts";
+import {
   createScanRunId,
   createScanRunRecorder,
   type ScanRunRecorder,
@@ -1675,29 +1680,87 @@ async function probeExternalApplyUrl(tabId: string): Promise<ExternalApplyProbeR
   const click = await evaluateBrowserJson<ApplyClickResult>(tabId, clickLinkedInExternalApplyButton);
   const flowUrls = new Set<string>();
 
+  // Pull obvious offsite candidates straight from the click result. Most
+  // useful for the `external_href` case where LinkedIn handed us an offsite
+  // anchor href before any redirect happened.
   addCandidateApplyUrls(flowUrls, click.href);
-  addCandidateApplyUrls(flowUrls, click.afterUrl);
   for (const url of click.observedUrls ?? []) {
     addCandidateApplyUrls(flowUrls, url);
   }
 
-  const openedTabs = new Map<string, BbTabInfo>();
-  if (click.clicked) {
-    for (let attempt = 0; attempt < 8; attempt += 1) {
+  // Discover tabs the click opened. We must keep watching beyond the first
+  // sighting because LinkedIn sometimes opens a tab AND immediately spawns a
+  // second one for analytics/redirect handoff. Stop only when discovery has
+  // gone quiet for `quietMs` (no new tabs in that window) or we've exceeded
+  // `discoveryWindowMs`.
+  const openedTabIds = new Set<string>();
+  {
+    const discoveryWindowMs = 6_000;
+    const quietMs = 1_200;
+    const start = Date.now();
+    let lastNewTabAt = start;
+    while (Date.now() - start < discoveryWindowMs) {
       const tabs = await listBbTabs();
+      let foundNew = false;
       for (const tab of tabs) {
         if (!tab.tabId || beforeIds.has(tab.tabId)) continue;
-        openedTabs.set(tab.tabId, tab);
-        addCandidateApplyUrls(flowUrls, tab.url);
+        if (!openedTabIds.has(tab.tabId)) {
+          openedTabIds.add(tab.tabId);
+          foundNew = true;
+        }
       }
-      if (flowUrls.size > 0) break;
-      await sleep(750);
+      if (foundNew) lastNewTabAt = Date.now();
+      // Quiet window after we've seen at least one tab — bail early.
+      if (openedTabIds.size > 0 && Date.now() - lastNewTabAt >= quietMs) break;
+      await sleep(400);
     }
   }
 
-  for (const tab of openedTabs.values()) {
-    if (tab.tabId) await closeBbTab(tab.tabId);
+  // For each opened tab, KEEP IT OPEN and settle on its final URL. The
+  // previous implementation read tab.url once and closed the tab — which
+  // missed the LinkedIn -> ATS redirect (the original bug).
+  for (const newTabId of openedTabIds) {
+    try {
+      const settled = await settleFinalUrl(
+        () => readTabUrlState(newTabId),
+        { maxMs: 12_000, stableMs: 1_500, intervalMs: 400 },
+      );
+      if (settled.finalUrl) addCandidateApplyUrls(flowUrls, settled.finalUrl);
+      // Even if settle returned null, keep any observed URLs that happened
+      // to be offsite during the chain (defensive).
+      for (const observedUrl of settled.observed) {
+        addCandidateApplyUrls(flowUrls, observedUrl);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Settle failed for popup tab ${newTabId}: ${message}`);
+    } finally {
+      await closeBbTab(newTabId);
+    }
   }
+
+  // Same-tab navigation case: the original detail tab's URL may have left
+  // LinkedIn. Settle it too, but only if the click report says the tab
+  // navigated AND we got nothing from popups.
+  const navigated = click.afterUrl && click.beforeUrl && click.afterUrl !== click.beforeUrl;
+  if (flowUrls.size === 0 && navigated) {
+    try {
+      const settled = await settleFinalUrl(
+        () => readTabUrlState(tabId),
+        { maxMs: 8_000, stableMs: 1_200, intervalMs: 400 },
+      );
+      if (settled.finalUrl && isOffsiteHttpUrl(settled.finalUrl)) {
+        addCandidateApplyUrls(flowUrls, settled.finalUrl);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Settle failed for in-tab navigation on ${tabId}: ${message}`);
+    }
+  }
+
+  // As a last resort, accept the click's reported afterUrl if it was
+  // already offsite (rare, but cheap to keep).
+  addCandidateApplyUrls(flowUrls, click.afterUrl);
 
   const urls = [...flowUrls];
   return {
@@ -1707,6 +1770,24 @@ async function probeExternalApplyUrl(tabId: string): Promise<ExternalApplyProbeR
     flowUrls: urls,
     clicked: Boolean(click.clicked),
   };
+}
+
+/**
+ * Read the current tab's URL state via `bb-browser eval`. Returns null if
+ * the tab is gone or eval fails (caller treats null as "tab closed" and
+ * stops polling).
+ */
+async function readTabUrlState(tabId: string): Promise<TabUrlState | null> {
+  try {
+    return await evaluateBrowserJson<TabUrlState>(tabId, () => ({
+      href: window.location.href,
+      canonical: (document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null)?.href ?? null,
+      ogUrl: (document.querySelector('meta[property="og:url"]') as HTMLMetaElement | null)?.content ?? null,
+      readyState: document.readyState,
+    }));
+  } catch {
+    return null;
+  }
 }
 
 function addCandidateApplyUrls(target: Set<string>, raw: string | null | undefined): void {
