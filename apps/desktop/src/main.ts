@@ -114,6 +114,28 @@ function ensureWebDirFallback(): void {
   }
 }
 
+// GUI-launched macOS apps inherit a minimal PATH that excludes the user's
+// shell PATH, so CLIs installed in ~/.local/bin, ~/.npm-global/bin, or
+// /opt/homebrew/bin (the common locations for `claude`, `codex`, etc.) are
+// invisible to spawn(). Prepend the standard user bin dirs that exist on
+// disk so the bundled server can resolve them.
+function ensureUserPath(): void {
+  const candidates = [
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    join(homedir(), ".local/bin"),
+    join(homedir(), ".npm-global/bin"),
+    join(homedir(), ".cargo/bin"),
+  ];
+  const current = (process.env.PATH ?? "").split(":").filter(Boolean);
+  const seen = new Set(current);
+  const extra = candidates.filter((p) => existsSync(p) && !seen.has(p));
+  if (extra.length === 0) return;
+  process.env.PATH = [...extra, ...current].join(":");
+  console.log(`[auto-job] extended PATH with: ${extra.join(", ")}`);
+}
+
+ensureUserPath();
 ensureRepoRoot();
 ensureWebDirFallback();
 

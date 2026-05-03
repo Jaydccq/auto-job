@@ -15,6 +15,24 @@ describe('getScanCatalog', () => {
       expect(e.runners).toContain(e.defaultRunner);
     }
   });
+
+  it('exposes evaluator runners on builtin-scan and indeed-scan', async () => {
+    const cat = await getScanCatalog();
+    for (const id of ['builtin-scan', 'indeed-scan']) {
+      const entry = (cat as Array<{
+        id: string;
+        runners: string[];
+        defaultRunner: string;
+        advancedRunners?: string[];
+      }>).find((e) => e.id === id);
+      expect(entry).toBeDefined();
+      expect(entry!.runners).toEqual(
+        expect.arrayContaining(['real-codex', 'real-claude', 'real-openrouter', 'fake']),
+      );
+      expect(entry!.defaultRunner).toBe('real-codex');
+      expect(entry!.advancedRunners).toContain('discovery-only');
+    }
+  });
 });
 
 describe('buildArgv', () => {
@@ -59,6 +77,50 @@ describe('buildArgv', () => {
       inputs: { url: 'https://example.com' },
     });
     expect(argv).toContain('--score-only');
+  });
+
+  it('translates builtin-scan with real-codex + evaluateLimit into --evaluate-limit (no --no-evaluate)', () => {
+    const argv = buildArgv({
+      skillId: 'builtin-scan',
+      runner: 'real-codex',
+      inputs: { evaluateLimit: 5, limit: 50 },
+    });
+    expect(argv.slice(0, 4)).toEqual(['npm', 'run', 'builtin-scan', '--']);
+    expect(argv).toContain('--evaluate-limit');
+    expect(argv).toContain('5');
+    expect(argv).toContain('--limit');
+    expect(argv).toContain('50');
+    expect(argv).not.toContain('--no-evaluate');
+    expect(argv).not.toContain('--score-only');
+  });
+
+  it('translates indeed-scan with discovery-only into --no-evaluate + --score-only', () => {
+    const argv = buildArgv({
+      skillId: 'indeed-scan',
+      runner: 'discovery-only',
+      inputs: { limit: 30 },
+    });
+    expect(argv).toContain('--no-evaluate');
+    expect(argv).toContain('--score-only');
+  });
+
+  it('translates indeed-scan with real-openrouter passes url, pages, evaluateLimit', () => {
+    const argv = buildArgv({
+      skillId: 'indeed-scan',
+      runner: 'real-openrouter',
+      inputs: {
+        url: 'https://www.indeed.com/jobs?q=software+engineer&fromage=7',
+        pages: 2,
+        evaluateLimit: 3,
+      },
+    });
+    expect(argv).toContain('--url');
+    expect(argv).toContain('https://www.indeed.com/jobs?q=software+engineer&fromage=7');
+    expect(argv).toContain('--pages');
+    expect(argv).toContain('2');
+    expect(argv).toContain('--evaluate-limit');
+    expect(argv).toContain('3');
+    expect(argv).not.toContain('--no-evaluate');
   });
 });
 
