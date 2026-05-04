@@ -53,8 +53,8 @@ importers:
         version: link:../../packages/shared
     devDependencies:
       '@types/chrome':
-        specifier: ^0.0.280
-        version: 0.0.280
+        specifier: ^0.0.332
+        version: 0.0.332
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0
@@ -716,8 +716,8 @@ packages:
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
-  '@types/chrome@0.0.280':
-    resolution: {integrity: sha512-AotSmZrL9bcZDDmSI1D9dE7PGbhOur5L0cKxXd7IqbVizQWCY4gcvupPUVsQ4FfDj3V2tt/iOpomT9EY0s+w1g==}
+  '@types/chrome@0.0.332':
+    resolution: {integrity: sha512-Fl4luF9q/iroXMKbL1LQyr/nCKhKwkwkZQ9qeeePFECW/8SP/Lrx2kJ26wnpTpr0iAznkENoO8g924CP4mfNxw==}
 
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
@@ -2590,7 +2590,7 @@ snapshots:
       '@types/deep-eql': 4.0.2
       assertion-error: 2.0.1
 
-  '@types/chrome@0.0.280':
+  '@types/chrome@0.0.332':
     dependencies:
       '@types/filesystem': 0.0.36
       '@types/har-format': 1.2.16
