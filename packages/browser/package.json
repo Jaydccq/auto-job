@@ -1,0 +1,55 @@
+{
+  "name": "@auto-job/browser",
+  "version": "0.1.0",
+  "private": true,
+  "description": "In-process CDP-attached browser automation library replacing the bb-browser PATH dependency. Phase 1 = read path (scan); Phase 2 = write path (auto-apply).",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./sites/builtin": {
+      "types": "./src/sites/builtin/index.ts",
+      "development": "./src/sites/builtin/index.ts",
+      "default": "./dist/sites/builtin/index.js"
+    },
+    "./sites/indeed": {
+      "types": "./src/sites/indeed/index.ts",
+      "development": "./src/sites/indeed/index.ts",
+      "default": "./dist/sites/indeed/index.js"
+    },
+    "./sites/jobright": {
+      "types": "./src/sites/jobright/index.ts",
+      "development": "./src/sites/jobright/index.ts",
+      "default": "./dist/sites/jobright/index.js"
+    },
+    "./sites/linkedin": {
+      "types": "./src/sites/linkedin/index.ts",
+      "development": "./src/sites/linkedin/index.ts",
+      "default": "./dist/sites/linkedin/index.js"
+    },
+    "./bb-shim": {
+      "types": "./src/bb-shim.ts",
+      "development": "./src/bb-shim.ts",
+      "default": "./dist/bb-shim.js"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.4"
+  },
+  "dependencies": {
+    "playwright": "^1.58.1"
+  }
+}

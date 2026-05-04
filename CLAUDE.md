@@ -51,6 +51,7 @@ the runtime layer for user-specific content.
 | `apps/extension/` | Chrome MV3 extension |
 | `apps/desktop/` | Electron wrapper |
 | `packages/shared/` | TS contracts shared across server, extension, desktop |
+| `packages/browser/` | In-process CDP browser library (`@auto-job/browser`); replaces bb-browser. Phase 1 = read path. Profile: `~/.auto-job/chrome-profile/` (user home). See `docs/architecture/own-browser.md`. |
 | `modes/_shared.md` | Rubric, report contract, tracker contract |
 | `modes/oferta.md` | Block A–G evaluation prompt |
 | `batch/batch-prompt.md` | System prompt for the batch worker |
@@ -91,6 +92,16 @@ AUTO_JOB_BACKEND=real-openrouter npm run server    # OpenRouter
 ```
 
 Dashboard at `http://127.0.0.1:47319/dashboard/`.
+
+**First-time own-browser setup** (Phase 1 only, one-off):
+```bash
+npm run own-browser:login-helper   # walks through LinkedIn / Indeed / BuiltIn / JobRight logins
+                                   # in the dedicated Chrome profile (~/.auto-job/chrome-profile)
+```
+After this, `npm run linkedin-scan / builtin-scan / indeed-scan / newgrad-scan`
+all use `@auto-job/browser` (no `bb-browser` PATH binary needed).
+The old `*-bb-browser.ts` scripts remain on disk as a fallback during the
+7-day stability window — invoke directly via `npx tsx scripts/linkedin-scan-bb-browser.ts ...`.
 
 ## Onboarding (first session)
 
