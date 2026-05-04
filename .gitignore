@@ -82,6 +82,20 @@ packages/browser/dist/
 packages/browser/package-lock.json
 packages/browser/.test-chrome-profile/
 
+# Humanize package (Phase 2A)
+packages/humanize/node_modules/
+packages/humanize/dist/
+packages/humanize/package-lock.json
+
+# Credentials package (Phase 2A — macOS Keychain vault)
+packages/credentials/node_modules/
+packages/credentials/dist/
+packages/credentials/package-lock.json
+
+# Phase 2A apply-queue runtime data (private to user)
+data/apply-queue.jsonl
+config/auto-apply-policy.yml
+
 # Session artifacts
 .agents/
 **/CLAUDE.md

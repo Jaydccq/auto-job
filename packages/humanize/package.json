@@ -1,0 +1,30 @@
+{
+  "name": "@auto-job/humanize",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Behavior humanization decorator over @auto-job/browser's Tab. Defeats Datadome / Akamai BM / PerimeterX behavior-sequence fingerprints via Bezier mouse paths, log-normal keystroke timing, and reading delays.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.4"
+  },
+  "dependencies": {
+    "@auto-job/browser": "workspace:*",
+    "playwright": "^1.58.1"
+  }
+}
