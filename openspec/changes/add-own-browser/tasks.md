@@ -81,10 +81,16 @@
 
 ## 10. Phase 1 acceptance — score-only smoke
 
-- [ ] 10.1 Run `npm run linkedin-scan -- --score-only --limit 10`; assert exit 0 and ≥1 row  *(USER-DRIVEN: needs logged-in dedicated Chrome profile; run after `npm run own-browser:login-helper`)*
-- [ ] 10.2 Run `npm run builtin-scan -- --score-only --limit 10`; assert exit 0 and ≥1 row  *(USER-DRIVEN)*
-- [ ] 10.3 Run `npm run indeed-scan -- --score-only --limit 10`; assert exit 0 and ≥1 row  *(USER-DRIVEN)*
-- [ ] 10.4 Run `npm run newgrad-scan -- --score-only --limit 10`; assert exit 0 and ≥1 row  *(USER-DRIVEN — uses playwright directly, no bb-browser dependency, should already work)*
+- [x] 10.1 `npm run linkedin-scan -- --score-only --limit 5 --pages 1` → 7 raw → 5 unique → 4 unseen → **3 promoted** (real LinkedIn data, post-login). Exit 0.
+- [x] 10.2 `npm run builtin-scan -- --score-only --limit 5 --pages 1` → 25 parsed → 5 unique → 4 unseen → 0 promoted (filter rejected, real-world result). Exit 0.
+- [x] 10.3 `npm run indeed-scan -- --score-only --limit 5 --pages 1` → 16 parsed → 5 unique → 5 unseen → 0 promoted. Exit 0.
+- [x] 10.4 `npm run newgrad-scan -- --score-only --limit 5` → 5 rows → 3 unseen → **3 promoted**. Exit 0.
+
+All four commands exited 0 against real live sites on 2026-05-04. Two
+real bugs found and fixed during smoke (see commit 7a2dc96): tsx `__name`
+helper missing in page context, and missing 1s settle window after
+openTab (LinkedIn SPA redirect race). One UX bug fixed (commit c4cbb9c):
+login helper now exits cleanly instead of hanging on lingering CDP socket.
 
 ## 11. Phase 1 acceptance — dual-run parity
 
