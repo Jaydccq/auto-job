@@ -145,6 +145,10 @@ if (existsSync(join(repoRoot, "packages/credentials/package.json"))) {
   // KEYCHAIN_INTEGRATION=0 → only mocked tests run; real Keychain not touched.
   runNpmStep("credentials tests", join(repoRoot, "packages/credentials"), ["run", "test"], { KEYCHAIN_INTEGRATION: "0" });
 }
+if (existsSync(join(repoRoot, "packages/auto-apply/package.json"))) {
+  runNpmStep("auto-apply typecheck", join(repoRoot, "packages/auto-apply"), ["run", "typecheck"]);
+  runNpmStep("auto-apply tests", join(repoRoot, "packages/auto-apply"), ["run", "test"]);
+}
 
 console.log(`\n${"=".repeat(50)}`);
 console.log(`Result: ${errors} error(s), ${warnings} warning(s).`);
