@@ -22,10 +22,11 @@ const log = {
   err: (m) => { console.log(`FAIL ${m}`); errors++; },
 };
 
-function runNpmStep(label, cwd, args) {
+function runNpmStep(label, cwd, args, env = undefined) {
   try {
     execFileSync(process.platform === "win32" ? "npm.cmd" : "npm", args, {
       cwd, stdio: "pipe", encoding: "utf-8",
+      env: env ? { ...process.env, ...env } : undefined,
     });
     log.ok(label);
   } catch (e) {
@@ -125,12 +126,14 @@ if (existsSync(join(repoRoot, "apps/extension/package.json"))) {
 }
 if (existsSync(join(repoRoot, "packages/browser/package.json"))) {
   runNpmStep("browser typecheck", join(repoRoot, "packages/browser"), ["run", "typecheck"]);
-  // Skip the integration test (needs real Chrome). Unit tests cover errors,
-  // chrome-binary detection, and adapter source/shape.
+  // Skip the integration test (needs real Chrome and a clean port 47322).
+  // Run it explicitly via `npm --prefix packages/browser run test` when
+  // exercising the full BrowserController lifecycle.
   runNpmStep(
     "browser tests (unit)",
     join(repoRoot, "packages/browser"),
     ["run", "test"],
+    { SKIP_BROWSER_INTEGRATION: "1" },
   );
 }
 

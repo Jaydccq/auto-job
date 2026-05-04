@@ -142,6 +142,18 @@ Diagnostic tool: `test/_manual-leak-check.mjs` opens a tab and dumps every prope
 Verified clean against Chrome 147 on macOS as of 2026-05-03:
 `navigator.webdriver: false`, real plugins, real UA, real M3 GPU fingerprint.
 
+## Supported sites
+
+| Id | Name | Auth | Style | Notes |
+|---|---|---|---|---|
+| `builtin` | BuiltIn | no | per-keyword | US tech-jobs aggregator |
+| `indeed` | Indeed | no | per-keyword | Global, query + location |
+| `linkedin` | LinkedIn | yes | per-keyword | Wrapper takes caller-provided extractor (not in registry) |
+| `jobright` | JobRight | yes | personalized | NewGrad recommendations |
+| `greenhouse` | Greenhouse | no | per-tenant | ~10k+ companies (Stripe, Airbnb, Vercel, …) |
+| `workday` | Workday | no | per-tenant | Enterprise (Adobe, Nvidia, Amazon, Salesforce, Cisco, …); auto-probes sitePath; detects maintenance-page redirects |
+| `icims` | iCIMS | no | per-tenant | **Experimental** — adapter targets v3 API + legacy `/jobs/search` HTML pattern. As of 2026-05-04, all tested `careers-<tenant>.icims.com` URLs return iCIMS's deprecation page. Adapter ships with full test coverage but needs URL-pattern reverse-engineering to return real data on iCIMS Modern Career Sites — see follow-up `update-icims-modern-urls` (planned). |
+
 ## Adding a new site
 
 The framework supports adding new job sites with minimal effort:

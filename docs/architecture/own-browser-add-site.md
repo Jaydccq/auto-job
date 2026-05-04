@@ -176,6 +176,67 @@ If `requiresAuth: true`:
    when it detects an auth wall (typical signals: response is 401, or
    200 with HTML containing a login form).
 
+## ATS-specific tips
+
+Adding an Applicant Tracking System (ATS) — Workday, iCIMS, Greenhouse, Lever, Ashby, etc. — has shape considerations that don't apply to per-keyword aggregator sites (BuiltIn, Indeed). These tips capture patterns that emerged from the Workday + iCIMS additions.
+
+### Per-tenant input model (vs per-keyword)
+
+Most ATS host **per-company** boards, not a global searchable index. Choose your input shape accordingly:
+
+| Site type | Primary input | Example | Adapter style |
+|---|---|---|---|
+| Aggregator (per-keyword) | `query`, `location` | BuiltIn, Indeed | Single shared script with `--source` flag |
+| ATS (per-tenant) | `tenant` (or `url`) | Greenhouse, Workday, iCIMS, Lever | Dedicated scan script (`<ats>-scan.ts`) |
+
+Don't bolt per-tenant ATS into `job-board-scan.ts`'s `--source` switch — overloading per-keyword and per-tenant input models in one script hurts clarity. Two small focused scripts beat one fat one.
+
+### Multi-mechanism fallback (iCIMS reference)
+
+When a site has multiple data shapes across tenants (newer JSON API + older HTML scrape), implement **explicit fallback with telemetry**:
+
+1. Define a `resolvedVia: "v3-api" | "html-scrape" | …` field on the result type so callers know which path succeeded.
+2. Try the structured/cheaper mechanism first; on **any failure** (HTTP error, parse error, unexpected shape) return `null` from the helper rather than throwing.
+3. Try the next mechanism with the same null-on-failure contract.
+4. Top-level `searchX` consolidates: first non-null wins; if all return null, throw `AdapterParseError("<site>: tried <mechanism A> and <mechanism B>, both failed")`.
+
+This pattern is reusable — Lever / Ashby may need similar v2/v3 splits.
+
+### Three-state response semantics (both Workday and iCIMS)
+
+For ATS adapters, distinguish three response states so operators can act on real failures:
+
+1. **Genuinely empty board (success)** — site explicitly confirms zero jobs (`totalCount: 0`, "No jobs found" text). Return `{count: 0, jobs: [], totalAvailable: 0}` — this is normal.
+2. **Parser found nothing in non-empty response (throw)** — response present but parser couldn't extract job rows. Likely tenant-specific schema drift. Throw `AdapterParseError` with the tenant identified, e.g. `"icims: response present but parser found no jobs — likely schema drift on tenant disney"`.
+3. **HTTP / connectivity failure (throw)** — non-OK responses or network errors. Throw `AdapterParseError` with the status code and tenant.
+
+The distinction matters: case 1 is a normal operational outcome (the company has no openings); cases 2/3 are operator-actionable failures (file an issue, patch the parser).
+
+### Site-path probing (Workday reference)
+
+When tenants vary in URL sub-path (Workday's `External_Career_Site` vs `Careers` vs `External`), probe in priority order:
+
+```ts
+const PROBES = ["External_Career_Site", "Careers", "External"];
+for (const candidate of PROBES) {
+  const r = await tab.fetch(buildApiUrl(tenant, candidate), { method: "POST", ... });
+  if (r.ok) return candidate;
+}
+throw new AdapterParseError(`<site>: could not auto-detect path for ${tenant} (probed: ${PROBES.join(", ")}). Pass it explicitly.`, "");
+```
+
+Always allow explicit override (`--site-path` / explicit `sitePath` option) so users can configure long-tail tenants without modifying the adapter.
+
+### Anti-bot considerations
+
+ATS endpoints commonly use anti-bot vendors (Datadome, Akamai Bot Manager, PerimeterX). For Phase 1.5 read-only scans:
+
+- Detect 403 / 429 explicitly and surface a different error message (`access denied — tenant may have rate-limited or anti-bot-blocked us`) rather than a generic HTTP error
+- Keep scan volume low (≤10 per tenant per day during read-only Phase 1.5)
+- Reuse the dedicated profile (cookies / session continuity helps "look human")
+
+Future Phase 5 (private fork) adds Risk Telemetry that auto-cooldowns an ATS for 7 days on the first detection signal.
+
 ## Checklist
 
 Before opening a PR adding a new site:

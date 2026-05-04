@@ -9,8 +9,15 @@ import {
 } from "../../src/sites/registry.js";
 
 describe("site registry", () => {
-  it("includes the four search-style adapters by stable id", () => {
-    expect(SITE_IDS).toEqual(["builtin", "indeed", "jobright", "greenhouse"]);
+  it("includes all six search-style adapters by stable id", () => {
+    expect(SITE_IDS).toEqual([
+      "builtin",
+      "indeed",
+      "jobright",
+      "greenhouse",
+      "workday",
+      "icims",
+    ]);
   });
 
   it("each registered adapter has a SiteAdapterMeta with id matching the registry key", () => {
@@ -57,6 +64,8 @@ describe("site registry", () => {
     expect(SITE_ADAPTERS.builtin.meta.requiresAuth).toBe(false);
     expect(SITE_ADAPTERS.indeed.meta.requiresAuth).toBe(false);
     expect(SITE_ADAPTERS.greenhouse.meta.requiresAuth).toBe(false);
+    expect(SITE_ADAPTERS.workday.meta.requiresAuth).toBe(false);
+    expect(SITE_ADAPTERS.icims.meta.requiresAuth).toBe(false);
     expect(SITE_ADAPTERS.jobright.meta.requiresAuth).toBe(true);
   });
 });

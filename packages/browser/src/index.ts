@@ -76,6 +76,22 @@ export type {
   GreenhouseSearchResult,
 } from "./sites/greenhouse/index.js";
 
+export { searchWorkday, parseWorkdayUrl, WORKDAY_ADAPTER } from "./sites/workday/index.js";
+export type {
+  WorkdayCenter,
+  WorkdayJob,
+  WorkdaySearchOptions,
+  WorkdaySearchResult,
+} from "./sites/workday/index.js";
+
+export { searchICIMS, parseICIMSUrl, ICIMS_ADAPTER } from "./sites/icims/index.js";
+export type {
+  ICIMSJob,
+  ICIMSResolvedVia,
+  ICIMSSearchOptions,
+  ICIMSSearchResult,
+} from "./sites/icims/index.js";
+
 export {
   SITE_ADAPTERS,
   SITE_IDS,
@@ -89,3 +105,4 @@ export type { SearchAdapter, SiteAdapterMeta } from "./sites/types.js";
 export { BUILTIN_ADAPTER } from "./sites/builtin/index.js";
 export { INDEED_ADAPTER } from "./sites/indeed/index.js";
 export { JOBRIGHT_ADAPTER } from "./sites/jobright/index.js";
+// WORKDAY_ADAPTER and ICIMS_ADAPTER are exported above alongside their search functions.

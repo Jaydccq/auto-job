@@ -37,6 +37,16 @@
       "development": "./src/sites/greenhouse/index.ts",
       "default": "./dist/sites/greenhouse/index.js"
     },
+    "./sites/workday": {
+      "types": "./src/sites/workday/index.ts",
+      "development": "./src/sites/workday/index.ts",
+      "default": "./dist/sites/workday/index.js"
+    },
+    "./sites/icims": {
+      "types": "./src/sites/icims/index.ts",
+      "development": "./src/sites/icims/index.ts",
+      "default": "./dist/sites/icims/index.js"
+    },
     "./sites": {
       "types": "./src/sites/registry.ts",
       "development": "./src/sites/registry.ts",
