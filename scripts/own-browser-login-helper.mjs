@@ -48,7 +48,14 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main().then(
+  () => {
+    // Playwright's CDP websocket sometimes keeps the event loop alive even
+    // after browser.close(). For a one-shot CLI helper, force-exit cleanly.
+    process.exit(0);
+  },
+  (err) => {
+    console.error(err);
+    process.exit(1);
+  },
+);
