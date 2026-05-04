@@ -142,6 +142,35 @@ Diagnostic tool: `test/_manual-leak-check.mjs` opens a tab and dumps every prope
 Verified clean against Chrome 147 on macOS as of 2026-05-03:
 `navigator.webdriver: false`, real plugins, real UA, real M3 GPU fingerprint.
 
+## Adding a new site
+
+The framework supports adding new job sites with minimal effort:
+
+1. Create `packages/browser/src/sites/<id>/index.ts` exporting a `SearchAdapter`
+2. Register in `src/sites/registry.ts`
+3. Re-export from `src/index.ts` and `package.json` exports
+4. Write tests (happy path / filters / error paths / registry presence)
+
+Reference implementation: `src/sites/greenhouse/` (per-company public
+boards, no auth, JSON API). Step-by-step guide:
+[`own-browser-add-site.md`](./own-browser-add-site.md).
+
+The registry (`SITE_ADAPTERS`) lets callers iterate over all known
+sites without hardcoding the list:
+
+```ts
+import { listSiteMetas, getSiteAdapter, isKnownSiteId } from "@auto-job/browser/sites";
+
+for (const meta of listSiteMetas()) {
+  console.log(`${meta.id} — ${meta.name} (auth: ${meta.requiresAuth})`);
+}
+```
+
+LinkedIn is intentionally NOT in the registry — it takes a caller-
+provided DOM extractor function (the extractor lives in
+`apps/extension/src/content/extract-linkedin.ts` and is shared with the
+Chrome extension).
+
 ## Migration from bb-browser
 
 Phase 1 (this layer) is in production-ready state when:

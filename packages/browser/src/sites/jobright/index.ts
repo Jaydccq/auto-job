@@ -8,6 +8,7 @@
 
 import { AdapterParseError } from "../../errors.js";
 import type { Tab } from "../../tab.js";
+import type { SearchAdapter, SiteAdapterMeta } from "../types.js";
 
 export interface JobrightRecommendOptions {
   /** Max rows to return (1..2500, default 200). */
@@ -117,6 +118,19 @@ function safeHostname(url: string): string {
 function isErrorPayload(value: unknown): value is JobrightErrorPayload {
   return typeof value === "object" && value !== null && "error" in value;
 }
+
+const META: SiteAdapterMeta = {
+  id: "jobright",
+  name: "JobRight",
+  domain: "jobright.ai",
+  requiresAuth: true,
+  description: "Personalized newgrad recommendations; uses minisite category path.",
+};
+
+export const JOBRIGHT_ADAPTER: SearchAdapter<JobrightRecommendOptions, JobrightRecommendResult> = {
+  meta: META,
+  search: recommendJobright,
+};
 
 /* eslint-disable */
 export const JOBRIGHT_NEWGRAD_SOURCE = `async function jobrightNewgrad(args) {

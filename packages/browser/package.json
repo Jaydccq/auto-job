@@ -32,6 +32,16 @@
       "development": "./src/sites/linkedin/index.ts",
       "default": "./dist/sites/linkedin/index.js"
     },
+    "./sites/greenhouse": {
+      "types": "./src/sites/greenhouse/index.ts",
+      "development": "./src/sites/greenhouse/index.ts",
+      "default": "./dist/sites/greenhouse/index.js"
+    },
+    "./sites": {
+      "types": "./src/sites/registry.ts",
+      "development": "./src/sites/registry.ts",
+      "default": "./dist/sites/registry.js"
+    },
     "./bb-shim": {
       "types": "./src/bb-shim.ts",
       "development": "./src/bb-shim.ts",

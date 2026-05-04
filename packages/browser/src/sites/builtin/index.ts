@@ -11,6 +11,7 @@
 
 import { AdapterParseError } from "../../errors.js";
 import type { Tab } from "../../tab.js";
+import type { SearchAdapter, SiteAdapterMeta } from "../types.js";
 
 export interface BuiltInSearchOptions {
   /** Search keyword. Defaults to "Software Engineer" inside the adapter when omitted. */
@@ -80,6 +81,19 @@ function safeHostname(url: string): string {
 function isErrorPayload(value: unknown): value is BuiltInErrorPayload {
   return typeof value === "object" && value !== null && "error" in value;
 }
+
+const META: SiteAdapterMeta = {
+  id: "builtin",
+  name: "BuiltIn",
+  domain: "builtin.com",
+  requiresAuth: false,
+  description: "US tech-jobs aggregator; query keyword + path/page.",
+};
+
+export const BUILTIN_ADAPTER: SearchAdapter<BuiltInSearchOptions, BuiltInSearchResult> = {
+  meta: META,
+  search: searchBuiltIn,
+};
 
 /* eslint-disable */
 /**

@@ -5,6 +5,7 @@
 
 import { AdapterParseError } from "../../errors.js";
 import type { Tab } from "../../tab.js";
+import type { SearchAdapter, SiteAdapterMeta } from "../types.js";
 
 export interface IndeedSearchOptions {
   query?: string;
@@ -74,6 +75,19 @@ function safeHostname(url: string): string {
 function isErrorPayload(value: unknown): value is IndeedErrorPayload {
   return typeof value === "object" && value !== null && "error" in value;
 }
+
+const META: SiteAdapterMeta = {
+  id: "indeed",
+  name: "Indeed",
+  domain: "www.indeed.com",
+  requiresAuth: false,
+  description: "Global job search; query + location filters.",
+};
+
+export const INDEED_ADAPTER: SearchAdapter<IndeedSearchOptions, IndeedSearchResult> = {
+  meta: META,
+  search: searchIndeed,
+};
 
 /* eslint-disable */
 export const INDEED_ADAPTER_SOURCE = `async function indeedJobs(args) {

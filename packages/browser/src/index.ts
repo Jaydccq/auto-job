@@ -68,3 +68,24 @@ export {
   captureLinkedInAuthState,
 } from "./sites/linkedin/index.js";
 export type { LinkedInAuthState } from "./sites/linkedin/index.js";
+
+export { searchGreenhouse, GREENHOUSE_ADAPTER } from "./sites/greenhouse/index.js";
+export type {
+  GreenhouseJob,
+  GreenhouseSearchOptions,
+  GreenhouseSearchResult,
+} from "./sites/greenhouse/index.js";
+
+export {
+  SITE_ADAPTERS,
+  SITE_IDS,
+  listSiteMetas,
+  getSiteAdapter,
+  isKnownSiteId,
+} from "./sites/registry.js";
+export type { SiteId } from "./sites/registry.js";
+export type { SearchAdapter, SiteAdapterMeta } from "./sites/types.js";
+
+export { BUILTIN_ADAPTER } from "./sites/builtin/index.js";
+export { INDEED_ADAPTER } from "./sites/indeed/index.js";
+export { JOBRIGHT_ADAPTER } from "./sites/jobright/index.js";
