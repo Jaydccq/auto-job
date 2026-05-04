@@ -1,0 +1,48 @@
+# auto-apply policy
+#
+# DEFAULTS DISABLE auto-apply. Copy this file to `config/auto-apply-policy.yml`
+# (gitignored) and set non-zero values to opt in.
+#
+# Architecture decision A6: the system NEVER auto-applies until you explicitly
+# set both `auto_threshold` to a number AND set `daily_quota.total > 0` AND
+# set `daily_quota.per_ats.<ats> > 0` for each ATS you want to enable.
+#
+# Architecture decision A7: realistic sustainable volume from a single device
+# + single residential IP is ~30 auto-applies/week before bot-detection signal
+# saturation. Stay under that with conservative quotas.
+
+# Minimum evaluation score to trigger auto-apply enqueue.
+# null = disabled (no auto-apply ever, regardless of other settings).
+# Recommended starting value when opting in: 4.5 (out of 5).
+auto_threshold: null
+
+daily_quota:
+  # Global cap across ALL ATS per calendar day (resets at local midnight).
+  # 0 = disabled.
+  total: 0
+  # Per-ATS daily cap. Each ATS not listed here defaults to 0 (disabled).
+  per_ats:
+    greenhouse: 0
+    lever: 0
+    ashby: 0
+    workday: 0
+    icims: 0
+
+# Cooldown — how long an ATS sits in penalty after a detection signal.
+# Phase 5 Risk Telemetry uses these to auto-pause an ATS on first sign of trouble.
+cooldown:
+  on_captcha_hours: 168              # 7 days
+  on_account_locked_hours: 720       # 30 days
+  on_verification_required_hours: 168 # 7 days
+
+# Inter-apply pacing — Phase 2A engine respects these between consecutive applies.
+inter_apply_delay:
+  min_seconds: 600         # 10 min between any two applies (across ATS)
+  same_ats_min_seconds: 3600  # 1 hour between two applies on the same ATS
+
+# Humanizer parameters — Phase 2A passes these through to @auto-job/humanize.
+# Conservative defaults; widen ranges over time if observed detection rate is low.
+humanizer:
+  reading_speed_wpm: [180, 320]   # human reading speed range
+  typing_wpm: [40, 75]            # words-per-minute typing range
+  click_dwell_ms: [200, 600]      # ms of mouse-down dwell on click

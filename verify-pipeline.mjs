@@ -136,6 +136,15 @@ if (existsSync(join(repoRoot, "packages/browser/package.json"))) {
     { SKIP_BROWSER_INTEGRATION: "1" },
   );
 }
+if (existsSync(join(repoRoot, "packages/humanize/package.json"))) {
+  runNpmStep("humanize typecheck", join(repoRoot, "packages/humanize"), ["run", "typecheck"]);
+  runNpmStep("humanize tests", join(repoRoot, "packages/humanize"), ["run", "test"]);
+}
+if (existsSync(join(repoRoot, "packages/credentials/package.json"))) {
+  runNpmStep("credentials typecheck", join(repoRoot, "packages/credentials"), ["run", "typecheck"]);
+  // KEYCHAIN_INTEGRATION=0 → only mocked tests run; real Keychain not touched.
+  runNpmStep("credentials tests", join(repoRoot, "packages/credentials"), ["run", "test"], { KEYCHAIN_INTEGRATION: "0" });
+}
 
 console.log(`\n${"=".repeat(50)}`);
 console.log(`Result: ${errors} error(s), ${warnings} warning(s).`);
