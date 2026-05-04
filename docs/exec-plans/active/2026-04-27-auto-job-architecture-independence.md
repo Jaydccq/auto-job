@@ -975,6 +975,13 @@ handled in this plan:
   `npm run verify:skills` into the default verification pipeline. This closes
   the remaining command-map coupling to Claude-specific paths while preserving
   Claude Code compatibility.
+- 2026-05-03: The "Replacing bb-browser" out-of-scope decision recorded in
+  this plan's "NOT In Scope" section is **reversed** by OpenSpec change
+  `add-own-browser` (Phase 1 read replacement) on branch `feat/own-browser`.
+  The follow-up `remove-bb-browser` change will delete `./bb-browser/` and
+  the `*-bb-browser.ts` scripts after a 7-day stability window. See
+  `openspec/changes/add-own-browser/` and
+  `docs/superpowers/specs/2026-05-03-own-browser-design.md`.
 
 ## Current Audit Findings
 

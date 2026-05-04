@@ -123,6 +123,16 @@ if (existsSync(join(repoRoot, "apps/extension/package.json"))) {
   runNpmStep("extension typecheck", join(repoRoot, "apps/extension"), ["run", "typecheck"]);
   runNpmStep("extension build", join(repoRoot, "apps/extension"), ["run", "build"]);
 }
+if (existsSync(join(repoRoot, "packages/browser/package.json"))) {
+  runNpmStep("browser typecheck", join(repoRoot, "packages/browser"), ["run", "typecheck"]);
+  // Skip the integration test (needs real Chrome). Unit tests cover errors,
+  // chrome-binary detection, and adapter source/shape.
+  runNpmStep(
+    "browser tests (unit)",
+    join(repoRoot, "packages/browser"),
+    ["run", "test"],
+  );
+}
 
 console.log(`\n${"=".repeat(50)}`);
 console.log(`Result: ${errors} error(s), ${warnings} warning(s).`);

@@ -74,6 +74,14 @@ packages/shared/node_modules/
 packages/shared/dist/
 packages/shared/package-lock.json
 
+# Browser package (own-browser; replaces bb-browser)
+# Note: the dedicated Chrome profile lives at ~/.auto-job/chrome-profile/
+# (user home, NOT inside this repo). Nothing to gitignore for that.
+packages/browser/node_modules/
+packages/browser/dist/
+packages/browser/package-lock.json
+packages/browser/.test-chrome-profile/
+
 # Session artifacts
 .agents/
 **/CLAUDE.md
