@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { chromium, type Browser, type BrowserContext } from "playwright";
 
 import { ensureChrome, type EnsureResult } from "./ensure-chrome.js";
+import { STEALTH_INIT_SCRIPT } from "./stealth.js";
 import { Tab } from "./tab.js";
 import type { ControllerOptions, TabInfo } from "./types.js";
 
@@ -24,6 +25,10 @@ export class BrowserController {
     const meta = await ensureChrome(opts);
     const browser = await chromium.connectOverCDP(meta.cdpEndpoint);
     const context = browser.contexts()[0] ?? (await browser.newContext());
+    // Apply stealth patches to every NEW page opened in this context.
+    // Idempotent — safe to call across reattachments. Existing tabs the
+    // user opened manually before attach are not affected.
+    await context.addInitScript(STEALTH_INIT_SCRIPT).catch(() => undefined);
     return new BrowserController(browser, context, meta);
   }
 

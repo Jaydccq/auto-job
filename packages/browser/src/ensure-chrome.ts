@@ -116,13 +116,18 @@ interface BuildArgsInput {
 }
 
 function buildLaunchArgs(input: BuildArgsInput): string[] {
+  // Anti-bot note: we deliberately do NOT pass `--enable-automation`,
+  // `--disable-blink-features=AutomationControlled`, or any other flag
+  // that broadcasts automation. The CDP-attach path (vs playwright.launch)
+  // already avoids those defaults. We also keep popup-blocking ON
+  // (real users have it on) — bb-browser's `--disable-popup-blocking`
+  // was removed for fingerprint naturalness.
   const base = [
     `--user-data-dir=${input.profileDir}`,
     `--remote-debugging-port=${input.port}`,
     "--no-first-run",
     "--no-default-browser-check",
     "--disable-features=Translate",
-    "--disable-popup-blocking",
     "--password-store=basic",
     "--use-mock-keychain",
   ];

@@ -110,6 +110,38 @@ probably needs re-login. Run `npm run own-browser:login-helper`.
 **"Chrome binary not found" on Linux/WSL** — install Google Chrome or
 Chromium, or pass `chromeBinary` explicitly via `BrowserController.ensure({ chromeBinary: "/usr/bin/google-chrome" })`.
 
+## Anti-bot posture
+
+Architectural defenses (the bulk of the protection):
+
+| Defense | Why it matters |
+|---------|----------------|
+| Attach via `connectOverCDP` to a user-launched real Chrome (not `playwright.launch`) | Skips the `--enable-automation` flag and `--disable-blink-features=AutomationControlled` that playwright's launch path injects by default. These are the #1 thing bot detectors look for. |
+| Real Google Chrome binary, not Chromium / Chrome for Testing only when present | UA, plugins, WebGL vendor strings all match a real user. Chromium has tells (`HeadlessChrome` UA fragment, distinct WebGL vendor) that real Chrome does not. |
+| Persistent profile (`~/.auto-job/chrome-profile/`) | Cookies, localStorage, browsing history accumulate naturally across sessions. Sites see a returning user, not a fresh visitor every time. |
+| User performs real interactive logins via `npm run own-browser:login-helper` | Login completion proves to the site that this profile is human-driven. Subsequent automated reads inherit that trust. |
+| No `--disable-popup-blocking` (real users have popup blocking on) | Removed from the launch args because it was a fingerprintable deviation from default Chrome. |
+
+Defensive patches (`src/stealth.ts`, applied via `context.addInitScript()` on every new page):
+
+- Re-asserts `navigator.webdriver = false` even if a hostile page script tries to redefine the property. Empirically, our default already returns `false` (verified by `test/_manual-leak-check.mjs`); this is belt-and-suspenders.
+- Adds a benign descriptor for `Navigator.prototype.webdriver` so detectors that check for the descriptor's existence don't trip.
+
+What we deliberately do NOT do:
+
+- Fake `window.chrome.runtime` — vanilla Chrome with no extensions returns `undefined` for `chrome.runtime`, so leaving it alone is correct. Faking can backfire when sites probe specific properties like `chrome.runtime.id` or `chrome.runtime.connect`.
+- Fake `navigator.plugins` / `languages` / `WebGL` fingerprint — already realistic on real Chrome.
+- Inject fake mouse-movement noise — not needed for Phase 1's read-only flows (we only call `tab.fetch()` from inside the page; no clicks). Phase 2 (auto-apply) will revisit this.
+
+Diagnostic tool: `test/_manual-leak-check.mjs` opens a tab and dumps every property anti-bot detectors typically inspect. Run it any time you suspect a leak:
+
+```bash
+./apps/server/node_modules/.bin/tsx packages/browser/test/_manual-leak-check.mjs
+```
+
+Verified clean against Chrome 147 on macOS as of 2026-05-03:
+`navigator.webdriver: false`, real plugins, real UA, real M3 GPU fingerprint.
+
 ## Migration from bb-browser
 
 Phase 1 (this layer) is in production-ready state when:
