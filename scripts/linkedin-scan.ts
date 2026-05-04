@@ -194,7 +194,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 
 function usage(): string {
-  return `auto-job LinkedIn scan via bb-browser
+  return `auto-job LinkedIn scan via @auto-job/browser (CDP-attached dedicated Chrome)
 
 Usage:
   npm run linkedin-scan -- --url "<LinkedIn Jobs search URL>" [options]
@@ -223,8 +223,8 @@ Options:
 
 Login recovery:
   If LinkedIn redirects to login or checkpoint, run:
-    bb-browser open https://www.linkedin.com/login
-  Log in manually in that managed browser, then rerun this command.
+    npm run own-browser:login-helper
+  Log in manually in the dedicated Chrome window, then rerun this command.
 
 Safety:
   This scanner never clicks Easy Apply, Save, Dismiss, or message controls.
@@ -1080,7 +1080,7 @@ async function assertLinkedInReady(tabId: string): Promise<void> {
   if (!block) return;
 
   throw new Error(
-    `LinkedIn ${block} page detected. Run "bb-browser open https://www.linkedin.com/login", log in manually, then rerun linkedin-scan.`,
+    `LinkedIn ${block} page detected. Run "npm run own-browser:login-helper", log in to LinkedIn in the dedicated Chrome window, then rerun linkedin-scan.`,
   );
 }
 

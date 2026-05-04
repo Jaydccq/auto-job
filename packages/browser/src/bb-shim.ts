@@ -51,6 +51,11 @@ export async function assertBbBrowserAvailable(): Promise<void> {
 export async function openBbTab(url: string): Promise<string> {
   const controller = await getController();
   const tab = await controller.openTab(url);
+  // Match the original bb-browser shim: 1s settle window so post-load
+  // client-side navigations (login redirects, SPA hydration) complete
+  // before the caller's first evaluate fires. Otherwise playwright throws
+  // "Execution context was destroyed" mid-eval.
+  await new Promise((resolve) => setTimeout(resolve, 1_000));
   tabsById.set(tab.id, tab);
   return tab.id;
 }
@@ -80,7 +85,13 @@ export async function evaluateBrowserJson<T>(
 ): Promise<T> {
   const tab = tabsById.get(tabId);
   if (!tab) throw new Error(`No tab tracked with id ${tabId}`);
-  return tab.evaluate<T>(func as (...a: unknown[]) => T | Promise<T>, ...args);
+  // Wrap so tsx-compiled __name(...) helper calls (inserted to preserve
+  // function names) don't blow up in the page context where __name is not
+  // defined. Mirrors the original bb-browser eval wrapper semantics.
+  const script =
+    `(() => { const __name = (target) => target; void __name; const __args = ${JSON.stringify(args)}; ` +
+    `return (async () => await (${func.toString()})(...__args))(); })()`;
+  return tab.evaluate<T>(script);
 }
 
 export interface BbProcessResult {
