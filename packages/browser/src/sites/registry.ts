@@ -15,8 +15,10 @@
 
 import { BUILTIN_ADAPTER } from "./builtin/index.js";
 import { GREENHOUSE_ADAPTER } from "./greenhouse/index.js";
+import { ICIMS_ADAPTER } from "./icims/index.js";
 import { INDEED_ADAPTER } from "./indeed/index.js";
 import { JOBRIGHT_ADAPTER } from "./jobright/index.js";
+import { WORKDAY_ADAPTER } from "./workday/index.js";
 import type { SearchAdapter, SiteAdapterMeta } from "./types.js";
 
 export const SITE_ADAPTERS = {
@@ -24,6 +26,8 @@ export const SITE_ADAPTERS = {
   indeed: INDEED_ADAPTER,
   jobright: JOBRIGHT_ADAPTER,
   greenhouse: GREENHOUSE_ADAPTER,
+  workday: WORKDAY_ADAPTER,
+  icims: ICIMS_ADAPTER,
 } as const;
 
 export type SiteId = keyof typeof SITE_ADAPTERS;
