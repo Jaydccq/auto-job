@@ -96,6 +96,13 @@ packages/credentials/package-lock.json
 data/apply-queue.jsonl
 config/auto-apply-policy.yml
 
+# Phase 2B auto-apply package + review snapshots
+packages/auto-apply/node_modules/
+packages/auto-apply/dist/
+packages/auto-apply/package-lock.json
+data/apply-snapshots/*
+!data/apply-snapshots/.gitkeep
+
 # Session artifacts
 .agents/
 **/CLAUDE.md
