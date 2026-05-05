@@ -41,7 +41,7 @@ function resolvePath(rel: string): string {
   return join(__dirname, "..", rel);
 }
 const HTML_PATH = resolvePath("src/settings-window.html");
-const PRELOAD_PATH = resolvePath("dist/settings-preload.js");
+const PRELOAD_PATH = resolvePath("dist/settings-preload.cjs");
 
 let win: BrowserWindow | null = null;
 let handlersRegistered = false;
