@@ -21,7 +21,7 @@
   "dependencies": {
     "@auto-job/server": "workspace:*",
     "@auto-job/shared": "workspace:*",
-    "yaml": "^2.8.3"
+    "yaml": "^2.8.4"
   },
   "devDependencies": {
     "@types/node": "^22.19.0",
