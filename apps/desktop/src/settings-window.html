@@ -6,14 +6,14 @@
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      padding: 24px;
-      max-width: 480px;
+      padding: 20px 24px;
+      max-width: 560px;
       margin: 0 auto;
       background: #f5f5f7;
       color: #1d1d1f;
     }
-    h1 { font-size: 18px; margin: 0 0 16px; }
-    label { display: block; margin-top: 16px; font-size: 13px; font-weight: 500; }
+    h1 { font-size: 18px; margin: 0 0 8px; }
+    label { display: block; margin-top: 14px; font-size: 13px; font-weight: 500; }
     select, input[type="password"], input[type="text"] {
       display: block; width: 100%; padding: 8px;
       border: 1px solid #c7c7cc; border-radius: 6px;
@@ -21,8 +21,8 @@
       background: white;
       box-sizing: border-box;
     }
-    .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 13px; }
-    .buttons { margin-top: 24px; display: flex; justify-content: flex-end; gap: 8px; }
+    .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 13px; }
+    .buttons { margin-top: 20px; display: flex; justify-content: flex-end; gap: 8px; }
     button {
       padding: 8px 16px; border-radius: 6px; border: none;
       font-size: 13px; font-weight: 500; cursor: pointer;
@@ -33,92 +33,276 @@
     .key-status { font-size: 12px; color: #6e6e73; margin-top: 4px; }
     .hidden { display: none; }
     .error { color: #c0392b; font-size: 12px; margin-top: 8px; }
+    .helper { font-size: 12px; color: #6e6e73; margin-top: 4px; line-height: 1.4; }
+
+    .tabs {
+      display: flex; gap: 4px; margin: 8px 0 14px;
+      border-bottom: 1px solid #d2d2d7;
+    }
+    .tab {
+      padding: 6px 12px; font-size: 12.5px; font-weight: 500;
+      background: transparent; color: #6e6e73;
+      border: none; border-bottom: 2px solid transparent;
+      cursor: pointer;
+    }
+    .tab.active { color: #1d1d1f; border-bottom-color: #007aff; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 6px;
+    }
+    .grid-2 input[type="number"] {
+      width: 100%; padding: 8px;
+      border: 1px solid #c7c7cc; border-radius: 6px;
+      font-size: 13px; background: white; box-sizing: border-box;
+    }
+    .grid-2 label { margin-top: 0; }
+
+    .status-card {
+      background: white; border: 1px solid #d2d2d7; border-radius: 8px;
+      padding: 12px 14px; margin-bottom: 12px;
+    }
+    .status-card .row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 12px; padding: 4px 0; font-size: 12.5px;
+    }
+    .status-card .row + .row { border-top: 1px solid #f1f1f4; }
+    .status-card .row .k { color: #6e6e73; flex: 0 0 auto; }
+    .status-card .row .v {
+      color: #1d1d1f; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      text-align: right; word-break: break-all;
+    }
+    .pill {
+      display: inline-block; padding: 1px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 600;
+    }
+    .pill-ok { background: #e3f5e0; color: #1c7c2c; }
+    .pill-bad { background: #fce4e2; color: #b32018; }
+    .pill-warn { background: #fff4d6; color: #8a6300; }
+
+    .reload-btn {
+      float: right; padding: 2px 8px; font-size: 11px;
+      background: #e5e5ea; color: #1d1d1f;
+      border: none; border-radius: 6px; cursor: pointer;
+    }
+
+    .pf-textarea {
+      width: 100%; padding: 8px; box-sizing: border-box;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px; line-height: 1.45; tab-size: 2;
+      border: 1px solid #c7c7cc; border-radius: 6px;
+      background: white; resize: vertical;
+    }
   </style>
 </head>
 <body>
   <h1>Settings</h1>
 
-  <label for="backend">Evaluation backend</label>
-  <select id="backend">
-    <option value="real-codex">Codex CLI (default)</option>
-    <option value="real-claude">Claude CLI</option>
-    <option value="real-openrouter">OpenRouter API</option>
-    <option value="fake">Fake (testing)</option>
-  </select>
+  <div class="tabs">
+    <button class="tab active" data-tab="general">General</button>
+    <button class="tab" data-tab="newgrad">New-grad</button>
+    <button class="tab" data-tab="files">Personal files</button>
+    <button class="tab" data-tab="bridge">Bridge</button>
+  </div>
 
-  <div id="openrouter-section" class="hidden">
-    <label for="openrouter-key">OpenRouter API Key</label>
-    <input id="openrouter-key" type="password" placeholder="sk-or-...">
-    <div class="key-status" id="key-status">Not set</div>
-
-    <label for="openrouter-model-select">OpenRouter Model</label>
-    <select id="openrouter-model-select">
-      <optgroup label="Anthropic — Claude">
-        <option value="anthropic/claude-opus-4.7">Opus 4.7 — best quality · $5/M</option>
-        <option value="anthropic/claude-opus-4.6">Opus 4.6 — strong · $5/M</option>
-        <option value="anthropic/claude-sonnet-4.6">Sonnet 4.6 — balanced (default) · $3/M</option>
-        <option value="anthropic/claude-sonnet-latest">Sonnet (latest, auto-tracking) · $3/M</option>
-        <option value="anthropic/claude-haiku-latest">Haiku (latest) — fast &amp; cheap · $1/M</option>
-        <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet — legacy</option>
-      </optgroup>
-      <optgroup label="OpenAI — GPT">
-        <option value="openai/gpt-5.5-pro">GPT-5.5 Pro — best · $30/M</option>
-        <option value="openai/gpt-5.5">GPT-5.5 — strong · $5/M</option>
-        <option value="openai/gpt-5.4-pro">GPT-5.4 Pro · $30/M</option>
-        <option value="openai/gpt-5.4">GPT-5.4 — balanced · $2.50/M</option>
-        <option value="openai/gpt-5.4-mini">GPT-5.4 Mini — cheap · $0.75/M</option>
-        <option value="openai/gpt-5.4-nano">GPT-5.4 Nano — cheapest · $0.20/M</option>
-        <option value="openai/gpt-5.3-codex">GPT-5.3 Codex — coding · $1.75/M</option>
-      </optgroup>
-      <optgroup label="Google — Gemini">
-        <option value="google/gemini-3.1-pro-preview">Gemini 3.1 Pro Preview · $2/M</option>
-        <option value="google/gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite — cheap · $0.25/M</option>
-        <option value="google/gemini-pro-latest">Gemini Pro (latest) · $2/M</option>
-        <option value="google/gemini-flash-latest">Gemini Flash (latest) · $0.50/M</option>
-      </optgroup>
-      <optgroup label="DeepSeek">
-        <option value="deepseek/deepseek-v4-pro">DeepSeek V4 Pro — reasoning · $0.44/M</option>
-        <option value="deepseek/deepseek-v4-flash">DeepSeek V4 Flash — cheap · $0.14/M</option>
-      </optgroup>
-      <optgroup label="Qwen (Alibaba)">
-        <option value="qwen/qwen3-coder-next">Qwen3 Coder Next — coding · $0.14/M</option>
-        <option value="qwen/qwen3.6-max-preview">Qwen3.6 Max — strong · $1.04/M</option>
-        <option value="qwen/qwen3.6-flash">Qwen3.6 Flash — fast · $0.25/M</option>
-      </optgroup>
-      <optgroup label="xAI — Grok">
-        <option value="x-ai/grok-4.20">Grok 4.20 · $2/M</option>
-      </optgroup>
-      <optgroup label="Free tier (zero cost)">
-        <option value="inclusionai/ling-2.6-1t:free">Ling 2.6 1T — strong reasoning · 256k ctx</option>
-        <option value="nvidia/nemotron-3-super-120b-a12b:free">Nemotron 3 Super 120B — strong · 256k ctx</option>
-        <option value="tencent/hy3-preview:free">Tencent Hy3 Preview · 256k ctx</option>
-        <option value="google/gemma-4-31b-it:free">Gemma 4 31B · 256k ctx</option>
-        <option value="google/gemma-4-26b-a4b-it:free">Gemma 4 26B A4B · 256k ctx</option>
-        <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">Nemotron 3 Nano 30B — reasoning · 256k ctx</option>
-        <option value="minimax/minimax-m2.5:free">MiniMax M2.5 · 192k ctx</option>
-        <option value="poolside/laguna-m.1:free">Poolside Laguna M.1 · 128k ctx</option>
-        <option value="poolside/laguna-xs.2:free">Poolside Laguna XS.2 — small · 128k ctx</option>
-        <option value="baidu/qianfan-ocr-fast:free">Baidu Qianfan-OCR — OCR/vision · 64k ctx</option>
-      </optgroup>
-      <optgroup label="Other">
-        <option value="__custom__">Custom slug…</option>
-      </optgroup>
+  <!-- ============================== GENERAL ============================== -->
+  <section class="tab-pane active" data-tab="general">
+    <label for="backend">Evaluation backend</label>
+    <select id="backend">
+      <option value="real-codex">Codex CLI (default)</option>
+      <option value="real-claude">Claude CLI</option>
+      <option value="real-openrouter">OpenRouter API</option>
+      <option value="fake">Fake (testing)</option>
     </select>
-    <input id="openrouter-model-custom" type="text" placeholder="provider/model-name"
-           autocomplete="off" class="hidden" style="margin-top:8px">
-    <div class="key-status">Prices are per 1M prompt tokens. Pick "Custom slug…" to type any model from openrouter.ai/models.</div>
-  </div>
 
-  <div class="checkbox-row">
-    <input id="start-at-login" type="checkbox">
-    <label for="start-at-login" style="margin: 0;">Start Auto Job at login</label>
-  </div>
+    <div id="codex-section" class="hidden">
+      <label for="codex-model">Codex model</label>
+      <select id="codex-model">
+        <option value="">(bridge default)</option>
+        <option value="gpt-5.4-mini">gpt-5.4-mini — cheap default</option>
+        <option value="gpt-5.4">gpt-5.4 — balanced</option>
+        <option value="gpt-5.4-pro">gpt-5.4-pro — strong reasoning</option>
+        <option value="gpt-5.5">gpt-5.5 — frontier</option>
+      </select>
+
+      <label for="codex-effort">Reasoning effort</label>
+      <select id="codex-effort">
+        <option value="">(bridge default)</option>
+        <option value="low">low</option>
+        <option value="medium">medium</option>
+        <option value="high">high</option>
+      </select>
+    </div>
+
+    <div id="claude-section" class="hidden">
+      <label for="anthropic-model">Anthropic model</label>
+      <select id="anthropic-model">
+        <option value="">(claude CLI default)</option>
+        <option value="claude-sonnet-4-6">claude-sonnet-4-6 — balanced</option>
+        <option value="claude-opus-4-7">claude-opus-4-7 — best</option>
+        <option value="claude-haiku-4-5">claude-haiku-4-5 — fast &amp; cheap</option>
+      </select>
+    </div>
+
+    <div id="openrouter-section" class="hidden">
+      <label for="openrouter-key">OpenRouter API Key</label>
+      <input id="openrouter-key" type="password" placeholder="sk-or-...">
+      <div class="key-status" id="key-status">Not set</div>
+
+      <label for="openrouter-model-select">OpenRouter Model</label>
+      <select id="openrouter-model-select">
+        <optgroup label="Anthropic — Claude">
+          <option value="anthropic/claude-opus-4.7">Opus 4.7 — best quality · $5/M</option>
+          <option value="anthropic/claude-opus-4.6">Opus 4.6 — strong · $5/M</option>
+          <option value="anthropic/claude-sonnet-4.6">Sonnet 4.6 — balanced (default) · $3/M</option>
+          <option value="anthropic/claude-sonnet-latest">Sonnet (latest, auto-tracking) · $3/M</option>
+          <option value="anthropic/claude-haiku-latest">Haiku (latest) — fast &amp; cheap · $1/M</option>
+          <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet — legacy</option>
+        </optgroup>
+        <optgroup label="OpenAI — GPT">
+          <option value="openai/gpt-5.5-pro">GPT-5.5 Pro — best · $30/M</option>
+          <option value="openai/gpt-5.5">GPT-5.5 — strong · $5/M</option>
+          <option value="openai/gpt-5.4-pro">GPT-5.4 Pro · $30/M</option>
+          <option value="openai/gpt-5.4">GPT-5.4 — balanced · $2.50/M</option>
+          <option value="openai/gpt-5.4-mini">GPT-5.4 Mini — cheap · $0.75/M</option>
+          <option value="openai/gpt-5.4-nano">GPT-5.4 Nano — cheapest · $0.20/M</option>
+          <option value="openai/gpt-5.3-codex">GPT-5.3 Codex — coding · $1.75/M</option>
+        </optgroup>
+        <optgroup label="Google — Gemini">
+          <option value="google/gemini-3.1-pro-preview">Gemini 3.1 Pro Preview · $2/M</option>
+          <option value="google/gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite — cheap · $0.25/M</option>
+          <option value="google/gemini-pro-latest">Gemini Pro (latest) · $2/M</option>
+          <option value="google/gemini-flash-latest">Gemini Flash (latest) · $0.50/M</option>
+        </optgroup>
+        <optgroup label="DeepSeek">
+          <option value="deepseek/deepseek-v4-pro">DeepSeek V4 Pro — reasoning · $0.44/M</option>
+          <option value="deepseek/deepseek-v4-flash">DeepSeek V4 Flash — cheap · $0.14/M</option>
+        </optgroup>
+        <optgroup label="Qwen (Alibaba)">
+          <option value="qwen/qwen3-coder-next">Qwen3 Coder Next — coding · $0.14/M</option>
+          <option value="qwen/qwen3.6-max-preview">Qwen3.6 Max — strong · $1.04/M</option>
+          <option value="qwen/qwen3.6-flash">Qwen3.6 Flash — fast · $0.25/M</option>
+        </optgroup>
+        <optgroup label="xAI — Grok">
+          <option value="x-ai/grok-4.20">Grok 4.20 · $2/M</option>
+        </optgroup>
+        <optgroup label="Free tier (zero cost)">
+          <option value="inclusionai/ling-2.6-1t:free">Ling 2.6 1T — strong reasoning · 256k ctx</option>
+          <option value="nvidia/nemotron-3-super-120b-a12b:free">Nemotron 3 Super 120B — strong · 256k ctx</option>
+          <option value="tencent/hy3-preview:free">Tencent Hy3 Preview · 256k ctx</option>
+          <option value="google/gemma-4-31b-it:free">Gemma 4 31B · 256k ctx</option>
+          <option value="google/gemma-4-26b-a4b-it:free">Gemma 4 26B A4B · 256k ctx</option>
+          <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">Nemotron 3 Nano 30B — reasoning · 256k ctx</option>
+          <option value="minimax/minimax-m2.5:free">MiniMax M2.5 · 192k ctx</option>
+          <option value="poolside/laguna-m.1:free">Poolside Laguna M.1 · 128k ctx</option>
+          <option value="poolside/laguna-xs.2:free">Poolside Laguna XS.2 — small · 128k ctx</option>
+          <option value="baidu/qianfan-ocr-fast:free">Baidu Qianfan-OCR — OCR/vision · 64k ctx</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option value="__custom__">Custom slug…</option>
+        </optgroup>
+      </select>
+      <input id="openrouter-model-custom" type="text" placeholder="provider/model-name"
+             autocomplete="off" class="hidden" style="margin-top:8px">
+      <div class="key-status">Prices are per 1M prompt tokens. Pick "Custom slug…" to type any model from openrouter.ai/models.</div>
+    </div>
+
+    <div class="checkbox-row">
+      <input id="start-at-login" type="checkbox">
+      <label for="start-at-login" style="margin: 0;">Start Auto Job at login</label>
+    </div>
+
+    <div class="helper" id="restart-hint">
+      Backend or model changes will restart the bridge after you click Save.
+    </div>
+  </section>
+
+  <!-- ============================== NEW-GRAD ============================= -->
+  <section class="tab-pane" data-tab="newgrad">
+    <div class="helper">
+      Tunes <code>config/profile.yml → newgrad_scan</code>. Takes effect on the
+      next scan run; no restart needed.
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label for="ng-list-threshold">List threshold</label>
+        <input id="ng-list-threshold" type="number" min="0" max="9" step="1">
+      </div>
+      <div>
+        <label for="ng-pipeline-threshold">Pipeline threshold</label>
+        <input id="ng-pipeline-threshold" type="number" min="0" max="9" step="1">
+      </div>
+      <div>
+        <label for="ng-detail-value-threshold">Detail value threshold</label>
+        <input id="ng-detail-value-threshold" type="number" min="0" max="10" step="0.1">
+      </div>
+      <div>
+        <label for="ng-max-years">Max years experience</label>
+        <input id="ng-max-years" type="number" min="0" max="10" step="1">
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <input id="ng-no-sponsorship" type="checkbox">
+      <label for="ng-no-sponsorship" style="margin: 0;">Exclude roles that don't sponsor</label>
+    </div>
+    <div class="checkbox-row">
+      <input id="ng-clearance" type="checkbox">
+      <label for="ng-clearance" style="margin: 0;">Exclude roles requiring active security clearance</label>
+    </div>
+  </section>
+
+  <!-- ============================ PERSONAL FILES ========================= -->
+  <section class="tab-pane" data-tab="files">
+    <label for="pf-select">Edit a personal file</label>
+    <select id="pf-select">
+      <option value="">— pick a file —</option>
+    </select>
+    <div class="helper" id="pf-description"></div>
+
+    <label for="pf-textarea" style="margin-top: 12px;">Contents</label>
+    <textarea id="pf-textarea" class="pf-textarea" rows="22" spellcheck="false"></textarea>
+
+    <div class="key-status" id="pf-status">
+      Pick a file above. yaml files are syntax-checked before save; a backup is
+      written to <code>~/.auto-job/personal-files-backups/</code> first.
+    </div>
+
+    <div style="margin-top: 8px; display: flex; justify-content: flex-end;">
+      <button class="primary" id="pf-save" disabled>Save this file</button>
+    </div>
+
+    <div class="error hidden" id="pf-error"></div>
+  </section>
+
+  <!-- ============================== BRIDGE =============================== -->
+  <section class="tab-pane" data-tab="bridge">
+    <div style="font-size: 14px; font-weight: 600;">
+      Bridge status
+      <button class="reload-btn" id="bridge-refresh">Refresh</button>
+    </div>
+    <div class="status-card" id="bridge-card" style="margin-top: 8px;">
+      <div class="row"><span class="k">Status</span><span class="v" id="b-status">…</span></div>
+      <div class="row"><span class="k">URL</span><span class="v" id="b-url">…</span></div>
+      <div class="row"><span class="k">Mode / executor</span><span class="v" id="b-mode">…</span></div>
+      <div class="row"><span class="k">Codex model</span><span class="v" id="b-codex-model">…</span></div>
+      <div class="row"><span class="k">Codex reasoning</span><span class="v" id="b-codex-effort">…</span></div>
+      <div class="row"><span class="k">Anthropic model</span><span class="v" id="b-anthropic-model">…</span></div>
+      <div class="row"><span class="k">claude CLI</span><span class="v" id="b-claude">…</span></div>
+      <div class="row"><span class="k">codex CLI</span><span class="v" id="b-codex">…</span></div>
+      <div class="row"><span class="k">Playwright</span><span class="v" id="b-playwright">…</span></div>
+      <div class="row"><span class="k">Bridge version</span><span class="v" id="b-version">…</span></div>
+      <div class="row"><span class="k">Token</span><span class="v" id="b-token">…</span></div>
+    </div>
+  </section>
 
   <div class="error hidden" id="error"></div>
 
   <div class="buttons">
     <button class="secondary" id="cancel">Cancel</button>
-    <button class="primary" id="save">Save &amp; Restart</button>
+    <button class="primary" id="save">Save</button>
   </div>
 
   <script>
@@ -131,20 +315,37 @@
         return;
       }
 
+      // ----- Tabs ------------------------------------------------------------
+      const tabButtons = Array.from(document.querySelectorAll(".tab"));
+      const tabPanes = Array.from(document.querySelectorAll(".tab-pane"));
+      function activateTab(name) {
+        tabButtons.forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+        tabPanes.forEach(p => p.classList.toggle("active", p.dataset.tab === name));
+      }
+      tabButtons.forEach(b => b.addEventListener("click", () => activateTab(b.dataset.tab)));
+
+      // ----- General tab DOM -------------------------------------------------
       const backendSel = document.getElementById("backend");
+      const codexSection = document.getElementById("codex-section");
+      const claudeSection = document.getElementById("claude-section");
       const openrouterSection = document.getElementById("openrouter-section");
+      const codexModelSel = document.getElementById("codex-model");
+      const codexEffortSel = document.getElementById("codex-effort");
+      const anthropicModelSel = document.getElementById("anthropic-model");
       const keyStatus = document.getElementById("key-status");
       const keyInput = document.getElementById("openrouter-key");
       const modelSelect = document.getElementById("openrouter-model-select");
       const modelCustom = document.getElementById("openrouter-model-custom");
       const startAtLogin = document.getElementById("start-at-login");
+      const saveBtn = document.getElementById("save");
+      const cancelBtn = document.getElementById("cancel");
+      const errEl = document.getElementById("error");
 
       function knownModelSlugs() {
-        return Array.from(modelSelect.querySelectorAll('option'))
+        return Array.from(modelSelect.querySelectorAll("option"))
           .map(o => o.value)
           .filter(v => v && v !== "__custom__");
       }
-
       function applyModelToUI(slug) {
         const known = new Set(knownModelSlugs());
         if (slug && known.has(slug)) {
@@ -152,20 +353,21 @@
           modelCustom.classList.add("hidden");
           modelCustom.value = "";
         } else {
-          // Saved value is custom (or empty) — show the input prefilled.
           modelSelect.value = "__custom__";
           modelCustom.classList.remove("hidden");
           modelCustom.value = slug || "";
         }
       }
-
       function selectedModelSlug() {
-        if (modelSelect.value === "__custom__") {
-          return modelCustom.value.trim();
-        }
-        return modelSelect.value;
+        return modelSelect.value === "__custom__"
+          ? modelCustom.value.trim()
+          : modelSelect.value;
       }
-
+      function toggleExecutorSections() {
+        codexSection.classList.toggle("hidden", backendSel.value !== "real-codex");
+        claudeSection.classList.toggle("hidden", backendSel.value !== "real-claude");
+        openrouterSection.classList.toggle("hidden", backendSel.value !== "real-openrouter");
+      }
       modelSelect.addEventListener("change", () => {
         if (modelSelect.value === "__custom__") {
           modelCustom.classList.remove("hidden");
@@ -174,9 +376,10 @@
           modelCustom.classList.add("hidden");
         }
       });
-      const saveBtn = document.getElementById("save");
-      const cancelBtn = document.getElementById("cancel");
-      const errEl = document.getElementById("error");
+      backendSel.addEventListener("change", () => {
+        toggleExecutorSections();
+        refreshSaveLabel();
+      });
 
       function showError(msg) {
         errEl.textContent = msg;
@@ -187,10 +390,98 @@
         errEl.classList.add("hidden");
       }
 
-      function toggleOpenRouterSection() {
-        openrouterSection.classList.toggle("hidden", backendSel.value !== "real-openrouter");
+      // ----- Save-label dirty tracking --------------------------------------
+      let loadedExecutor = {
+        backend: "", openrouterModel: "", codexModel: "", codexEffort: "", anthropicModel: ""
+      };
+      function snapshotExecutor() {
+        return {
+          backend: backendSel.value,
+          openrouterModel: selectedModelSlug() || "",
+          codexModel: codexModelSel.value,
+          codexEffort: codexEffortSel.value,
+          anthropicModel: anthropicModelSel.value,
+        };
       }
+      function executorDirty() {
+        const cur = snapshotExecutor();
+        return Object.keys(cur).some(k => cur[k] !== loadedExecutor[k]);
+      }
+      function refreshSaveLabel() {
+        saveBtn.textContent = executorDirty() ? "Save & Restart bridge" : "Save";
+      }
+      [codexModelSel, codexEffortSel, anthropicModelSel, modelSelect, modelCustom]
+        .forEach(el => el.addEventListener("change", refreshSaveLabel));
+      modelCustom.addEventListener("input", refreshSaveLabel);
 
+      // ----- Newgrad tab DOM -------------------------------------------------
+      const ngList = document.getElementById("ng-list-threshold");
+      const ngPipeline = document.getElementById("ng-pipeline-threshold");
+      const ngDetailValue = document.getElementById("ng-detail-value-threshold");
+      const ngMaxYears = document.getElementById("ng-max-years");
+      const ngNoSponsorship = document.getElementById("ng-no-sponsorship");
+      const ngClearance = document.getElementById("ng-clearance");
+
+      // ----- Bridge tab DOM --------------------------------------------------
+      const bRefresh = document.getElementById("bridge-refresh");
+      const bStatus = document.getElementById("b-status");
+      const bUrl = document.getElementById("b-url");
+      const bMode = document.getElementById("b-mode");
+      const bCodexModel = document.getElementById("b-codex-model");
+      const bCodexEffort = document.getElementById("b-codex-effort");
+      const bAnthropic = document.getElementById("b-anthropic-model");
+      const bClaude = document.getElementById("b-claude");
+      const bCodex = document.getElementById("b-codex");
+      const bPlaywright = document.getElementById("b-playwright");
+      const bVersion = document.getElementById("b-version");
+      const bToken = document.getElementById("b-token");
+
+      function pill(cls, text) {
+        return `<span class="pill ${cls}">${text}</span>`;
+      }
+      function renderBridgeHealth(h) {
+        if (!h) {
+          bStatus.innerHTML = pill("pill-bad", "no response");
+          return;
+        }
+        bUrl.textContent = h.baseUrl ?? "—";
+        bCodexModel.textContent = h.codexModel ?? "(default)";
+        bCodexEffort.textContent = h.codexReasoningEffort ?? "(default)";
+        bAnthropic.textContent = h.anthropicModel ?? "(default)";
+        bToken.textContent = h.tokenPreview ?? "(missing)";
+        if (!h.ok) {
+          bStatus.innerHTML = pill("pill-bad", "unreachable");
+          const msg = h.error || (h.body && JSON.stringify(h.body));
+          bMode.textContent = msg ? String(msg).slice(0, 80) : "—";
+          bClaude.textContent = "—";
+          bCodex.textContent = "—";
+          bPlaywright.textContent = "—";
+          bVersion.textContent = "—";
+          return;
+        }
+        const r = h.body && h.body.result ? h.body.result : null;
+        if (!r) {
+          bStatus.innerHTML = pill("pill-warn", "ok but no payload");
+          return;
+        }
+        bStatus.innerHTML = pill("pill-ok", "running");
+        const exec = r.execution ?? {};
+        bMode.textContent = `${exec.mode ?? "?"} / ${exec.realExecutor ?? "?"}`;
+        bVersion.textContent = `${r.bridgeVersion ?? "?"} (proto ${r.protocolVersion ?? "?"})`;
+        const deps = r.deps ?? {};
+        bClaude.textContent = deps.claudeCli && deps.claudeCli.ok ? deps.claudeCli.version || "ok" : "missing";
+        bCodex.textContent = deps.codexCli && deps.codexCli.ok ? deps.codexCli.version || "ok" : "missing";
+        bPlaywright.textContent = deps.playwrightChromium && deps.playwrightChromium.ok ? "ok" : "missing";
+      }
+      async function refreshBridgeHealth() {
+        bStatus.innerHTML = pill("pill-warn", "checking…");
+        try { renderBridgeHealth(await api.getBridgeHealth()); }
+        catch (err) { renderBridgeHealth(null); }
+      }
+      bRefresh.addEventListener("click", refreshBridgeHealth);
+      refreshBridgeHealth();
+
+      // ----- Load settings + thresholds --------------------------------------
       api.load().then((state) => {
         backendSel.value = state.backend;
         startAtLogin.checked = !!state.startAtLogin;
@@ -198,11 +489,121 @@
           ? "Key is set (paste a new key to overwrite)"
           : "Not set";
         applyModelToUI(state.openrouterModel || "");
-        toggleOpenRouterSection();
+        codexModelSel.value = state.codexModel || "";
+        codexEffortSel.value = state.codexReasoningEffort || "";
+        anthropicModelSel.value = state.anthropicModel || "";
+        toggleExecutorSections();
+        loadedExecutor = snapshotExecutor();
+        refreshSaveLabel();
       });
 
-      backendSel.addEventListener("change", toggleOpenRouterSection);
+      api.loadNewGradThresholds().then((res) => {
+        if (!res || !res.ok) {
+          showError("Could not load newgrad thresholds: " +
+            (res && res.error ? res.error : "unknown error"));
+          return;
+        }
+        const t = res.value;
+        ngList.value = t.list_threshold;
+        ngPipeline.value = t.pipeline_threshold;
+        ngDetailValue.value = t.detail_value_threshold;
+        ngMaxYears.value = t.max_years_experience;
+        ngNoSponsorship.checked = !!t.exclude_no_sponsorship;
+        ngClearance.checked = !!t.exclude_active_security_clearance;
+      });
+
+      // ----- Personal files tab ---------------------------------------------
+      const pfSelect = document.getElementById("pf-select");
+      const pfDescription = document.getElementById("pf-description");
+      const pfTextarea = document.getElementById("pf-textarea");
+      const pfSaveBtn = document.getElementById("pf-save");
+      const pfStatus = document.getElementById("pf-status");
+      const pfError = document.getElementById("pf-error");
+
+      let pfLoadedContent = "";
+      let pfActiveId = "";
+
+      function pfShowError(msg) {
+        pfError.textContent = msg;
+        pfError.classList.remove("hidden");
+      }
+      function pfClearError() {
+        pfError.textContent = "";
+        pfError.classList.add("hidden");
+      }
+      function pfRefreshSaveBtn() {
+        pfSaveBtn.disabled = !pfActiveId || pfTextarea.value === pfLoadedContent;
+      }
+
+      api.listPersonalFiles().then((files) => {
+        for (const f of files) {
+          const opt = document.createElement("option");
+          opt.value = f.id;
+          opt.textContent = f.relPath + " — " + f.description;
+          pfSelect.appendChild(opt);
+        }
+      });
+
+      pfSelect.addEventListener("change", async () => {
+        pfClearError();
+        pfActiveId = pfSelect.value;
+        if (!pfActiveId) {
+          pfTextarea.value = "";
+          pfLoadedContent = "";
+          pfDescription.textContent = "";
+          pfRefreshSaveBtn();
+          return;
+        }
+        pfTextarea.value = "(loading…)";
+        pfTextarea.disabled = true;
+        const res = await api.readPersonalFile(pfActiveId);
+        pfTextarea.disabled = false;
+        if (!res || !res.ok) {
+          pfShowError(res && res.error ? res.error : "read failed");
+          pfTextarea.value = "";
+          pfLoadedContent = "";
+          pfRefreshSaveBtn();
+          return;
+        }
+        pfLoadedContent = res.value.content;
+        pfTextarea.value = res.value.content;
+        pfDescription.textContent =
+          res.value.relPath + (res.value.exists ? "" : " (will be created on save)");
+        pfRefreshSaveBtn();
+      });
+      pfTextarea.addEventListener("input", pfRefreshSaveBtn);
+
+      pfSaveBtn.addEventListener("click", async () => {
+        pfClearError();
+        pfSaveBtn.disabled = true;
+        pfSaveBtn.textContent = "Saving…";
+        const res = await api.savePersonalFile(pfActiveId, pfTextarea.value);
+        pfSaveBtn.textContent = "Save this file";
+        if (!res || !res.ok) {
+          pfShowError(res && res.error ? res.error : "save failed");
+          pfRefreshSaveBtn();
+          return;
+        }
+        pfLoadedContent = pfTextarea.value;
+        pfStatus.textContent = res.value.backupPath
+          ? "Saved. Backup: " + res.value.backupPath
+          : "Saved (no backup — file did not previously exist).";
+        pfRefreshSaveBtn();
+      });
+
+      // ----- Save (top-level) -----------------------------------------------
       cancelBtn.addEventListener("click", () => api.close());
+
+      function readThresholdsForm() {
+        return {
+          list_threshold: Number(ngList.value),
+          pipeline_threshold: Number(ngPipeline.value),
+          detail_value_threshold: Number(ngDetailValue.value),
+          max_years_experience: Number(ngMaxYears.value),
+          exclude_no_sponsorship: ngNoSponsorship.checked,
+          exclude_active_security_clearance: ngClearance.checked,
+        };
+      }
 
       saveBtn.addEventListener("click", async () => {
         clearError();
@@ -210,11 +611,20 @@
         const originalLabel = saveBtn.textContent;
         saveBtn.textContent = "Saving…";
         try {
+          const thresholdsRes = await api.saveNewGradThresholds(readThresholdsForm());
+          if (!thresholdsRes || !thresholdsRes.ok) {
+            throw new Error("newgrad thresholds: " +
+              (thresholdsRes && thresholdsRes.error
+                ? thresholdsRes.error : "unknown error"));
+          }
           await api.save({
             backend: backendSel.value,
             startAtLogin: startAtLogin.checked,
             openrouterKey: keyInput.value.trim() || null,
             openrouterModel: selectedModelSlug() || null,
+            codexModel: codexModelSel.value,
+            codexReasoningEffort: codexEffortSel.value,
+            anthropicModel: anthropicModelSel.value,
           });
           api.close();
         } catch (err) {

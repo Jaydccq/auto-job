@@ -13,13 +13,13 @@
  * Electron-builder packaging (5.5) is wired separately.
  */
 
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, Menu, shell } from "electron";
 import { appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { createServer, type ServerHandle, type AdapterMode } from "@auto-job/server";
 import { createTray, type TrayController, type TrayState } from "./tray.js";
-import { loadSettings, type Backend } from "./settings.js";
+import { loadSettings, type Backend, type Settings } from "./settings.js";
 import { openSettingsWindow } from "./settings-window.js";
 
 // File logger: when the app is packaged, console output disappears, so
@@ -163,8 +163,20 @@ function resolveBackend(): AdapterMode {
   return loadSettings().backend as Backend;
 }
 
+let currentSettings: Settings = loadSettings();
 let currentBackend: AdapterMode = resolveBackend();
-let currentOpenrouterModel: string = loadSettings().openrouterModel;
+
+function applyExecutorEnv(s: Settings): void {
+  const setOrUnset = (key: string, value: string) => {
+    if (value) process.env[key] = value;
+    else delete process.env[key];
+  };
+  setOrUnset("AUTO_JOB_CODEX_MODEL", s.codexModel);
+  setOrUnset("AUTO_JOB_CODEX_REASONING_EFFORT", s.codexReasoningEffort);
+  setOrUnset("ANTHROPIC_MODEL", s.anthropicModel);
+}
+
+applyExecutorEnv(currentSettings);
 
 async function startServer(): Promise<void> {
   trayState = "idle";
@@ -172,11 +184,11 @@ async function startServer(): Promise<void> {
   try {
     server = createServer({
       backend: currentBackend,
-      openrouterModel: currentOpenrouterModel,
+      openrouterModel: currentSettings.openrouterModel,
     });
     const info = await server.start({ port: PORT, host: HOST });
     console.log(
-      `[auto-job] server listening on http://${info.host}:${info.port} (backend=${currentBackend}, openrouterModel=${currentOpenrouterModel})`,
+      `[auto-job] server listening on http://${info.host}:${info.port} (backend=${currentBackend}, openrouterModel=${currentSettings.openrouterModel})`,
     );
     trayState = "running";
   } catch (err) {
@@ -243,11 +255,16 @@ function openDashboardWindow(): void {
 
 function handleOpenSettings(): void {
   openSettingsWindow(async (next) => {
-    const backendChanged = next.backend !== currentBackend;
-    const modelChanged = next.openrouterModel !== currentOpenrouterModel;
-    if (backendChanged || modelChanged) {
-      currentBackend = next.backend as AdapterMode;
-      currentOpenrouterModel = next.openrouterModel;
+    const needsRestart =
+      next.backend !== currentSettings.backend ||
+      next.openrouterModel !== currentSettings.openrouterModel ||
+      next.codexModel !== currentSettings.codexModel ||
+      next.codexReasoningEffort !== currentSettings.codexReasoningEffort ||
+      next.anthropicModel !== currentSettings.anthropicModel;
+    currentSettings = next;
+    currentBackend = next.backend as AdapterMode;
+    applyExecutorEnv(next);
+    if (needsRestart) {
       try {
         await restartServer();
       } catch (err) {
@@ -266,6 +283,49 @@ app.whenReady().then(async () => {
     onRestart: restartServer,
     onOpenSettings: handleOpenSettings,
   });
+
+  // Application menu — gives the user a Cmd+, shortcut to open Settings even
+  // when the menu-bar tray icon is hidden behind status-bar managers like
+  // Bartender. Replaces the default Electron menu so the standard macOS
+  // edit/window/help still work.
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      {
+        label: "Auto Job",
+        submenu: [
+          { label: "About Auto Job", role: "about" },
+          { type: "separator" },
+          {
+            label: "Settings…",
+            accelerator: "Command+,",
+            click: handleOpenSettings,
+          },
+          { type: "separator" },
+          { label: "Hide Auto Job", accelerator: "Command+H", role: "hide" },
+          {
+            label: "Hide Others",
+            accelerator: "Command+Alt+H",
+            role: "hideOthers",
+          },
+          { label: "Show All", role: "unhide" },
+          { type: "separator" },
+          { label: "Quit", accelerator: "Command+Q", role: "quit" },
+        ],
+      },
+      { label: "Edit", role: "editMenu" },
+      { label: "View", role: "viewMenu" },
+      {
+        label: "Window",
+        submenu: [
+          { label: "Open Dashboard", click: openDashboardWindow },
+          { label: "Restart Bridge", click: () => void restartServer() },
+          { type: "separator" },
+          { role: "minimize" },
+          { role: "close" },
+        ],
+      },
+    ]),
+  );
 
   try {
     await startServer();
