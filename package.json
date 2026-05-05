@@ -30,6 +30,8 @@
     "auto:hourly-scan": "node scripts/hourly-job-scan.mjs",
     "auto:hourly-scan:dry": "AUTO_JOB_SCAN_DRY_RUN=1 node scripts/hourly-job-scan.mjs",
     "pending:warm-cache": "node scripts/warm-legacy-pending-cache.mjs",
+    "prune-cache": "node scripts/prune-browser-cache.mjs",
+    "prune-cache:dry": "node scripts/prune-browser-cache.mjs --dry-run",
     "gmail:auth": "node scripts/gmail-oauth-refresh.mjs auth",
     "gmail:scan": "node scripts/gmail-oauth-refresh.mjs scan",
     "gmail:update": "node scripts/refresh-gmail-signals.mjs",
