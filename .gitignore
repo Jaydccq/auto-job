@@ -118,6 +118,14 @@ packages/risk-telemetry/package-lock.json
 data/risk-events.jsonl
 data/risk-cooldowns.jsonl
 
+# Phase 4 auto-signup package + signup snapshots + LIVE RISK_ACK
+packages/auto-signup/node_modules/
+packages/auto-signup/dist/
+packages/auto-signup/package-lock.json
+data/signup-snapshots/*
+!data/signup-snapshots/.gitkeep
+RISK_ACK.md
+
 # Session artifacts
 .agents/
 **/CLAUDE.md

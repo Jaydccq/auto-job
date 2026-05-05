@@ -1,0 +1,34 @@
+{
+  "name": "@auto-job/auto-signup",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Phase 4 — per-ATS account-creation flows. RISK_ACK gated, vault-first, telemetry-recorded. Highest-risk capability in the auto-job system.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.4"
+  },
+  "dependencies": {
+    "@auto-job/browser": "workspace:*",
+    "@auto-job/humanize": "workspace:*",
+    "@auto-job/credentials": "workspace:*",
+    "@auto-job/risk-telemetry": "workspace:*",
+    "@auto-job/auto-apply": "workspace:*",
+    "yaml": "^2.8.3"
+  }
+}
