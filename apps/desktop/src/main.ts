@@ -13,7 +13,7 @@
  * Electron-builder packaging (5.5) is wired separately.
  */
 
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, Menu, shell } from "electron";
 import { appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
@@ -283,6 +283,49 @@ app.whenReady().then(async () => {
     onRestart: restartServer,
     onOpenSettings: handleOpenSettings,
   });
+
+  // Application menu — gives the user a Cmd+, shortcut to open Settings even
+  // when the menu-bar tray icon is hidden behind status-bar managers like
+  // Bartender. Replaces the default Electron menu so the standard macOS
+  // edit/window/help still work.
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      {
+        label: "Auto Job",
+        submenu: [
+          { label: "About Auto Job", role: "about" },
+          { type: "separator" },
+          {
+            label: "Settings…",
+            accelerator: "Command+,",
+            click: handleOpenSettings,
+          },
+          { type: "separator" },
+          { label: "Hide Auto Job", accelerator: "Command+H", role: "hide" },
+          {
+            label: "Hide Others",
+            accelerator: "Command+Alt+H",
+            role: "hideOthers",
+          },
+          { label: "Show All", role: "unhide" },
+          { type: "separator" },
+          { label: "Quit", accelerator: "Command+Q", role: "quit" },
+        ],
+      },
+      { label: "Edit", role: "editMenu" },
+      { label: "View", role: "viewMenu" },
+      {
+        label: "Window",
+        submenu: [
+          { label: "Open Dashboard", click: openDashboardWindow },
+          { label: "Restart Bridge", click: () => void restartServer() },
+          { type: "separator" },
+          { role: "minimize" },
+          { role: "close" },
+        ],
+      },
+    ]),
+  );
 
   try {
     await startServer();
