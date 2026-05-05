@@ -19,7 +19,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { createServer, type ServerHandle, type AdapterMode } from "@auto-job/server";
 import { createTray, type TrayController, type TrayState } from "./tray.js";
-import { loadSettings, type Backend } from "./settings.js";
+import { loadSettings, type Backend, type Settings } from "./settings.js";
 import { openSettingsWindow } from "./settings-window.js";
 
 // File logger: when the app is packaged, console output disappears, so
@@ -163,8 +163,20 @@ function resolveBackend(): AdapterMode {
   return loadSettings().backend as Backend;
 }
 
+let currentSettings: Settings = loadSettings();
 let currentBackend: AdapterMode = resolveBackend();
-let currentOpenrouterModel: string = loadSettings().openrouterModel;
+
+function applyExecutorEnv(s: Settings): void {
+  const setOrUnset = (key: string, value: string) => {
+    if (value) process.env[key] = value;
+    else delete process.env[key];
+  };
+  setOrUnset("AUTO_JOB_CODEX_MODEL", s.codexModel);
+  setOrUnset("AUTO_JOB_CODEX_REASONING_EFFORT", s.codexReasoningEffort);
+  setOrUnset("ANTHROPIC_MODEL", s.anthropicModel);
+}
+
+applyExecutorEnv(currentSettings);
 
 async function startServer(): Promise<void> {
   trayState = "idle";
@@ -172,11 +184,11 @@ async function startServer(): Promise<void> {
   try {
     server = createServer({
       backend: currentBackend,
-      openrouterModel: currentOpenrouterModel,
+      openrouterModel: currentSettings.openrouterModel,
     });
     const info = await server.start({ port: PORT, host: HOST });
     console.log(
-      `[auto-job] server listening on http://${info.host}:${info.port} (backend=${currentBackend}, openrouterModel=${currentOpenrouterModel})`,
+      `[auto-job] server listening on http://${info.host}:${info.port} (backend=${currentBackend}, openrouterModel=${currentSettings.openrouterModel})`,
     );
     trayState = "running";
   } catch (err) {
@@ -243,11 +255,16 @@ function openDashboardWindow(): void {
 
 function handleOpenSettings(): void {
   openSettingsWindow(async (next) => {
-    const backendChanged = next.backend !== currentBackend;
-    const modelChanged = next.openrouterModel !== currentOpenrouterModel;
-    if (backendChanged || modelChanged) {
-      currentBackend = next.backend as AdapterMode;
-      currentOpenrouterModel = next.openrouterModel;
+    const needsRestart =
+      next.backend !== currentSettings.backend ||
+      next.openrouterModel !== currentSettings.openrouterModel ||
+      next.codexModel !== currentSettings.codexModel ||
+      next.codexReasoningEffort !== currentSettings.codexReasoningEffort ||
+      next.anthropicModel !== currentSettings.anthropicModel;
+    currentSettings = next;
+    currentBackend = next.backend as AdapterMode;
+    applyExecutorEnv(next);
+    if (needsRestart) {
       try {
         await restartServer();
       } catch (err) {

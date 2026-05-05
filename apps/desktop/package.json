@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@auto-job/server": "workspace:*",
-    "@auto-job/shared": "workspace:*"
+    "@auto-job/shared": "workspace:*",
+    "yaml": "^2.8.3"
   },
   "devDependencies": {
     "@types/node": "^22.19.0",
