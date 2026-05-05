@@ -1,0 +1,30 @@
+# Email-verification-bot allowlist
+#
+# DEFAULT: empty list = bot disabled.
+#
+# Copy this file to config/email-verification-allowlist.yml (gitignored)
+# and add the hostnames you want the bot to confirm.
+#
+# Architecture decision (Phase 3):
+#  - The bot ONLY clicks links whose host appears below.
+#  - Each entry has `auto_click: true|false`. `false` lets you stage a host
+#    (it will appear in `email-bot list` but the bot refuses to click).
+#  - You can override the per-host confirm button selector via
+#    `confirm_button_selector` if the generic fallbacks miss.
+#  - Subdomains of allowlisted hosts are accepted (e.g. allowlisting
+#    `myworkdayjobs.com` accepts `wd5.myworkdayjobs.com`).
+
+hosts:
+  # Examples — all opted-out by default. Flip to auto_click: true after
+  # confirming a real verification email matches the expected pattern.
+  # - host: myworkdayjobs.com
+  #   auto_click: false
+  #   confirm_button_selector: "button[data-automation-id='confirmButton']"
+  # - host: talent.icims.com
+  #   auto_click: false
+  # - host: greenhouse.io
+  #   auto_click: false
+  # - host: lever.co
+  #   auto_click: false
+  # - host: ashbyhq.com
+  #   auto_click: false

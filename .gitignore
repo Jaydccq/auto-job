@@ -103,6 +103,14 @@ packages/auto-apply/package-lock.json
 data/apply-snapshots/*
 !data/apply-snapshots/.gitkeep
 
+# Phase 3 email-bot package + verification snapshots + live allowlist
+packages/email-bot/node_modules/
+packages/email-bot/dist/
+packages/email-bot/package-lock.json
+data/email-bot-snapshots/*
+!data/email-bot-snapshots/.gitkeep
+config/email-verification-allowlist.yml
+
 # Session artifacts
 .agents/
 **/CLAUDE.md
