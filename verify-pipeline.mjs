@@ -197,6 +197,10 @@ if (existsSync(join(repoRoot, "packages/email-bot/package.json"))) {
   runNpmStep("email-bot typecheck", join(repoRoot, "packages/email-bot"), ["run", "typecheck"]);
   runNpmStep("email-bot tests", join(repoRoot, "packages/email-bot"), ["run", "test"]);
 }
+if (existsSync(join(repoRoot, "packages/risk-telemetry/package.json"))) {
+  runNpmStep("risk-telemetry typecheck", join(repoRoot, "packages/risk-telemetry"), ["run", "typecheck"]);
+  runNpmStep("risk-telemetry tests", join(repoRoot, "packages/risk-telemetry"), ["run", "test"]);
+}
 
 // Phase 2C — submit-gate guard. The literal `allowSubmit: true` should appear
 // in production code in exactly one place: processApprovedEntry. Spec, tests,

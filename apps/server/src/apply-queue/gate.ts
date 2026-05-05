@@ -14,6 +14,8 @@
  *   7. otherwise → enqueue: true
  */
 
+import { isInCooldown, type CooldownInfo } from "@auto-job/risk-telemetry";
+
 import type {
   ApplyPolicy,
   ApplyQueueEntry,
@@ -47,6 +49,12 @@ export interface GateOptions {
   supportedAts?: readonly string[];
   /** "Now" override for tests. */
   nowMs?: number;
+  /**
+   * Inject a cooldown query (used by tests to avoid touching disk).
+   * Defaults to `isInCooldown` from `@auto-job/risk-telemetry`, which
+   * reads `data/risk-cooldowns.jsonl`.
+   */
+  cooldownQuery?: (ats: string, nowMs: number) => CooldownInfo;
 }
 
 export function applyGate(
@@ -105,7 +113,19 @@ export function applyGate(
     };
   }
 
-  // Cooldown — ATS has a recent "detected" entry
+  // Cooldown — Phase 5: query the risk-telemetry registry first (single
+  // source of truth). Fall back to queue-projection (legacy) if telemetry
+  // returns inactive — this gives us a smooth migration window where
+  // existing `status:detected` entries still cool down even before the
+  // first telemetry event has been recorded.
+  const cooldownQuery = opts.cooldownQuery ?? ((ats: string, nowMs: number) => isInCooldown(ats, { nowMs }));
+  const telemetry = cooldownQuery(evaluation.ats, now);
+  if (telemetry.active) {
+    return {
+      enqueue: false,
+      reason: `ATS ${evaluation.ats} in cooldown until ${telemetry.endsAt} (${telemetry.reason ?? "telemetry"})`,
+    };
+  }
   const recentDetections = queue.filter(
     (q) =>
       q.ats === evaluation.ats &&

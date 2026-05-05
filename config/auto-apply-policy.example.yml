@@ -35,6 +35,17 @@ cooldown:
   on_account_locked_hours: 720       # 30 days
   on_verification_required_hours: 168 # 7 days
 
+# Phase 5 — per-signal cooldown durations used by risk-telemetry's
+# evaluateCooldowns(). Keys are the canonical detection-signal kinds.
+# Setting any value to 0 disables cooldown for that signal.
+signal_cooldowns:
+  captcha: 168                # 7d
+  http_403: 168               # 7d
+  http_429: 168               # 7d
+  verification_required: 72   # 3d (milder)
+  login_redirect: 168         # 7d
+  silent_degradation: 24      # 1d (transient possible)
+
 # Inter-apply pacing — Phase 2A engine respects these between consecutive applies.
 inter_apply_delay:
   min_seconds: 600         # 10 min between any two applies (across ATS)

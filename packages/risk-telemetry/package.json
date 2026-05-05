@@ -1,8 +1,8 @@
 {
-  "name": "@auto-job/auto-apply",
+  "name": "@auto-job/risk-telemetry",
   "version": "0.1.0",
   "private": true,
-  "description": "Per-ATS auto-apply flows. Default mode: fill-only / dry-run; submit gated behind explicit opt-in. Composes @auto-job/browser + @auto-job/humanize + @auto-job/credentials.",
+  "description": "Append-only telemetry log + detection-signal heuristics + auto-cooldown registry. Used by auto-apply, email-bot, and scan scripts to observe operational health.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,12 +22,5 @@
     "@types/node": "^22.19.17",
     "typescript": "^6.0.3",
     "vitest": "^4.1.4"
-  },
-  "dependencies": {
-    "@auto-job/browser": "workspace:*",
-    "@auto-job/humanize": "workspace:*",
-    "@auto-job/credentials": "workspace:*",
-    "@auto-job/risk-telemetry": "workspace:*",
-    "yaml": "^2.8.3"
   }
 }

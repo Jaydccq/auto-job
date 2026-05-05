@@ -111,6 +111,13 @@ data/email-bot-snapshots/*
 !data/email-bot-snapshots/.gitkeep
 config/email-verification-allowlist.yml
 
+# Phase 5 risk-telemetry package + event/cooldown logs
+packages/risk-telemetry/node_modules/
+packages/risk-telemetry/dist/
+packages/risk-telemetry/package-lock.json
+data/risk-events.jsonl
+data/risk-cooldowns.jsonl
+
 # Session artifacts
 .agents/
 **/CLAUDE.md

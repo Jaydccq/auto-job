@@ -76,6 +76,9 @@ importers:
       '@auto-job/humanize':
         specifier: workspace:*
         version: link:../../packages/humanize
+      '@auto-job/risk-telemetry':
+        specifier: workspace:*
+        version: link:../../packages/risk-telemetry
       '@auto-job/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -125,6 +128,9 @@ importers:
       '@auto-job/humanize':
         specifier: workspace:*
         version: link:../humanize
+      '@auto-job/risk-telemetry':
+        specifier: workspace:*
+        version: link:../risk-telemetry
       yaml:
         specifier: ^2.8.3
         version: 2.8.3
@@ -200,6 +206,18 @@ importers:
       playwright:
         specifier: ^1.58.1
         version: 1.59.1
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.17
+        version: 22.19.17
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.4
+        version: 4.1.5(@types/node@22.19.17)(happy-dom@20.9.0)(vite@8.0.10(@types/node@22.19.17)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
+
+  packages/risk-telemetry:
     devDependencies:
       '@types/node':
         specifier: ^22.19.17
