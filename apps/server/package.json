@@ -32,10 +32,12 @@
   },
   "dependencies": {
     "@auto-job/shared": "workspace:*",
+    "@auto-job/browser": "workspace:*",
+    "@auto-job/auto-apply": "workspace:*",
     "fastify": "^5.8.4",
     "js-yaml": "^4.1.1",
-    "nanoid": "^5.1.7",
+    "nanoid": "^5.1.11",
     "yaml": "^2.8.3",
-    "zod": "^4.3.6"
+    "zod": "^4.4.2"
   }
 }

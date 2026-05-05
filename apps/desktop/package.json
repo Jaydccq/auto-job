@@ -9,7 +9,7 @@
   "main": "dist/main.js",
   "scripts": {
     "build:server": "npm --prefix ../../packages/shared run build && npm --prefix ../server run build",
-    "build:main": "esbuild src/main.ts --bundle --platform=node --target=node20 --external:electron --outfile=dist/main.js --format=esm --sourcemap",
+    "build:main": "esbuild src/main.ts --bundle --platform=node --target=node20 --external:electron --outfile=dist/main.js --format=esm --sourcemap --banner:js=\"import { createRequire as __cjsRequire } from 'node:module'; const require = __cjsRequire(import.meta.url);\"",
     "build:preload": "esbuild src/settings-preload.ts --bundle --platform=node --target=node20 --external:electron --outfile=dist/settings-preload.js --format=cjs --sourcemap",
     "build": "npm run build:server && npm run build:preload && npm run build:main",
     "dev": "npm run build && electron dist/main.js",
@@ -20,11 +20,12 @@
   },
   "dependencies": {
     "@auto-job/server": "workspace:*",
-    "@auto-job/shared": "workspace:*"
+    "@auto-job/shared": "workspace:*",
+    "yaml": "^2.8.3"
   },
   "devDependencies": {
     "@types/node": "^22.19.0",
-    "electron": "^41.3.0",
+    "electron": "^41.5.0",
     "electron-builder": "^26.8.1",
     "esbuild": "^0.28.0",
     "tsx": "^4.21.0",

@@ -1,0 +1,32 @@
+{
+  "name": "@auto-job/auto-apply",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Per-ATS auto-apply flows. Default mode: fill-only / dry-run; submit gated behind explicit opt-in. Composes @auto-job/browser + @auto-job/humanize + @auto-job/credentials.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.4"
+  },
+  "dependencies": {
+    "@auto-job/browser": "workspace:*",
+    "@auto-job/humanize": "workspace:*",
+    "@auto-job/credentials": "workspace:*",
+    "yaml": "^2.8.3"
+  }
+}

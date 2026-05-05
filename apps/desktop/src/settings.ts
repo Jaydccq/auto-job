@@ -29,6 +29,12 @@ export interface Settings {
   /** OpenRouter model slug, e.g. "anthropic/claude-3.5-sonnet". Used only when
    *  backend === "real-openrouter". Trimmed string; never null. */
   openrouterModel: string;
+  /** Override for AUTO_JOB_CODEX_MODEL when backend === "real-codex". Empty = bridge default. */
+  codexModel: string;
+  /** Override for AUTO_JOB_CODEX_REASONING_EFFORT. One of "low" | "medium" | "high" | "". */
+  codexReasoningEffort: string;
+  /** Override for ANTHROPIC_MODEL when backend === "real-claude". Empty = CLI default. */
+  anthropicModel: string;
 }
 
 export const DEFAULT_OPENROUTER_MODEL = "anthropic/claude-sonnet-4.6";
@@ -37,6 +43,9 @@ export const DEFAULT_SETTINGS: Settings = {
   backend: "real-codex",
   startAtLogin: false,
   openrouterModel: DEFAULT_OPENROUTER_MODEL,
+  codexModel: "",
+  codexReasoningEffort: "",
+  anthropicModel: "",
 };
 
 function isBackend(value: unknown): value is Backend {
@@ -58,6 +67,11 @@ export function loadSettings(): Settings {
       startAtLogin:
         typeof raw.startAtLogin === "boolean" ? raw.startAtLogin : DEFAULT_SETTINGS.startAtLogin,
       openrouterModel: modelRaw || DEFAULT_OPENROUTER_MODEL,
+      codexModel: typeof raw.codexModel === "string" ? raw.codexModel.trim() : "",
+      codexReasoningEffort:
+        typeof raw.codexReasoningEffort === "string" ? raw.codexReasoningEffort.trim() : "",
+      anthropicModel:
+        typeof raw.anthropicModel === "string" ? raw.anthropicModel.trim() : "",
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
