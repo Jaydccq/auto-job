@@ -34,9 +34,14 @@ import {
 } from "./personal-files.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// HTML stays in src/ as a static asset; preload is compiled to dist/.
-const HTML_PATH = join(__dirname, "..", "src", "settings-window.html");
-const PRELOAD_PATH = join(__dirname, "..", "dist", "settings-preload.js");
+// In packaged builds resolve from app root (handles asar transparently).
+// In dev resolve from this file's compiled location.
+function resolvePath(rel: string): string {
+  if (app.isPackaged) return join(app.getAppPath(), rel);
+  return join(__dirname, "..", rel);
+}
+const HTML_PATH = resolvePath("src/settings-window.html");
+const PRELOAD_PATH = resolvePath("dist/settings-preload.js");
 
 let win: BrowserWindow | null = null;
 let handlersRegistered = false;
@@ -77,6 +82,17 @@ export function openSettingsWindow(onSaved: (next: Settings) => Promise<void> | 
     },
   });
 
+  // Diagnostic: log whether the preload file exists at the resolved path so
+  // we can tell preload-not-loaded from a renderer-side mistake.
+  try {
+    const exists = existsSync(PRELOAD_PATH);
+    console.log(`[settings] preload exists=${exists} path=${PRELOAD_PATH}`);
+  } catch (err) {
+    console.error("[settings] preload existsSync threw:", err);
+  }
+  win.webContents.on("preload-error", (_e, p, err) => {
+    console.error(`[settings] preload-error path=${p}:`, err);
+  });
   void win.loadFile(HTML_PATH);
 
   // Register IPC handlers once per process; they look up `win` at call

@@ -284,36 +284,39 @@ app.whenReady().then(async () => {
     onOpenSettings: handleOpenSettings,
   });
 
-  // Application menu — gives the user a Cmd+, shortcut to open Settings even
-  // when the menu-bar tray icon is hidden behind status-bar managers like
-  // Bartender. Replaces the default Electron menu so the standard macOS
-  // edit/window/help still work.
+  // Application menu — exposes Settings via Cmd+, when the tray icon is
+  // hidden behind status-bar managers (Bartender, Hidden Bar). Uses the
+  // built-in `appMenu` role for the first submenu so macOS auto-fills the
+  // About/Hide/Quit items correctly; we only inject Settings.
+  const isMac = process.platform === "darwin";
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
-      {
-        label: "Auto Job",
-        submenu: [
-          { label: "About Auto Job", role: "about" },
-          { type: "separator" },
-          {
-            label: "Settings…",
-            accelerator: "Command+,",
-            click: handleOpenSettings,
-          },
-          { type: "separator" },
-          { label: "Hide Auto Job", accelerator: "Command+H", role: "hide" },
-          {
-            label: "Hide Others",
-            accelerator: "Command+Alt+H",
-            role: "hideOthers",
-          },
-          { label: "Show All", role: "unhide" },
-          { type: "separator" },
-          { label: "Quit", accelerator: "Command+Q", role: "quit" },
-        ],
-      },
-      { label: "Edit", role: "editMenu" },
-      { label: "View", role: "viewMenu" },
+      ...(isMac
+        ? [
+            {
+              role: "appMenu" as const,
+              submenu: [
+                { role: "about" as const },
+                { type: "separator" as const },
+                {
+                  label: "Settings…",
+                  accelerator: "Command+,",
+                  click: handleOpenSettings,
+                },
+                { type: "separator" as const },
+                { role: "services" as const },
+                { type: "separator" as const },
+                { role: "hide" as const },
+                { role: "hideOthers" as const },
+                { role: "unhide" as const },
+                { type: "separator" as const },
+                { role: "quit" as const },
+              ],
+            },
+          ]
+        : []),
+      { role: "editMenu" },
+      { role: "viewMenu" },
       {
         label: "Window",
         submenu: [
