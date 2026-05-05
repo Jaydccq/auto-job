@@ -26,6 +26,7 @@
     "indeed-scan": "./apps/server/node_modules/.bin/tsx scripts/job-board-scan.ts --source indeed",
     "workday-scan": "./apps/server/node_modules/.bin/tsx scripts/workday-scan.ts",
     "icims-scan": "./apps/server/node_modules/.bin/tsx scripts/icims-scan.ts",
+    "auto-apply:approve": "NODE_OPTIONS=\"--conditions=development\" ./apps/server/node_modules/.bin/tsx scripts/auto-apply-approve.ts",
     "own-browser:login-helper": "./apps/server/node_modules/.bin/tsx scripts/own-browser-login-helper.mjs",
     "auto:hourly-scan": "node scripts/hourly-job-scan.mjs",
     "auto:hourly-scan:dry": "AUTO_JOB_SCAN_DRY_RUN=1 node scripts/hourly-job-scan.mjs",

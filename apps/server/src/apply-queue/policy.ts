@@ -27,6 +27,7 @@ export const DISABLED_POLICY: ApplyPolicy = {
     typing_wpm: [40, 75],
     click_dwell_ms: [200, 600],
   },
+  approval_ttl_hours: 24,
 };
 
 export interface LoadOptions {
@@ -67,5 +68,9 @@ function mergeWithDefaults(p: Partial<ApplyPolicy>): ApplyPolicy {
       typing_wpm: p.humanizer?.typing_wpm ?? DISABLED_POLICY.humanizer.typing_wpm,
       click_dwell_ms: p.humanizer?.click_dwell_ms ?? DISABLED_POLICY.humanizer.click_dwell_ms,
     },
+    approval_ttl_hours:
+      typeof p.approval_ttl_hours === "number" && p.approval_ttl_hours >= 0
+        ? p.approval_ttl_hours
+        : DISABLED_POLICY.approval_ttl_hours,
   };
 }

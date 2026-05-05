@@ -4,11 +4,12 @@
  * Surface:
  *   const flow = applyFlowFor("greenhouse");           // factory
  *   const data = loadApplicationData();                // profile reader
- *   const result = await runApplyFlow(ctrl, request);  // orchestrator
+ *   const result = await runApplyFlow(ctrl, request);  // fill-only orchestrator
  *
- * Default mode: fill-only / dry-run. submit() throws SubmitNotPermittedError
- * unless { allowSubmit: true } is passed (and the runner does NOT pass it
- * in this change).
+ * runApplyFlow is fill-only; per-ATS adapter `submit()` throws
+ * SubmitNotPermittedError without an explicit allowSubmit flag. The single
+ * production call site that lifts the gate is processApprovedEntry in
+ * apps/server/src/apply-queue/runner.ts.
  */
 
 export { applyFlowFor, APPLY_FLOWS } from "./registry.js";

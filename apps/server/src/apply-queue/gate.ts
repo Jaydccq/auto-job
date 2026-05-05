@@ -17,11 +17,30 @@
 import type {
   ApplyPolicy,
   ApplyQueueEntry,
+  ApplyStatus,
   Evaluation,
   GateResult,
 } from "./types.js";
 
 const SUPPORTED_ATS_DEFAULT = ["greenhouse", "lever", "ashby", "workday", "icims"] as const;
+
+/**
+ * Statuses that count against the daily quota: anything we've already
+ * spent a fill or submit on for that day. `awaiting_approval` and
+ * `submitted` count because they consumed a real session against the ATS.
+ */
+const QUOTA_CONSUMING_STATUSES: ReadonlySet<ApplyStatus> = new Set([
+  "ready",
+  "in_flight",
+  "awaiting_approval",
+  "submitted",
+  "submit_failed",
+  "succeeded",
+]);
+
+function consumesQuota(status: ApplyStatus): boolean {
+  return QUOTA_CONSUMING_STATUSES.has(status);
+}
 
 export interface GateOptions {
   /** Override the supported-ATS allowlist. */
@@ -61,7 +80,7 @@ export function applyGate(
     (q) =>
       q.ats === evaluation.ats &&
       Date.parse(q.queued_at) >= todayStart &&
-      (q.status === "ready" || q.status === "in_flight" || q.status === "succeeded"),
+      consumesQuota(q.status),
   );
   if (todayForAts.length >= perAtsLimit) {
     return {
@@ -77,7 +96,7 @@ export function applyGate(
   const todayAll = queue.filter(
     (q) =>
       Date.parse(q.queued_at) >= todayStart &&
-      (q.status === "ready" || q.status === "in_flight" || q.status === "succeeded"),
+      consumesQuota(q.status),
   );
   if (todayAll.length >= policy.daily_quota.total) {
     return {

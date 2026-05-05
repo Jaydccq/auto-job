@@ -15,6 +15,15 @@
 export { enqueue, markStatus, readQueue, type QueueOptions } from "./queue.js";
 export { loadPolicy, DISABLED_POLICY, type LoadOptions } from "./policy.js";
 export { applyGate, type GateOptions } from "./gate.js";
+export {
+  processNextApplyEntry,
+  processApprovedEntry,
+  type ProcessOptions,
+  type ProcessResult,
+  type ApproveResult,
+} from "./runner.js";
+export { runExpirySweep, type SweepOptions, type SweepResult } from "./expiry.js";
+export { EntryNotApprovableError } from "./errors.js";
 export type {
   ApplyPolicy,
   ApplyQueueEntry,

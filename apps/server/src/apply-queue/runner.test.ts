@@ -54,7 +54,7 @@ describe("processNextApplyEntry", () => {
     expect(r.processed).toBe(false);
   });
 
-  it("on success: marks status succeeded with snapshot path in notes", async () => {
+  it("on success: marks status awaiting_approval with snapshot path in notes", async () => {
     enqueueOne();
     vi.mocked(runApplyFlow).mockResolvedValue({
       fill: {
@@ -66,10 +66,11 @@ describe("processNextApplyEntry", () => {
       },
     });
     const r = await processNextApplyEntry(fakeController, { queuePath });
-    expect(r.outcome).toBe("succeeded");
+    expect(r.outcome).toBe("awaiting_approval");
     const projected = readQueue({ filePath: queuePath });
-    expect(projected[0]?.status).toBe("succeeded");
+    expect(projected[0]?.status).toBe("awaiting_approval");
     expect(projected[0]?.notes).toContain("/tmp/snap-abc");
+    expect(projected[0]?.notes).toContain("auto-apply-approve abc");
   });
 
   it("on FormFillError: marks status failed", async () => {

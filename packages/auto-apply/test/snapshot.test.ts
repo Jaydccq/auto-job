@@ -50,7 +50,7 @@ describe("writeReviewSnapshot", () => {
     });
     expect(existsSync(out)).toBe(true);
     const files = readdirSync(out).sort();
-    expect(files).toEqual(["data.json", "form.html", "result.json", "screenshot.png"]);
+    expect(files).toEqual(["MANIFEST.txt", "data.json", "form.html", "result.json", "screenshot.png"]);
   });
 
   it("data.json never contains the password field substring", async () => {
@@ -78,6 +78,35 @@ describe("writeReviewSnapshot", () => {
     const dataJson = readFileSync(join(out, "data.json"), "utf-8");
     expect(dataJson).not.toContain("Dear hiring manager");
     expect(dataJson).toMatch(/<\d+ chars>/);
+  });
+
+  it("MANIFEST.txt includes id, REVIEW + APPROVE hint, and skipped fields", async () => {
+    const out = await writeReviewSnapshot(fakeTab, {
+      id: "manifest-id",
+      ats: "greenhouse",
+      data: SAMPLE_DATA,
+      result: {
+        fieldsFilled: 4,
+        fieldsMissing: ["coverLetter"],
+        fieldsSkipped: [
+          { selector: "#why-us", tag: "textarea", label: "Why this company?", required: true },
+        ],
+        filledAt: "2026-05-04T10:00:00Z",
+      },
+      manifest: { jobUrl: "https://boards.greenhouse.io/x/jobs/1", tenant: "x", score: 4.7 },
+      rootDir: dir,
+    });
+    const manifest = readFileSync(join(out, "MANIFEST.txt"), "utf-8");
+    expect(manifest).toContain("id: manifest-id");
+    expect(manifest).toContain("ATS: greenhouse");
+    expect(manifest).toContain("tenant: x");
+    expect(manifest).toContain("Score: 4.7");
+    expect(manifest).toContain("Job URL: https://boards.greenhouse.io/x/jobs/1");
+    expect(manifest).toContain("filled  : 4");
+    expect(manifest).toContain("missing : 1 (coverLetter)");
+    expect(manifest).toContain("Why this company?");
+    expect(manifest).toContain("REVIEW + APPROVE: auto-apply-approve manifest-id");
+    expect(manifest).toContain("SKIP            : auto-apply-approve skip manifest-id");
   });
 
   it("uses provided id and timestamp in directory name", async () => {

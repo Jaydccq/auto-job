@@ -46,3 +46,11 @@ humanizer:
   reading_speed_wpm: [180, 320]   # human reading speed range
   typing_wpm: [40, 75]            # words-per-minute typing range
   click_dwell_ms: [200, 600]      # ms of mouse-down dwell on click
+
+# Phase 2C — Approval TTL.
+# After Phase 2B fills a form, the entry sits in `awaiting_approval` until you
+# review the snapshot and run `auto-apply-approve <id>`. If you don't approve
+# within `approval_ttl_hours`, the entry flips to `expired` (no further action).
+# Set to 0 to disable expiry entirely (entries wait forever — only do this if
+# you know you'll review them).
+approval_ttl_hours: 24

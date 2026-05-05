@@ -73,6 +73,9 @@ importers:
       '@auto-job/browser':
         specifier: workspace:*
         version: link:../../packages/browser
+      '@auto-job/humanize':
+        specifier: workspace:*
+        version: link:../../packages/humanize
       '@auto-job/shared':
         specifier: workspace:*
         version: link:../../packages/shared

@@ -1,5 +1,5 @@
 /**
- * runApplyFlow — orchestrator for one apply attempt.
+ * runApplyFlow — fill-only orchestrator for one apply attempt.
  *
  * Sequence:
  *   1. resolve flow via applyFlowFor(request.ats)
@@ -8,8 +8,15 @@
  *   4. wrap tab with humanize() — all subsequent fills go through it
  *   5. fill form via flow.fillForm
  *   6. write review snapshot (form.html + screenshot + data + result)
- *   7. if opts.allowSubmit === true: call flow.submit (NOT exercised by runner)
- *   8. close tab, return FillResult
+ *   7. close tab, return FillResult
+ *
+ * Phase 2C contract: runApplyFlow NEVER calls flow.submit. The single
+ * production call site that lifts the submit gate lives in
+ * apps/server/src/apply-queue/runner.ts → processApprovedEntry.
+ *
+ * The legacy `opts.allowSubmit` parameter is preserved for API stability but
+ * is now intentionally ignored — passing `true` is a no-op rather than a
+ * footgun.
  */
 
 import type { BrowserController } from "@auto-job/browser";
@@ -22,11 +29,17 @@ import type {
   ApplicationData,
   ApplyRequest,
   FillResult,
-  SubmitResult,
 } from "./types.js";
 
 export interface RunOptions {
-  /** Defaults to false; when true, also calls flow.submit afterwards. */
+  /**
+   * Phase 2C: this option is intentionally ignored. runApplyFlow is fill-only.
+   * Real submission happens in apps/server/src/apply-queue/runner.ts →
+   * processApprovedEntry, which is the single audited call site that lifts
+   * the submit gate.
+   *
+   * Kept on the type for backwards-compat with Phase 2B callers.
+   */
   allowSubmit?: boolean;
   /** Override profile path for tests. */
   profilePath?: string;
@@ -38,7 +51,6 @@ export interface RunOptions {
 
 export interface RunResult {
   fill: FillResult;
-  submit?: SubmitResult;
 }
 
 export async function runApplyFlow(
@@ -64,6 +76,7 @@ export async function runApplyFlow(
       ats: request.ats,
       data,
       result: { ...fillCounts, filledAt },
+      manifest: { jobUrl: request.jobUrl },
       ...(opts.snapshotRoot ? { rootDir: opts.snapshotRoot } : {}),
     });
 
@@ -72,11 +85,6 @@ export async function runApplyFlow(
       filledAt,
       reviewSnapshotPath: snapshotRoot,
     };
-
-    if (opts.allowSubmit === true) {
-      const submit = await flow.submit(ht, { allowSubmit: true });
-      return { fill, submit };
-    }
 
     return { fill };
   } finally {

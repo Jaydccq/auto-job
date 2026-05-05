@@ -34,6 +34,7 @@
     "@auto-job/shared": "workspace:*",
     "@auto-job/browser": "workspace:*",
     "@auto-job/auto-apply": "workspace:*",
+    "@auto-job/humanize": "workspace:*",
     "fastify": "^5.8.4",
     "js-yaml": "^4.1.1",
     "nanoid": "^5.1.11",

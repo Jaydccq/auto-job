@@ -4,15 +4,32 @@
  * Backed by data/apply-queue.jsonl (gitignored). Append-only, latest-line-wins
  * per `id`. See ./queue.ts for read/write behavior and ./gate.ts for the
  * pre-enqueue decision.
+ *
+ * State machine (Phase 2C):
+ *
+ *   ready ─▶ in_flight ─▶ awaiting_approval ─▶ submitted
+ *                  │              │       └▶ submit_failed
+ *                  │              └▶ skipped (operator skip)
+ *                  │              └▶ expired (TTL passed)
+ *                  ├▶ failed   (fill error)
+ *                  └▶ detected (cooldown trigger)
+ *
+ * `succeeded` is preserved for callers that invoke runApplyFlow with
+ * allowSubmit:false directly (outside the queue runner). The queue runner no
+ * longer marks `succeeded` after Phase 2C: it marks `awaiting_approval`.
  */
 
 export type ApplyStatus =
-  | "ready"        // gate passed, awaiting fire
-  | "in_flight"   // engine working on it
-  | "succeeded"   // submitted successfully
-  | "failed"      // engine threw a non-detection error
-  | "detected"    // bot/captcha/auth-block signal — triggers cooldown
-  | "skipped";    // operator manually skipped
+  | "ready"               // gate passed, awaiting fire
+  | "in_flight"           // engine working on it
+  | "awaiting_approval"   // fill complete, snapshot ready, user has not approved yet
+  | "submitted"           // submit operation completed successfully
+  | "submit_failed"       // submit attempted but failed
+  | "expired"             // TTL passed without approval
+  | "succeeded"           // legacy / direct-invoke fill-only success (kept for back-compat)
+  | "failed"              // engine threw a non-detection error
+  | "detected"            // bot/captcha/auth-block signal — triggers cooldown
+  | "skipped";            // operator manually skipped
 
 export interface ApplyQueueEntry {
   id: string;                   // stable per-application id
@@ -60,6 +77,12 @@ export interface ApplyPolicy {
     typing_wpm: [number, number];
     click_dwell_ms: [number, number];
   };
+  /**
+   * Phase 2C: how long an `awaiting_approval` entry can sit before
+   * runExpirySweep flips it to `expired`. 0 disables expiry entirely.
+   * Default: 24h.
+   */
+  approval_ttl_hours: number;
 }
 
 export interface GateResult {

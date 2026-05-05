@@ -113,6 +113,50 @@ function checkTracker() {
 
 checkTracker();
 
+function checkSubmitGateSingleCallSite() {
+  // Production .ts files only (skip tests, dist, node_modules, openspec/, scripts test files).
+  const grepRoots = [
+    join(repoRoot, "apps/server/src"),
+    join(repoRoot, "packages"),
+    join(repoRoot, "scripts"),
+  ].filter((p) => existsSync(p));
+  let raw;
+  try {
+    raw = execFileSync(
+      "grep",
+      [
+        "-rn",
+        "--include=*.ts",
+        "--exclude=*.test.ts",
+        "--exclude-dir=node_modules",
+        "--exclude-dir=dist",
+        "allowSubmit: true",
+        ...grepRoots,
+      ],
+      { encoding: "utf-8", stdio: ["ignore", "pipe", "pipe"] },
+    );
+  } catch (e) {
+    // grep exit 1 means no matches — fail because we expect the runner to match.
+    raw = e?.stdout ?? "";
+  }
+  const matches = raw.split("\n").filter(Boolean);
+  // The expected single production call site:
+  const expectedFile = "apps/server/src/apply-queue/runner.ts";
+  const expectedMatches = matches.filter((m) => m.includes(expectedFile));
+  const otherMatches = matches.filter((m) => !m.includes(expectedFile));
+  if (expectedMatches.length === 0) {
+    log.err(`submit-gate guard: expected at least one \`allowSubmit: true\` in ${expectedFile}`);
+    return;
+  }
+  if (otherMatches.length > 0) {
+    log.err(
+      `submit-gate guard: \`allowSubmit: true\` found outside ${expectedFile}:\n  ${otherMatches.join("\n  ")}`,
+    );
+    return;
+  }
+  log.ok(`submit-gate guard: only ${expectedFile} sets allowSubmit:true (${expectedMatches.length} call site(s))`);
+}
+
 console.log("\nChecking workspaces.\n");
 runNpmStep("repo ownership guard", repoRoot, ["run", "verify:repo-guard"]);
 runNpmStep("skill mirrors", repoRoot, ["run", "verify:skills"]);
@@ -149,6 +193,11 @@ if (existsSync(join(repoRoot, "packages/auto-apply/package.json"))) {
   runNpmStep("auto-apply typecheck", join(repoRoot, "packages/auto-apply"), ["run", "typecheck"]);
   runNpmStep("auto-apply tests", join(repoRoot, "packages/auto-apply"), ["run", "test"]);
 }
+
+// Phase 2C — submit-gate guard. The literal `allowSubmit: true` should appear
+// in production code in exactly one place: processApprovedEntry. Spec, tests,
+// and tasks files are allowed to mention it.
+checkSubmitGateSingleCallSite();
 
 console.log(`\n${"=".repeat(50)}`);
 console.log(`Result: ${errors} error(s), ${warnings} warning(s).`);
