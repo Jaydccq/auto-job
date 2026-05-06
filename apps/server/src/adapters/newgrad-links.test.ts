@@ -102,6 +102,45 @@ test("pipelineEntryUrlCandidates keeps company apply and source job aliases", ()
   ]);
 });
 
+test("pickPipelineEntryUrl ignores news article URLs whose slug merely mentions 'jobs'", () => {
+  const best = pickPipelineEntryUrl(
+    {
+      originalPostUrl:
+        "https://www.techtimes.com/articles/316328/20260504/big-tech-slashed-80000-jobs-early-2026.htm",
+      applyNowUrl: "",
+      applyFlowUrls: [
+        "https://www.techtimes.com/articles/316328/20260504/big-tech-slashed-80000-jobs-early-2026.htm",
+      ],
+    },
+    {
+      applyUrl: "https://jobright.ai/jobs/info/meta-role",
+      detailUrl: "https://jobright.ai/jobs/info/meta-role",
+    },
+  );
+
+  expect(best).toBe("https://jobright.ai/jobs/info/meta-role");
+});
+
+test("pickPipelineEntryUrl prefers concrete Jobright detail over Jobright slug search pages", () => {
+  const best = pickPipelineEntryUrl(
+    {
+      originalPostUrl:
+        "https://jobright.ai/jobs/software-engineer---fullstack-jobs-in-united-states",
+      applyNowUrl:
+        "https://jobright.ai/jobs/software-engineer---fullstack-jobs-in-united-states",
+      applyFlowUrls: [
+        "https://jobright.ai/jobs/software-engineer---fullstack-jobs-in-united-states",
+      ],
+    },
+    {
+      applyUrl: "https://jobright.ai/jobs/info/paypal-role",
+      detailUrl: "https://jobright.ai/jobs/info/paypal-role",
+    },
+  );
+
+  expect(best).toBe("https://jobright.ai/jobs/info/paypal-role");
+});
+
 test("pickPipelineEntryUrl prefers concrete Jobright detail over Jobright recommendations", () => {
   const best = pickPipelineEntryUrl(
     {

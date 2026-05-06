@@ -45,6 +45,48 @@ also inspect the summary for queue and completion counts.
 
 ## Progress Log
 
+- 2026-05-06: User requested `run newgrad scan`. Goal is to run the
+  repository-native `npm run newgrad-scan` workflow from the local checkout,
+  using default evaluation behavior. Success criteria: bridge reachable in
+  real Codex mode, scanner exits with a summary artifact, and this plan records
+  discovered/promoted/enriched/queued/completed counts plus any blocker.
+- 2026-05-06: Required user-layer files exist:
+  `cv.md`, `config/profile.yml`, `modes/_profile.md`, and `portals.yml`.
+  Existing unrelated untracked files observed and left untouched:
+  `RISK_ACK.md`, `packages/auto-signup/`.
+- 2026-05-06: Initial `/v1/health` check to `127.0.0.1:47319` failed with
+  connection error, so the next step is to start the local bridge before
+  running the scanner.
+- 2026-05-06: Started the local bridge with `npm run server`. Authenticated
+  `/v1/health` returned `execution.mode=real`,
+  `execution.realExecutor=codex`, `trackerOk=true`, `cvOk=true`,
+  `profileOk=true`, and `playwrightChromium.ok=true`.
+- 2026-05-06: Ran `npm run newgrad-scan`. The run completed successfully with
+  summary
+  `data/scan-runs/newgrad-20260506T052641Z-3096dc5b-summary.json` and event log
+  `data/scan-runs/newgrad-20260506T052641Z-3096dc5b.jsonl`.
+- 2026-05-06: Final counts: 111 discovered, 54 list-promoted, 57
+  list-filtered, 54 enriched, 0 enrichment failures, 12 detail additions, 42
+  detail skips, 12 evaluations queued, 0 queue failures, 12 completed, 0
+  failed, 0 timed out.
+- 2026-05-06: Bridge skip breakdown printed by the scanner: 2
+  `already_evaluated_report`, 25 `no_sponsorship`, 9 `already_in_pipeline`, 1
+  `experience_too_high`, 2 `site_signal_mixed`, 2 `detail_value_threshold`,
+  and 1 `pipeline_threshold`.
+- 2026-05-06: Reports/tracker rows produced and merged:
+  `reports/651-paypal-2026-05-06.md` (PayPal, 4/5),
+  `reports/652-airbnb-2026-05-06.md` (Airbnb, 4.2/5),
+  `reports/653-computershare-2026-05-06.md` (Computershare, 4/5),
+  `reports/654-nuro-2026-05-06.md` (Nuro Data Platform, 3.8/5),
+  `reports/655-two-sigma-2026-05-06.md` (Two Sigma, 1.6/5),
+  `reports/656-invoicecloud-inc-2026-05-06.md` (InvoiceCloud, 1.6/5),
+  `reports/657-citi-2026-05-06.md` (Citi, 1.4/5),
+  `reports/658-nuro-2026-05-06.md` (Nuro ML Data Infrastructure, 4.3/5),
+  `reports/659-arrow-electronics-2026-05-06.md` (Arrow Electronics, 3/5),
+  `reports/660-amazon-web-services-aws-2026-05-06.md` (AWS, 4.1/5),
+  `reports/661-amazon-2026-05-06.md` (Amazon, 3.9/5), and
+  `reports/662-northwestern-mutual-2026-05-06.md` (Northwestern Mutual,
+  3.7/5).
 - 2026-04-29: Required user-layer files exist.
 - 2026-04-29: Unauthenticated bridge health returned `UNAUTHORIZED`, confirming
   the bridge is listening and token-protected.
@@ -280,3 +322,38 @@ Findings:
   never sent the close-of-response signal for those specific detail IDs.
   Raising the timeout would not rescue them; the helper-script presence check
   is the correct shape of fix.
+- 2026-05-06: User reported the scanner was not producing real job URLs.
+  Investigation found two URL-picking bugs in the newgrad URL scorer (both
+  `apps/server/src/adapters/newgrad-links.ts` and the in-extension
+  `apps/extension/src/content/extract-newgrad.ts` had matching logic):
+  (a) The scorer added an extra `-30` penalty to `jobright.ai/jobs/info/{id}`
+      paths (the actual job posting), which caused worthless jobright slug
+      search-result URLs like `jobright.ai/jobs/{slug}-jobs-in-united-states`
+      (extracted from "more like this" links on the detail page) to outscore
+      the real `info/{id}` URL when no external ATS link was available.
+  (b) Non-jobright URLs scored a +40 bonus if they only matched the loose
+      `\b(apply|job|jobs|career|...)\b` text regex. A news article URL
+      (`techtimes.com/articles/.../big-tech-slashed-80000-jobs-...`) linked
+      from Meta's detail page therefore won over the canonical jobright info
+      URL.
+  Fix: jobright URLs that are not `/jobs/info/{id}` are now treated as
+  non-job pages (heavy penalty, filtered by `MIN_ACCEPTABLE_SCORE`); a
+  non-jobright URL must have a structural signal (ATS host, apply-query
+  param, or `/job(s)|/career(s)` path) — bare slug "jobs" mentions are now
+  rejected, while opaque ATS redirect tokens (no signals at all) are still
+  acceptable so LinkedIn-Apply captures keep working. Two regression tests
+  added in `newgrad-links.test.ts`. All 377 server tests pass.
+- 2026-05-06: Re-ran `npm run newgrad-scan -- --bridge-port 47320 --headless
+  --no-evaluate` against a dev bridge running the patched code. First
+  re-run: 105 list rows → 31 promoted → 6 added to pipeline. Verified URLs:
+  5/6 entries correctly used `jobright.ai/jobs/info/{id}` (e.g. Sony
+  Interactive, OpenSesame, Reddit, Squarepoint, Esri); 1/6 (Meta) still
+  wrote the techtimes article URL — that case prompted fix (b) above. Manually
+  corrected the Meta pipeline.md entry to its proper info URL
+  (`69fa5508b1fc847fc1aefaf5`, captured from the scan jsonl). Second re-run
+  (after both fixes) processed 24 fresh rows; all enriched cleanly with no
+  new URL leaks (added=0 because all promoted rows hit existing skip gates).
+  Files changed: `apps/server/src/adapters/newgrad-links.ts`,
+  `apps/server/src/adapters/newgrad-links.test.ts`,
+  `apps/extension/src/content/extract-newgrad.ts`, and the corrected
+  `data/pipeline.md` Meta line.

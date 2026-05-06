@@ -53,6 +53,7 @@ const APPLY_QUERY_HINTS = [
   "ashby_jid",
   "token=",
 ];
+const JOBRIGHT_JOB_PATH_PREFIX = "/jobs/info/";
 const JOBRIGHT_NON_JOB_PATHS = [
   "/jobs/recommend",
 ];
@@ -110,8 +111,14 @@ function scoreUrlCandidate(url: string | null | undefined): number {
     const hasJobPath = hasPattern(path, JOB_PATH_HINTS);
     const hasJobText = /\b(apply|job|jobs|career|careers|position|opening|opportunit)\b/.test(full);
 
-    if (isJobrightUrl(normalized) && JOBRIGHT_NON_JOB_PATHS.includes(path)) {
-      return -120;
+    if (isJobrightUrl(normalized)) {
+      // Only `/jobs/info/{id}` is a real posting page on Jobright. Every
+      // other path (`/jobs/recommend`, search-result slug pages like
+      // `/jobs/software-engineer-jobs-in-united-states`, etc.) is a
+      // listing/landing page and must never be picked as a pipeline URL.
+      if (!path.startsWith(JOBRIGHT_JOB_PATH_PREFIX) || JOBRIGHT_NON_JOB_PATHS.includes(path)) {
+        return -120;
+      }
     }
 
     if (hasAtsHost) score += 100;
@@ -123,10 +130,19 @@ function scoreUrlCandidate(url: string | null | undefined): number {
 
     if (isJobrightUrl(normalized)) {
       score -= 80;
-      if (path.startsWith("/jobs/info/")) score -= 30;
-    } else if (hasAtsHost || hasApplyQuery || hasJobPath || hasJobText) {
+    } else if (hasAtsHost || hasApplyQuery || hasJobPath) {
       score += 40;
+    } else if (hasJobText) {
+      // The URL only "mentions" job-related words in its slug but has no
+      // structural signal (no ATS host, no apply-query param, no /job(s)|
+      // /career(s) path). News articles and blog posts about hiring/layoffs
+      // (e.g. techtimes.com/articles/...-jobs-early-2026.htm) match this
+      // pattern. Reject — never pick these as a pipeline URL.
+      return -120;
     } else {
+      // No textual or structural signal — keep but penalize. This catches
+      // legitimate opaque apply-redirect tokens (click.appcast.io/t/...,
+      // dsp.prng.co/...) that LinkedIn captures during an Apply click.
       score -= 80;
     }
 

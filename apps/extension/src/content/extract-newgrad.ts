@@ -893,8 +893,12 @@ export function extractNewGradDetail(): NewGradDetail {
         score += 12;
       }
       if (host === "jobright.ai" || host.endsWith(".jobright.ai")) {
+        // Only /jobs/info/{id} is a real posting page; every other Jobright
+        // path (search-result slugs like /jobs/software-engineer-jobs-in-...,
+        // /jobs/recommend, etc.) is a listing/landing page and must not be
+        // picked as a job URL.
+        if (!path.startsWith("/jobs/info/")) return -200;
         score -= 80;
-        if (path.startsWith("/jobs/info/")) score -= 30;
       } else {
         score += 40;
       }
