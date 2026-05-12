@@ -27,6 +27,6 @@
     "@auto-job/browser": "workspace:*",
     "@auto-job/humanize": "workspace:*",
     "@auto-job/credentials": "workspace:*",
-    "yaml": "^2.8.3"
+    "yaml": "^2.9.0"
   }
 }
